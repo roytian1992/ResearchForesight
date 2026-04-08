@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "research-insight-benchmark"
+version = "0.1.0"
+description = "Core code and public release artifacts for the Research Insight Benchmark."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "beautifulsoup4",
+  "json-repair",
+  "numpy",
+  "PyYAML",
+  "rank-bm25",
+  "requests",
+  "scikit-learn",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

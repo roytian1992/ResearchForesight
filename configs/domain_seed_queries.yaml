@@ -1,0 +1,174 @@
+domains:
+  llm_agent:
+    positive_terms:
+      - agent
+      - agents
+      - agentic
+      - llm agent
+      - language agent
+      - autonomous agent
+      - autonomous agents
+      - tool use
+      - tool-using
+      - tool calling
+      - function calling
+      - planning
+      - reasoning
+      - task decomposition
+      - multi-agent
+      - multi agent
+      - agent workflow
+      - workflow
+      - memory
+      - long-term memory
+      - long term memory
+      - reflection
+      - self-reflection
+      - self improvement
+      - web agent
+      - code agent
+      - software agent
+      - research agent
+    caution_terms:
+      - benchmark
+      - survey
+      - evaluation
+    negative_terms:
+      - pure prompt engineering
+      - pure base model pretraining
+
+  llm_finetuning_post_training:
+    positive_terms:
+      - fine-tuning
+      - finetuning
+      - post-training
+      - instruction tuning
+      - supervised fine-tuning
+      - SFT
+      - DPO
+      - direct preference optimization
+      - RLHF
+      - RFT
+      - preference learning
+      - reward model
+      - alignment efficiency
+      - synthetic preference
+      - data curation
+      - model merging
+      - test-time scaling
+    caution_terms:
+      - benchmark
+      - survey
+      - evaluation
+      - scaling law
+    negative_terms:
+      - pure pretraining scaling
+      - inference-only deployment
+      - serving system without training method
+
+  rag_and_retrieval_structuring:
+    positive_terms:
+      - retrieval-augmented generation
+      - retrieval augmented generation
+      - RAG
+      - agentic rag
+      - reasoning rag
+      - graph rag
+      - graph-based rag
+      - retrieval-augmented language model
+      - retrieval-based generation
+      - retrieval-enhanced generation
+      - knowledge-augmented generation
+      - knowledge grounded generation
+      - grounded generation
+      - document-grounded generation
+      - evidence-grounded generation
+      - search-augmented generation
+      - retrieval + structure
+      - retrieval and structuring
+      - retrieval plus structuring
+      - external knowledge integration
+      - knowledge integration
+      - retrieval planning
+      - iterative retrieval
+      - retrieval memory
+      - multimodal rag
+      - citation verification
+      - document grounding
+      - evidence aggregation
+      - multi-hop retrieval
+    caution_terms:
+      - benchmark
+      - survey
+      - evaluation
+      - long context
+      - search
+      - knowledge graph
+    negative_terms:
+      - pure search ranking
+      - retrieval-free long-context method
+      - pure knowledge graph completion without generation
+
+  visual_generative_modeling_and_diffusion:
+    anchor_terms:
+      - diffusion
+      - diffusion model
+      - latent diffusion
+      - score-based model
+      - flow matching
+      - rectified flow
+      - consistency model
+      - diffusion transformer
+      - text-to-image
+      - text to image
+      - image generation
+      - image editing
+      - text-to-video
+      - text to video
+      - video generation
+      - image-to-video
+      - image to video
+      - 3d generation
+      - view synthesis
+      - multi-view generation
+    positive_terms:
+      - diffusion model
+      - latent diffusion
+      - score-based model
+      - consistency model
+      - flow matching
+      - rectified flow
+      - diffusion transformer
+      - text-to-image
+      - text to image
+      - image generation
+      - image synthesis
+      - visual generation
+      - image editing
+      - text-to-video
+      - text to video
+      - video generation
+      - video synthesis
+      - image-to-video
+      - image to video
+      - 3d generation
+      - view synthesis
+      - multi-view generation
+      - controllable generation
+      - visual content generation
+    caution_terms:
+      - benchmark
+      - survey
+      - evaluation
+      - compression
+    negative_terms:
+      - protein diffusion
+      - molecule diffusion
+      - molecular generation
+      - drug discovery
+      - graph diffusion
+      - social diffusion
+      - time series
+      - traffic prediction
+      - weather forecasting
+      - recommendation

@@ -1,0 +1,44 @@
+id: benchmark_v3/judge_direction_forecasting
+task_variables:
+  - name: candidate_json
+    required: true
+template: |
+  You are judging whether a "direction_forecasting" benchmark item is high-quality enough for release.
+
+  Evaluate:
+  - family_fit
+  - temporal_discipline
+  - historical_grounding
+  - next_direction_specificity
+  - trajectory_alignment
+  - future_ground_truth_strength
+  - surface_naturalness
+  - public_benchmark_suitability
+
+  Scoring:
+  - 1.0 = excellent
+  - 0.7 = acceptable
+  - 0.4 = weak
+  - 0.1 = poor
+
+  Candidate:
+  {candidate_json}
+
+  Return valid JSON only:
+  {{
+    "scores": {{
+      "family_fit": 0.0,
+      "temporal_discipline": 0.0,
+      "historical_grounding": 0.0,
+      "next_direction_specificity": 0.0,
+      "trajectory_alignment": 0.0,
+      "future_ground_truth_strength": 0.0,
+      "surface_naturalness": 0.0,
+      "public_benchmark_suitability": 0.0
+    }},
+    "overall_score": 0.0,
+    "decision": "accept|borderline|reject",
+    "strengths": ["...", "..."],
+    "weaknesses": ["...", "..."],
+    "suggested_fix": "..."
+  }}

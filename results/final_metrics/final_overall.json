@@ -1,0 +1,50 @@
+[
+  {
+    "Method": "coi",
+    "Fact": 0.5277,
+    "FutureAlignment": 0.4567,
+    "EvidenceTraceability": 0.718,
+    "TemporalLeakage": 0.6687,
+    "TaskFulfillment": 0.7452,
+    "OpportunityGrounding": 0.7627,
+    "ForecastGrounding": 0.4647,
+    "TechnicalDependencyGrounding": 0.8121,
+    "TaskCount": 168
+  },
+  {
+    "Method": "hybrid",
+    "Fact": 0.5209,
+    "FutureAlignment": 0.396,
+    "EvidenceTraceability": 0.5191,
+    "TemporalLeakage": 0.8588,
+    "TaskFulfillment": 0.7746,
+    "OpportunityGrounding": 0.6919,
+    "ForecastGrounding": 0.5002,
+    "TechnicalDependencyGrounding": 0.8143,
+    "TaskCount": 168
+  },
+  {
+    "Method": "native",
+    "Fact": 0.416,
+    "FutureAlignment": 0.4411,
+    "EvidenceTraceability": 0.0555,
+    "TemporalLeakage": 0.9301,
+    "TaskFulfillment": 0.7699,
+    "OpportunityGrounding": 0.6124,
+    "ForecastGrounding": 0.4706,
+    "TechnicalDependencyGrounding": 0.7436,
+    "TaskCount": 168
+  },
+  {
+    "Method": "research_arc",
+    "Fact": 0.5185,
+    "FutureAlignment": 0.4563,
+    "EvidenceTraceability": 0.6243,
+    "TemporalLeakage": 0.4729,
+    "TaskFulfillment": 0.8047,
+    "OpportunityGrounding": 0.9285,
+    "ForecastGrounding": 0.882,
+    "TechnicalDependencyGrounding": 0.8908,
+    "TaskCount": 168
+  }
+]

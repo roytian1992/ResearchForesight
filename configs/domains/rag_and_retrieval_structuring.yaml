@@ -1,0 +1,63 @@
+domain_id: rag_and_retrieval_structuring
+raw_inputs:
+  - data/raw/paper_metadata_rag.jsonl
+  - data/raw/metadata.jsonl
+
+corpus:
+  merged_output: data/domains/rag_and_retrieval_structuring/interim/papers_merged.jsonl
+  candidate_output: data/domains/rag_and_retrieval_structuring/interim/candidate_papers.jsonl
+  summary_output: data/domains/rag_and_retrieval_structuring/interim/corpus_summary.json
+
+annotation:
+  prompt_id: curation/domain_scope_and_taxonomy
+  input_path: data/domains/rag_and_retrieval_structuring/interim/candidate_papers.jsonl
+  output_path: data/domains/rag_and_retrieval_structuring/annotations/paper_labels.jsonl
+  error_path: data/domains/rag_and_retrieval_structuring/annotations/paper_labels.errors.jsonl
+  request_timeout: 240
+  temperature: 0.0
+  workers: 8
+  max_retries: 2
+  candidate_tier: any
+  prompt_static:
+    domain_name: RAG / Agentic RAG / Retrieval + Structuring
+    domain_summary: >
+      A benchmark domain centered on how LLMs access, integrate, structure,
+      and verify external knowledge through retrieval, grounding, memory,
+      graph/structure construction, and agentic control loops.
+    core_definition: >
+      论文的核心贡献直接面向 external knowledge integration for LLMs，
+      包括 retrieval-augmented generation、grounded generation、agentic retrieval、
+      graph/structured retrieval、retrieval with memory、retrieval plus structuring、
+      citation/verification、以及 evidence-centric knowledge access。
+    adjacent_definition: >
+      与检索、搜索、知识图谱、长上下文或知识增强有关，但主要贡献不是
+      external knowledge integration 本身，例如一般 search/ranking、
+      long-context only、knowledge graph only、或只把 retrieval 当成配套模块。
+    out_of_scope_definition: >
+      不以 external knowledge integration 为核心，或者完全是传统检索、
+      纯排序、纯知识图谱、纯长上下文替代方案。
+    boundary_rules: |
+      优先纳入：
+      - classical retrieval-augmented generation
+      - reasoning RAG, multi-hop aggregation, evidence synthesis
+      - graph RAG, structured retrieval, retrieval + memory
+      - agentic RAG with planning, tool use, or iterative retrieval loops
+      - multimodal RAG when retrieval and generation coupling is central
+      - grounded generation, citation verification, document grounding
+      - external knowledge integration with explicit retrieval/grounding/structure coupling
+
+      倾向判为 adjacent：
+      - reranking or search methods that are not actually coupled to generation
+      - long-context QA papers that compare against RAG but do not advance RAG
+      - knowledge graph or database work that can support RAG but is not framed as retrieval-augmented generation
+      - generic information access work without LLM-side knowledge integration
+
+      排除：
+      - pure search / ranking systems without generative modeling
+      - retrieval-free long-context methods
+      - pure knowledge graph completion or schema construction without generation
+      - generic agent papers where retrieval is incidental
+
+clean:
+  output_path: data/domains/rag_and_retrieval_structuring/clean/core_papers.jsonl
+  stats_output: data/domains/rag_and_retrieval_structuring/clean/core_stats.json

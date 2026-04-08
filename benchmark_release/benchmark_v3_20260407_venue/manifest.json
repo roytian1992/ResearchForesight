@@ -1,0 +1,27 @@
+{
+  "release_name": "benchmark_v3_20260407_venue",
+  "task_count": 168,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 46,
+    "direction_forecasting": 49,
+    "strategic_research_planning": 73
+  },
+  "domain_counts": {
+    "LLM agents": 42,
+    "LLM fine-tuning and post-training": 50,
+    "RAG and retrieval structuring": 30,
+    "Visual generative modeling and diffusion": 46
+  },
+  "files": {
+    "tasks_public": "tasks.jsonl",
+    "tasks_internal_full": "tasks_internal_full.jsonl",
+    "tasks_hidden_eval": "tasks_hidden_eval.jsonl",
+    "tasks_build_trace": "tasks_build_trace.jsonl",
+    "tasks_hidden_eval_v3": "tasks_hidden_eval_v3.jsonl"
+  },
+  "augmentation": {
+    "source_release": "data/releases/benchmark_v3_20260402_pro",
+    "added_direction_tasks": 7,
+    "added_planning_tasks": 8
+  }
+}

@@ -1,0 +1,134 @@
+[
+  {
+    "Method": "coi",
+    "Family": "bottleneck_opportunity_discovery",
+    "Fact": 0.5002,
+    "FutureAlignment": 0.4341,
+    "EvidenceTraceability": 0.7092,
+    "TemporalLeakage": 0.797,
+    "TaskFulfillment": 0.6966,
+    "FamilyAux": 0.7627,
+    "TaskCount": 46
+  },
+  {
+    "Method": "coi",
+    "Family": "direction_forecasting",
+    "Fact": 0.5663,
+    "FutureAlignment": 0.5672,
+    "EvidenceTraceability": 0.6004,
+    "TemporalLeakage": 0.5339,
+    "TaskFulfillment": 0.7018,
+    "FamilyAux": 0.4647,
+    "TaskCount": 49
+  },
+  {
+    "Method": "coi",
+    "Family": "strategic_research_planning",
+    "Fact": 0.5192,
+    "FutureAlignment": 0.3968,
+    "EvidenceTraceability": 0.8024,
+    "TemporalLeakage": 0.6784,
+    "TaskFulfillment": 0.805,
+    "FamilyAux": 0.8121,
+    "TaskCount": 73
+  },
+  {
+    "Method": "hybrid",
+    "Family": "bottleneck_opportunity_discovery",
+    "Fact": 0.5478,
+    "FutureAlignment": 0.4432,
+    "EvidenceTraceability": 0.3986,
+    "TemporalLeakage": 0.9857,
+    "TaskFulfillment": 0.7444,
+    "FamilyAux": 0.6919,
+    "TaskCount": 46
+  },
+  {
+    "Method": "hybrid",
+    "Family": "direction_forecasting",
+    "Fact": 0.5271,
+    "FutureAlignment": 0.3867,
+    "EvidenceTraceability": 0.5399,
+    "TemporalLeakage": 0.6804,
+    "TaskFulfillment": 0.7344,
+    "FamilyAux": 0.5002,
+    "TaskCount": 49
+  },
+  {
+    "Method": "hybrid",
+    "Family": "strategic_research_planning",
+    "Fact": 0.4998,
+    "FutureAlignment": 0.3725,
+    "EvidenceTraceability": 0.5811,
+    "TemporalLeakage": 0.8986,
+    "TaskFulfillment": 0.8205,
+    "FamilyAux": 0.8143,
+    "TaskCount": 73
+  },
+  {
+    "Method": "native",
+    "Family": "bottleneck_opportunity_discovery",
+    "Fact": 0.4399,
+    "FutureAlignment": 0.5154,
+    "EvidenceTraceability": 0.0723,
+    "TemporalLeakage": 0.9857,
+    "TaskFulfillment": 0.7912,
+    "FamilyAux": 0.6124,
+    "TaskCount": 46
+  },
+  {
+    "Method": "native",
+    "Family": "direction_forecasting",
+    "Fact": 0.5326,
+    "FutureAlignment": 0.4254,
+    "EvidenceTraceability": 0.0055,
+    "TemporalLeakage": 0.9061,
+    "TaskFulfillment": 0.7229,
+    "FamilyAux": 0.4706,
+    "TaskCount": 49
+  },
+  {
+    "Method": "native",
+    "Family": "strategic_research_planning",
+    "Fact": 0.3227,
+    "FutureAlignment": 0.4048,
+    "EvidenceTraceability": 0.0785,
+    "TemporalLeakage": 0.9112,
+    "TaskFulfillment": 0.7879,
+    "FamilyAux": 0.7436,
+    "TaskCount": 73
+  },
+  {
+    "Method": "research_arc",
+    "Family": "bottleneck_opportunity_discovery",
+    "Fact": 0.5283,
+    "FutureAlignment": 0.371,
+    "EvidenceTraceability": 0.6207,
+    "TemporalLeakage": 0.7074,
+    "TaskFulfillment": 0.7476,
+    "FamilyAux": 0.9285,
+    "TaskCount": 46
+  },
+  {
+    "Method": "research_arc",
+    "Family": "direction_forecasting",
+    "Fact": 0.561,
+    "FutureAlignment": 0.4287,
+    "EvidenceTraceability": 0.6289,
+    "TemporalLeakage": 0.1922,
+    "TaskFulfillment": 0.8352,
+    "FamilyAux": 0.882,
+    "TaskCount": 49
+  },
+  {
+    "Method": "research_arc",
+    "Family": "strategic_research_planning",
+    "Fact": 0.4837,
+    "FutureAlignment": 0.5286,
+    "EvidenceTraceability": 0.6235,
+    "TemporalLeakage": 0.5134,
+    "TaskFulfillment": 0.8201,
+    "FamilyAux": 0.8908,
+    "TaskCount": 73
+  }
+]

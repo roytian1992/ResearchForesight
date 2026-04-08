@@ -1,0 +1,96 @@
+dimensions:
+  task_settings:
+    description: The visual generation setting emphasized by the paper.
+    labels:
+      text_to_image_generation:
+        description: Text-conditioned image generation is central.
+      image_editing_and_instruction_following:
+        description: Image editing, instruction-based editing, or localized modification is central.
+      video_generation:
+        description: Text-to-video, image-to-video, or native video generation is central.
+      three_d_generation_and_view_synthesis:
+        description: 3D generation, multi-view generation, view synthesis, or geometry-consistent generation is central.
+      controllable_or_compositional_generation:
+        description: Controllability, compositional generation, layout/structure conditioning, or fine-grained control is central.
+      personalization_and_customization:
+        description: Personalization, identity consistency, style adaptation, or subject customization is central.
+      multimodal_visual_generation:
+        description: Visual generation driven by multimodal conditioning beyond plain text.
+      benchmark_or_evaluation_suite:
+        description: A paper centered on benchmarks, datasets, or evaluation suites for visual generative modeling.
+
+  method_modules:
+    description: The main visual generative modeling modules introduced or emphasized.
+    labels:
+      latent_diffusion_and_autoencoding:
+        description: Latent diffusion, latent-space modeling, or autoencoding-based generation is central.
+      diffusion_transformers:
+        description: DiT-style architectures or transformer-based diffusion backbones are central.
+      flow_matching_or_rectified_flow:
+        description: Flow matching, rectified flow, or diffusion-adjacent generative transport methods are central.
+      consistency_distillation_and_acceleration:
+        description: Consistency models, distillation, fast sampling, or inference acceleration is central.
+      controllable_guidance_and_conditioning:
+        description: Guidance, control modules, layout/pose/depth conditioning, or editing controls are central.
+      temporal_video_modeling:
+        description: Video temporal coherence, motion modeling, or long-horizon video consistency is central.
+      three_d_or_multiview_representation:
+        description: 3D representations, multi-view constraints, geometry-aware modeling, or view consistency is central.
+      alignment_preference_and_safety_tuning:
+        description: Preference optimization, alignment, human feedback, or safety tuning for visual generators is central.
+
+  interaction_modes:
+    description: The conditioning or interaction mode used by the visual generator.
+    labels:
+      text_conditioning:
+        description: Text prompts are the main conditioning signal.
+      image_conditioning:
+        description: Image-to-image, reference image, or visual exemplar conditioning is central.
+      video_conditioning:
+        description: Video clips, frames, or motion trajectories are central conditioning signals.
+      multimodal_conditioning:
+        description: Multiple conditioning modalities are central, such as text plus image or text plus audio.
+      three_d_or_multiview_conditioning:
+        description: Multi-view, camera, geometry, or 3D scene signals are central.
+      human_preference_or_feedback:
+        description: Human ratings, preference labels, or iterative human feedback are explicitly used.
+
+  evaluation_focus:
+    description: The primary evaluation angle emphasized by the paper.
+    labels:
+      fidelity_and_visual_quality:
+        description: Visual fidelity, realism, perceptual quality, or image/video quality is central.
+      prompt_alignment_and_instruction_following:
+        description: Text-image alignment, instruction following, or semantic controllability is central.
+      temporal_consistency_and_motion_quality:
+        description: Video temporal coherence, motion realism, or long-range consistency is central.
+      three_d_consistency_and_geometry:
+        description: 3D faithfulness, multiview consistency, or geometric correctness is central.
+      controllability_and_editability:
+        description: Fine-grained control, edit success, localization, or compositional control is central.
+      efficiency_and_inference_speed:
+        description: Sampling cost, runtime, memory, or acceleration is central.
+      benchmark_construction:
+        description: New datasets, evaluation suites, or benchmarks are central.
+      human_preference_or_aesthetics:
+        description: Human preference, aesthetics, or subjective quality is central.
+      robustness_and_generalization:
+        description: Robustness, domain transfer, generalization, or failure under shift is central.
+
+  reliability_safety:
+    description: Reliability, safety, and governance topics explicitly addressed.
+    labels:
+      none_explicit:
+        description: Reliability or safety is not a main stated focus.
+      harmful_or_biased_content:
+        description: Harmful generation, bias, toxicity, or unsafe content control is central.
+      identity_and_personalization_safety:
+        description: Identity misuse, impersonation, consent, or personalization safety is central.
+      robustness_and_stability:
+        description: Stability under prompt variation, repeated runs, or perturbations is central.
+      watermarking_and_attribution:
+        description: Watermarking, provenance, attribution, or AI-generated content traceability is central.
+      interpretability_and_control:
+        description: Transparency, controllability, or internal mechanism inspection is central.
+      data_governance_and_leakage:
+        description: Data leakage, memorization, copyright, or training-data governance is central.

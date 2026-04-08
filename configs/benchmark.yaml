@@ -1,0 +1,5 @@
+project:
+  name: research_trajectory_lab
+  domain_registry_path: configs/domain_registry.yaml
+  domain_seed_queries_path: configs/domain_seed_queries.yaml
+  llm_config_path: configs/llm/qwen_235b.local.yaml

@@ -1,0 +1,115 @@
+id: domain_scope_and_taxonomy
+category: curation
+name: Domain Scope And Taxonomy
+description: >
+  Determine whether a paper belongs to a benchmark domain and assign
+  multi-dimensional taxonomy labels with concise evidence.
+
+task_variables:
+  - name: paper_id
+    type: string
+    required: true
+    description: Paper identifier.
+  - name: title
+    type: string
+    required: true
+    description: Paper title.
+  - name: abstract
+    type: string
+    required: true
+    description: Paper abstract.
+  - name: categories
+    type: string
+    required: true
+    description: Subject categories as a comma-separated string.
+  - name: published
+    type: string
+    required: false
+    description: Published timestamp.
+
+static_variables:
+  - name: domain_name
+    type: string
+    required: true
+    description: Benchmark domain name.
+  - name: domain_summary
+    type: string
+    required: true
+    description: Short domain summary.
+  - name: core_definition
+    type: string
+    required: true
+    description: What counts as core-domain work.
+  - name: adjacent_definition
+    type: string
+    required: true
+    description: What counts as adjacent work.
+  - name: out_of_scope_definition
+    type: string
+    required: true
+    description: What counts as out-of-scope work.
+  - name: boundary_rules
+    type: string
+    required: true
+    description: Concrete include and exclude rules.
+  - name: taxonomy_guide
+    type: string
+    required: true
+    description: Human-readable taxonomy definitions.
+
+template: |
+  你正在为一个科研 technical vision benchmark 筛选论文并打标签。
+
+  目标领域：
+  - domain_name: {domain_name}
+  - domain_summary: {domain_summary}
+
+  你必须只根据标题、摘要、类别和已给出的边界规则判断，不要假设论文正文中的额外内容。
+
+  三种 scope_decision 的含义如下：
+  - `core_domain`: {core_definition}
+  - `adjacent`: {adjacent_definition}
+  - `out_of_scope`: {out_of_scope_definition}
+
+  边界规则：
+  {boundary_rules}
+
+  论文信息：
+  - paper_id: {paper_id}
+  - title: {title}
+  - categories: {categories}
+  - published: {published}
+
+  abstract:
+  {abstract}
+
+  taxonomy guide:
+  {taxonomy_guide}
+
+  请输出一个 JSON 对象，不要输出 Markdown，不要输出解释性前缀。
+
+  JSON 结构必须严格为：
+  {{
+    "paper_id": "字符串",
+    "scope_decision": "core_domain | adjacent | out_of_scope",
+    "confidence": 0.0,
+    "reasoning": "用 2-4 句中文解释为什么这样判断",
+    "evidence_phrases": ["来自标题或摘要的短语", "短语"],
+    "taxonomy": {{
+      "task_settings": ["标签id"],
+      "method_modules": ["标签id"],
+      "interaction_modes": ["标签id"],
+      "evaluation_focus": ["标签id"],
+      "reliability_safety": ["标签id"]
+    }}
+  }}
+
+  约束：
+  - `paper_id` 必须原样返回。
+  - `confidence` 取值范围为 0 到 1。
+  - `evidence_phrases` 必须来自标题或摘要中的原短语，不要编造。
+  - 只能使用 taxonomy guide 中出现的标签 id。
+  - 若 `scope_decision` 为 `out_of_scope`，taxonomy 允许全为空数组。
+  - 若 `scope_decision` 为 `adjacent`，可以只填最明显的少量 taxonomy。
+  - 若 `scope_decision` 为 `core_domain`，至少填写 1 个 `task_settings` 和 1 个 `method_modules`。
+  - 如果标题或摘要证据不足，不要勉强判为 `core_domain`。

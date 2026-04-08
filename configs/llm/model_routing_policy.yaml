@@ -1,0 +1,26 @@
+routing:
+  default_batch_model: mimo-v2-flash
+  default_heavy_reasoning_model: qwen-235b
+  default_rewrite_model: mimo-v2-pro
+  stages:
+    domain_scope_labeling:
+      primary: mimo-v2-flash
+      fallback: qwen-235b
+    candidate_task_rewrite:
+      primary: mimo-v2-pro
+      fallback: qwen-235b
+    candidate_screen_judge:
+      primary: mimo-v2-flash
+      fallback: mimo-v2-pro
+    pairwise_arena_judge:
+      primary: mimo-v2-pro
+      fallback: qwen-235b
+    posthoc_audit_judge:
+      primary: qwen-235b
+      fallback: mimo-v2-pro
+    taxonomy_expansion:
+      primary: qwen-235b
+      fallback: mimo-v2-pro
+    fulltext_structure_extraction:
+      primary: mimo-v2-flash
+      fallback: qwen-235b

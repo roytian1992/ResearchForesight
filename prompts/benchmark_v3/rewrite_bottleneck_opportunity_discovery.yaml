@@ -1,0 +1,42 @@
+id: benchmark_v3/rewrite_bottleneck_opportunity_discovery
+task_variables:
+  - name: candidate_json
+    required: true
+template: |
+  You are rewriting a benchmark candidate for the task family "bottleneck_opportunity_discovery".
+
+  Goal:
+  Convert the draft into a public benchmark task that asks an autonomous research agent to identify one unresolved technical bottleneck from pre-cutoff literature and infer the opportunity that would likely open if the bottleneck were solved.
+
+  Requirements:
+  1. The question must be strictly ex ante. It should not reveal what actually happened after the cutoff.
+  2. The task should sound like it requires careful reading of historical papers, especially limitations, failure cases, and future-work signals.
+  3. Do not mention PageIndex, support packets, nodes, packet IDs, taxonomy paths, or any other internal artifact.
+  4. Use a technical, formal, standalone benchmark style.
+  5. Use natural language only. No snake_case, slash-separated labels, or internal identifiers.
+  6. The question must ask for:
+     - one concrete bottleneck, and
+     - the research opportunity that would likely become viable if the bottleneck were addressed.
+  7. The gold answer should tie the historical bottleneck to later-opened directions concisely.
+  8. The expected answer points should reward historical grounding and opportunity linkage.
+  9. Output valid JSON only.
+
+  Candidate:
+  {candidate_json}
+
+  Return JSON:
+  {{
+    "title": "...",
+    "question": "...",
+    "gold_answer": "...",
+    "expected_answer_points": ["...", "...", "..."],
+    "leakage_check": {{
+      "question_non_leaky": true,
+      "notes": "..."
+    }},
+    "surface_check": {{
+      "no_internal_label_leakage": true,
+      "no_snake_case": true,
+      "notes": "..."
+    }}
+  }}

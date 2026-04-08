@@ -1,0 +1,94 @@
+dimensions:
+  task_settings:
+    description: The post-training setting or optimization objective emphasized by the paper.
+    labels:
+      instruction_tuning:
+        description: Supervised instruction tuning, SFT, or instruction-following optimization.
+      preference_alignment:
+        description: Preference learning, pairwise ranking, direct preference optimization, or alignment by preference signals.
+      rl_or_rft_post_training:
+        description: Reinforcement learning, reinforcement fine-tuning, or outcome/process reward optimization after pretraining.
+      data_curation_and_filtering:
+        description: Data selection, curation, synthesis, filtering, or training-mixture design for post-training.
+      efficient_alignment_or_adaptation:
+        description: Parameter-efficient, low-cost, or resource-constrained post-training and adaptation.
+      test_time_scaling_with_post_training:
+        description: Test-time scaling, search, or verifier procedures designed jointly with a post-training objective or adaptation recipe.
+      safety_or_refusal_alignment:
+        description: Harmlessness, refusal, policy alignment, or safety-specific post-training.
+      multimodal_post_training:
+        description: Post-training or alignment for multimodal LLMs or VLMs.
+      benchmark_or_evaluation_suite:
+        description: A paper centered on benchmark, dataset, or evaluation design for post-training methods.
+
+  method_modules:
+    description: The main post-training mechanisms introduced or emphasized.
+    labels:
+      supervised_finetuning:
+        description: Standard supervised fine-tuning with curated demonstrations or instruction data.
+      preference_optimization:
+        description: DPO-like, IPO-like, ORPO-like, or other direct preference optimization objectives.
+      reward_modeling:
+        description: Explicit reward modeling, reward shaping, or preference model learning.
+      reinforcement_learning:
+        description: PPO-style RL, GRPO-like optimization, RFT, or policy optimization after pretraining.
+      process_or_verifier_supervision:
+        description: Process supervision, verifier guidance, step-level feedback, or outcome validation.
+      data_selection_and_synthesis:
+        description: Data filtering, data mixing, self-instruct, synthetic preference generation, or curriculum construction.
+      parameter_efficient_adaptation:
+        description: LoRA, adapters, prompt tuning, or other efficient post-training mechanisms.
+      model_merging_or_composition:
+        description: Model merging, composition of experts, policy composition, or post-training mixture integration.
+      test_time_scaling_integration:
+        description: Joint design of post-training with test-time search, self-consistency, verifier loops, or inference-time scaling.
+
+  interaction_modes:
+    description: The main feedback or rollout mode used during post-training.
+    labels:
+      static_offline_training:
+        description: Offline static training data without interactive rollout.
+      human_preference_feedback:
+        description: Human preference labels, human ranking, or direct human annotation is central.
+      model_or_programmatic_feedback:
+        description: AI feedback, judge models, verifiers, heuristic filters, or programmatic reward signals are central.
+      environment_or_rollout_interaction:
+        description: Interactive rollouts, sampled trajectories, or environment responses are central.
+      multimodal_input_output:
+        description: Images, audio, video, or other multimodal channels are central to the training setup.
+      inference_time_search_or_verification:
+        description: Search, verifier calls, or test-time procedures are directly coupled with post-training design.
+
+  evaluation_focus:
+    description: The primary evaluation angle emphasized by the paper.
+    labels:
+      benchmark_construction:
+        description: New benchmark, dataset, or evaluation suite construction.
+      task_success:
+        description: End-task accuracy, win rate, or instruction-following quality.
+      alignment_quality:
+        description: Preference win rate, harmlessness, refusal quality, or alignment-target attainment.
+      efficiency_and_cost:
+        description: Compute, data, memory, or training/inference efficiency.
+      robustness_and_generalization:
+        description: Transfer, distribution shift, robustness, or cross-domain generalization.
+      long_horizon_reasoning:
+        description: Long-chain reasoning, difficult problem solving, or inference-time scaling performance.
+      failure_analysis:
+        description: Error modes, reward hacking, over-optimization, or post-training limitations.
+
+  reliability_safety:
+    description: Reliability, safety, and control issues explicitly addressed.
+    labels:
+      none_explicit:
+        description: Reliability or safety is not a main stated focus.
+      reward_hacking_and_overoptimization:
+        description: Reward misspecification, exploitation, over-optimization, or gaming the objective.
+      safety_alignment:
+        description: Harm reduction, refusal alignment, or safe behavior shaping.
+      robustness_and_stability:
+        description: Stability across seeds, data shifts, updates, or repeated training.
+      calibration_and_uncertainty:
+        description: Confidence calibration, uncertainty estimation, or reliability of model judgments.
+      oversight_and_control:
+        description: Human oversight, controllability, governance, or intervention mechanisms.

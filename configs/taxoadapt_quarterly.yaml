@@ -1,0 +1,123 @@
+defaults:
+  allowed_scope: core_domain
+  init_levels: 1
+  max_depth: 3
+  max_density: 40
+  max_children_per_node: 5
+  bootstrap_paper_sample_size: 20
+  width_paper_sample_size: 40
+  depth_paper_sample_size: 40
+  candidate_label_top_k: 20
+  min_candidate_votes: 2
+  workers: 6
+  request_timeout: 240
+  max_retries: 2
+  min_abstract_chars: 40
+  temperature_bootstrap: 0.1
+  temperature_routing: 0.0
+  temperature_classification: 0.0
+  temperature_expansion: 0.4
+  temperature_clustering: 0.2
+  dimensions:
+  - id: tasks
+    display_name: Tasks
+    definition: 'Problem settings or objectives addressed by the paper, including
+      concrete tasks, goals, operating settings, and benchmark problem formulations.
+
+      '
+  - id: methodologies
+    display_name: Methodologies
+    definition: 'Techniques, model families, algorithms, architectural patterns, retrieval
+      pipelines, agent loops, training recipes, or optimization strategies proposed
+      or emphasized by the paper.
+
+      '
+  - id: datasets
+    display_name: Datasets
+    definition: 'Datasets, benchmarks, evaluation suites, corpora, structured resources,
+      or data-construction artifacts introduced or substantially curated by the paper.
+
+      '
+  - id: evaluation_methods
+    display_name: Evaluation Methods
+    definition: 'Evaluation protocols, metrics, benchmark methodologies, stress tests,
+      ablation frameworks, or analysis methods used to assess research systems.
+
+      '
+  - id: real_world_domains
+    display_name: Real-World Domains
+    definition: 'Applied settings, user populations, industries, scientific domains,
+      enterprise contexts, or operational environments in which the research is deployed
+      or evaluated.
+
+      '
+  time_slices:
+  - slice_id: 2023Q1
+    start: '2023-01-01'
+    end: '2023-04-01'
+  - slice_id: 2023Q2
+    start: '2023-04-01'
+    end: '2023-07-01'
+  - slice_id: 2023Q3
+    start: '2023-07-01'
+    end: '2023-10-01'
+  - slice_id: 2023Q4
+    start: '2023-10-01'
+    end: '2024-01-01'
+  - slice_id: 2024Q1
+    start: '2024-01-01'
+    end: '2024-04-01'
+  - slice_id: 2024Q2
+    start: '2024-04-01'
+    end: '2024-07-01'
+  - slice_id: 2024Q3
+    start: '2024-07-01'
+    end: '2024-10-01'
+  - slice_id: 2024Q4
+    start: '2024-10-01'
+    end: '2025-01-01'
+  - slice_id: 2025Q1
+    start: '2025-01-01'
+    end: '2025-04-01'
+  - slice_id: 2025Q2
+    start: '2025-04-01'
+    end: '2025-07-01'
+  - slice_id: 2025Q3
+    start: '2025-07-01'
+    end: '2025-10-01'
+  - slice_id: 2025Q4
+    start: '2025-10-01'
+    end: '2026-01-01'
+  - slice_id: 2026Q1
+    start: '2026-01-01'
+    end: '2026-03-01'
+domains:
+  rag_and_retrieval_structuring:
+    topic: Retrieval-augmented generation and external knowledge integration for large
+      language models
+    input_path: data/domains/rag_and_retrieval_structuring/interim/papers_merged.publication_enriched.semanticscholar.jsonl
+    scope_labels_path: data/domains/rag_and_retrieval_structuring/annotations/paper_labels.jsonl
+    output_dir: data/domains/rag_and_retrieval_structuring/taxoadapt_quarterly
+    max_density: 35
+    workers: 8
+  llm_finetuning_post_training:
+    topic: Large language model post-training, alignment, and fine-tuning
+    input_path: data/domains/llm_finetuning_post_training/interim/papers_merged.publication_enriched.semanticscholar.jsonl
+    scope_labels_path: data/domains/llm_finetuning_post_training/annotations/paper_labels.jsonl
+    output_dir: data/domains/llm_finetuning_post_training/taxoadapt_quarterly
+    max_density: 35
+    workers: 8
+  llm_agent:
+    topic: Large language model agents and agentic systems
+    input_path: data/domains/llm_agent/interim/papers_merged.publication_enriched.semanticscholar.jsonl
+    scope_labels_path: data/domains/llm_agent/annotations/paper_labels.jsonl
+    output_dir: data/domains/llm_agent/taxoadapt_quarterly
+    max_density: 60
+    workers: 8
+  visual_generative_modeling_and_diffusion:
+    topic: Visual generative modeling and diffusion-based image, video, and 3D generation
+    input_path: data/domains/visual_generative_modeling_and_diffusion/interim/papers_merged.publication_enriched.semanticscholar.jsonl
+    scope_labels_path: data/domains/visual_generative_modeling_and_diffusion/annotations/paper_labels.jsonl
+    output_dir: data/domains/visual_generative_modeling_and_diffusion/taxoadapt_quarterly
+    max_density: 45
+    workers: 8

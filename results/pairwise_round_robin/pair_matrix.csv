@@ -1,0 +1,7 @@
+MethodA,MethodB,WinRate,LossRate,TieRate,Count
+coi,hybrid,0.1373,0.8627,0.0,153
+coi,native,0.2745,0.7255,0.0,153
+coi,research_arc,0.1961,0.8039,0.0,153
+hybrid,native,0.7255,0.2745,0.0,153
+hybrid,research_arc,0.6275,0.3725,0.0,153
+native,research_arc,0.451,0.549,0.0,153

@@ -1,0 +1,40 @@
+id: benchmark_v3/rewrite_strategic_research_planning
+task_variables:
+  - name: candidate_json
+    required: true
+template: |
+  You are rewriting a benchmark candidate for the task family "strategic_research_planning".
+
+  Goal:
+  Convert the draft into a public benchmark task that asks an autonomous research agent to prioritize a small number of research directions at the cutoff using only pre-cutoff literature.
+
+  Requirements:
+  1. The question must be strictly ex ante. Do not reveal realized future outcomes in the question.
+  2. The task should focus on prioritization and rationale, not generic brainstorming.
+  3. Do not mention internal packets, nodes, taxonomy paths, ranking formulas, or builder metadata.
+  4. Use a technical, formal, standalone benchmark style.
+  5. Use natural language only. No snake_case, slash-separated labels, or internal identifiers.
+  6. The question must ask the agent to select and rank a small set of candidate directions for the next six months.
+  7. The gold answer should indicate which directions were high-value to prioritize and why.
+  8. The expected answer points should emphasize evidence-grounded prioritization, not vague ambition.
+  9. Output valid JSON only.
+
+  Candidate:
+  {candidate_json}
+
+  Return JSON:
+  {{
+    "title": "...",
+    "question": "...",
+    "gold_answer": "...",
+    "expected_answer_points": ["...", "...", "..."],
+    "leakage_check": {{
+      "question_non_leaky": true,
+      "notes": "..."
+    }},
+    "surface_check": {{
+      "no_internal_label_leakage": true,
+      "no_snake_case": true,
+      "notes": "..."
+    }}
+  }}

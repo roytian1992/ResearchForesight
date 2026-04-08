@@ -1,0 +1,144 @@
+domains:
+  - domain_id: llm_agent
+    status: active
+    priority: 1
+    display_name: LLM Agent
+    taxonomy_path: configs/llm_agent_taxonomy.yaml
+    why_it_matters: >
+      Fast-moving and already structurally organized. It supports both macro
+      trajectory forecasting and micro technical-vision tasks.
+    benchmark_readiness: high
+    track_support:
+      macro_forecasting: true
+      micro_technical_vision: true
+    trend_units:
+      - planning_and_reasoning
+      - memory
+      - tool_use
+      - multi_agent_coordination
+      - environment_interaction
+      - evaluation
+      - reliability_and_safety
+    notes: >
+      This is the current base domain and the first complete benchmark release.
+
+  - domain_id: llm_finetuning_post_training
+    status: active
+    priority: 2
+    display_name: LLM Fine-Tuning / Post-Training
+    taxonomy_path: configs/llm_post_training_taxonomy.yaml
+    why_it_matters: >
+      This is the next expansion target because it is both large and highly
+      structured. Method families emerge as clear clusters and are therefore
+      suitable for time-sliced future validation.
+    benchmark_readiness: high
+    track_support:
+      macro_forecasting: true
+      micro_technical_vision: true
+    trend_units:
+      - supervised_finetuning
+      - preference_learning
+      - dpo_and_direct_alignment
+      - rl_and_rft
+      - data_curation_and_selection
+      - alignment_efficiency
+      - test_time_scaling_with_post_training
+      - multimodal_post_training
+    boundary_rules:
+      include:
+        - post_training_optimization
+        - alignment_objectives
+        - preference_optimization
+        - reward_modeling_when_used_for_post_training
+        - efficient_adaptation_when_focused_on_training_or_alignment
+      exclude:
+        - generic_pretraining_scaling_without_post_training_focus
+        - deployment_only_system_papers
+        - evaluation_only_papers_without_training_or_post_training_methodology
+    notes: >
+      This domain now has a completed benchmark release built from a
+      domain-specific raw harvest.
+
+  - domain_id: rag_and_retrieval_structuring
+    status: active
+    priority: 3
+    display_name: RAG / Agentic RAG / Retrieval + Structuring
+    taxonomy_path: configs/rag_taxonomy.yaml
+    why_it_matters: >
+      This field captures how LLMs access, retrieve, ground, structure, and
+      verify external knowledge sources. It covers the evolution from classical
+      RAG to agentic retrieval, retrieval-plus-structuring, grounded generation,
+      and evidence-centric knowledge integration.
+    benchmark_readiness: high
+    track_support:
+      macro_forecasting: true
+      micro_technical_vision: true
+    trend_units:
+      - retrieval
+      - re_ranking_and_selection
+      - reasoning_over_retrieved_context
+      - memory
+      - graph_and_structure_construction
+      - multi_hop_aggregation
+      - multimodal_rag
+      - agentic_rag
+      - retrieval_plus_structuring
+    boundary_rules:
+      include:
+        - classical_rag
+        - reasoning_rag
+        - agentic_rag
+        - graph_rag
+        - retrieval_plus_memory
+        - retrieval_plus_structuring
+      exclude:
+        - generic_search_without_generation
+        - retrieval_free_long_context_only_papers
+        - pure_knowledge_graph_work_without_retrieval_augmented_generation_link
+    notes: >
+      This domain is being expanded from a narrower RAG-centered scope toward a
+      broader external-knowledge-integration benchmark built from a
+      domain-specific raw harvest.
+
+  - domain_id: visual_generative_modeling_and_diffusion
+    status: active
+    priority: 4
+    display_name: Visual Generative Modeling and Diffusion
+    taxonomy_path: configs/visual_generative_modeling_and_diffusion_taxonomy.yaml
+    why_it_matters: >
+      This field captures one of the most important post-2023 frontiers in
+      generative AI: diffusion-based and closely related visual generation
+      methods for images, video, editing, controllability, and 3D consistency.
+    benchmark_readiness: medium
+    track_support:
+      macro_forecasting: true
+      micro_technical_vision: true
+    trend_units:
+      - text_to_image
+      - image_editing
+      - video_generation
+      - controllable_generation
+      - diffusion_transformers
+      - acceleration
+      - three_d_generation
+      - evaluation_and_alignment
+    boundary_rules:
+      include:
+        - image_generation
+        - image_editing
+        - video_generation
+        - text_to_image
+        - text_to_video
+        - image_to_video
+        - three_d_generation
+        - visual_diffusion_modeling
+      exclude:
+        - molecule_or_protein_diffusion
+        - generic_graph_diffusion
+        - time_series_diffusion
+        - robotics_diffusion_policy_without_visual_generation_focus
+        - language_diffusion_without_visual_generation_focus
+    notes: >
+      The field is intentionally scoped to visual generative modeling so that
+      diffusion remains a coherent research frontier rather than an overly broad
+      method-only bucket.

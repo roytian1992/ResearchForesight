@@ -1,0 +1,28 @@
+benchmark_v2:
+  tasks:
+    direction_forecasting:
+      horizons: [quarterly, half_year]
+      subtypes:
+        - node_momentum
+        - evaluation_shift
+        - combination_as_direction
+    bottleneck_opportunity_discovery:
+      horizons: [half_year]
+      subtypes:
+        - bottleneck_discovery
+        - bottleneck_linked_opportunity
+        - under_addressed_gap
+    strategic_research_planning:
+      subtype_horizons:
+        venue_aware_planning: [quarterly]
+        submission_oriented_planning: [quarterly, half_year]
+        medium_horizon_agenda_synthesis: [half_year]
+  time_windows:
+    quarterly:
+      - start: '2025-09-01'
+        end: '2025-12-01'
+      - start: '2025-12-01'
+        end: '2026-03-01'
+    half_year:
+      - start: '2025-09-01'
+        end: '2026-03-01'

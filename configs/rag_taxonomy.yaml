@@ -1,0 +1,94 @@
+dimensions:
+  task_settings:
+    description: The retrieval-augmented generation setting emphasized by the paper.
+    labels:
+      classical_rag:
+        description: Standard retrieval-augmented generation over a static corpus or knowledge source.
+      reasoning_rag:
+        description: Multi-step, multi-hop, or reasoning-centric retrieval-augmented generation.
+      agentic_rag:
+        description: RAG with agent loops, planning, tool use, or autonomous retrieval-control decisions.
+      graph_or_structured_rag:
+        description: GraphRAG, retrieval plus structuring, or explicit structured knowledge construction.
+      memory_augmented_rag:
+        description: Session memory, episodic memory, user memory, or long-term memory integrated with RAG.
+      multimodal_rag:
+        description: Retrieval and generation over images, video, audio, or mixed-modality corpora.
+      domain_or_enterprise_rag:
+        description: Domain-specific, enterprise, scientific, or production RAG systems.
+      benchmark_or_evaluation_suite:
+        description: A paper centered on benchmarks, tasks, or evaluation suites for RAG.
+
+  method_modules:
+    description: The main retrieval and structuring modules introduced or emphasized.
+    labels:
+      retrieval_indexing:
+        description: Index construction, chunking, embedding, storage, or retriever design.
+      reranking_and_selection:
+        description: Reranking, filtering, relevance selection, or confidence-based document choice.
+      query_rewriting_and_planning:
+        description: Query decomposition, query rewriting, planning, or retrieval strategy optimization.
+      evidence_aggregation_and_multi_hop:
+        description: Multi-hop evidence aggregation, fusion, synthesis, or cross-document reasoning.
+      graph_or_structure_construction:
+        description: Knowledge graph construction, schema induction, table/graph structuring, or explicit structured memory.
+      memory_and_session_state:
+        description: User memory, episodic memory, conversation memory, or persistent context management.
+      tool_use_and_agent_loop:
+        description: Agentic control loops, tool calls, planner-executor patterns, or autonomous retrieval decisions.
+      citation_and_verification:
+        description: Source attribution, grounding, factual verification, or hallucination control.
+      multimodal_fusion:
+        description: Retrieval and reasoning across text, image, audio, or video evidence.
+
+  interaction_modes:
+    description: The main knowledge source or interaction mode used by the RAG system.
+    labels:
+      static_text_corpus:
+        description: Fixed text corpus or offline document collection is central.
+      web_or_live_sources:
+        description: Web search, live retrieval, or frequently updated external sources are central.
+      structured_knowledge_store:
+        description: Graphs, databases, tables, or structured stores are central.
+      multimodal_corpus:
+        description: Images, videos, figures, or other multimodal evidence stores are central.
+      tool_execution:
+        description: External tools or execution environments are central to the retrieval loop.
+      human_in_the_loop:
+        description: Human feedback, editing, or supervision is explicitly part of the loop.
+
+  evaluation_focus:
+    description: The primary evaluation angle emphasized by the paper.
+    labels:
+      benchmark_construction:
+        description: New benchmark, dataset, or evaluation suite construction.
+      answer_quality:
+        description: Answer accuracy, faithfulness, or end-task quality.
+      retrieval_quality:
+        description: Retrieval recall, precision, ranking quality, or evidence coverage.
+      process_quality:
+        description: Reasoning trace quality, retrieval plan quality, or intermediate evidence quality.
+      efficiency_and_cost:
+        description: Latency, token usage, retrieval cost, or systems efficiency.
+      robustness_and_generalization:
+        description: Domain transfer, noisy retrieval robustness, or OOD generalization.
+      long_context_or_long_horizon:
+        description: Long-context integration, persistent memory, or long-horizon retrieval behavior.
+      failure_analysis:
+        description: Error analysis, retrieval failure modes, hallucination analysis, or boundary studies.
+
+  reliability_safety:
+    description: Reliability, safety, and control issues explicitly addressed.
+    labels:
+      none_explicit:
+        description: Reliability or safety is not a main stated focus.
+      hallucination_and_grounding:
+        description: Faithfulness, citation quality, grounding, or hallucination reduction.
+      robustness_and_stability:
+        description: Stability under noisy retrieval, changing corpora, attacks, or repeated runs.
+      privacy_and_data_leakage:
+        description: Privacy, sensitive retrieval, access control, or leakage risks.
+      interpretability_and_monitoring:
+        description: Transparency, trace inspection, or monitoring of retrieval and generation decisions.
+      oversight_and_control:
+        description: Human oversight, controllability, approval, or policy constraints on retrieval and generation.

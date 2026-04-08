@@ -1,0 +1,41 @@
+id: benchmark_v3/rewrite_direction_forecasting
+task_variables:
+  - name: candidate_json
+    required: true
+template: |
+  You are rewriting a benchmark candidate for the task family "direction_forecasting".
+
+  Goal:
+  Convert the draft into a public benchmark task that asks an autonomous research agent to forecast the next-step direction of a topic using only pre-cutoff literature.
+
+  Requirements:
+  1. The question must be strictly ex ante. Ask what is likely to emerge after the cutoff. Do not use hindsight phrasing in the question.
+  2. Do not leak future-only facts, internal packet fields, taxonomy paths, node IDs, or builder artifacts.
+  3. Use a technical, formal, agent-facing style.
+  4. Use natural language only. No snake_case, slash-separated labels, or internal identifiers.
+  5. The question must explicitly ask for:
+     - one concrete next-step direction, and
+     - one trajectory characterization (accelerating, fragmenting, steady, or cooling).
+  6. The gold answer should concisely state the realized direction and realized trajectory.
+  7. The expected answer points should emphasize historical reasoning, not generic trend language.
+  8. Output valid JSON only.
+
+  Candidate:
+  {candidate_json}
+
+  Return JSON:
+  {{
+    "title": "...",
+    "question": "...",
+    "gold_answer": "...",
+    "expected_answer_points": ["...", "...", "..."],
+    "leakage_check": {{
+      "question_non_leaky": true,
+      "notes": "..."
+    }},
+    "surface_check": {{
+      "no_internal_label_leakage": true,
+      "no_snake_case": true,
+      "notes": "..."
+    }}
+  }}

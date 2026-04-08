@@ -1,0 +1,59 @@
+domain_id: llm_finetuning_post_training
+raw_inputs:
+  - data/raw/paper_metadata_llm_post_training.jsonl
+  - data/raw/metadata.jsonl
+
+corpus:
+  merged_output: data/domains/llm_finetuning_post_training/interim/papers_merged.jsonl
+  candidate_output: data/domains/llm_finetuning_post_training/interim/candidate_papers.jsonl
+  summary_output: data/domains/llm_finetuning_post_training/interim/corpus_summary.json
+
+annotation:
+  prompt_id: curation/domain_scope_and_taxonomy
+  input_path: data/domains/llm_finetuning_post_training/interim/candidate_papers.jsonl
+  output_path: data/domains/llm_finetuning_post_training/annotations/paper_labels.jsonl
+  error_path: data/domains/llm_finetuning_post_training/annotations/paper_labels.errors.jsonl
+  request_timeout: 240
+  temperature: 0.0
+  workers: 8
+  max_retries: 2
+  candidate_tier: core_candidate
+  prompt_static:
+    domain_name: LLM Fine-Tuning / Post-Training
+    domain_summary: >
+      A benchmark domain centered on post-training optimization, alignment,
+      and adaptation after foundation-model pretraining.
+    core_definition: >
+      论文的核心贡献直接针对 LLM 或 VLM 的 supervised fine-tuning、
+      preference optimization、RL/RFT、reward modeling、data curation、
+      alignment efficiency、test-time scaling 与 post-training 耦合等后训练问题。
+    adjacent_definition: >
+      与 post-training 强相关但不是主要贡献，例如以 evaluation、survey、
+      deployment、general reasoning analysis 为主，同时只顺带涉及后训练方法。
+    out_of_scope_definition: >
+      不以 post-training 或 alignment optimization 为核心，例如纯预训练扩展、
+      纯推理时方法、纯系统部署、纯 benchmark 且没有清晰后训练方法学贡献。
+    boundary_rules: |
+      优先纳入：
+      - supervised fine-tuning / instruction tuning / instruction following optimization
+      - preference learning, DPO-family methods, ORPO/IPO-like methods
+      - RLHF, RLAIF, reinforcement fine-tuning, reward optimization, verifier/process supervision
+      - post-training data curation, filtering, synthesis, curriculum, mixture design
+      - alignment efficiency, PEFT when the point is post-training or alignment
+      - model merging or composition when used as a post-training alignment/adaptation method
+      - post-training combined with test-time search, self-consistency, or verifier loops
+
+      倾向判为 adjacent：
+      - benchmark or survey papers summarizing post-training work
+      - evaluation papers about alignment quality without a new post-training method
+      - reasoning or safety analysis papers where post-training is only one experiment setting
+
+      排除：
+      - generic pretraining scaling without post-training focus
+      - inference-only prompting or decoding methods without training contribution
+      - deployment/serving/system papers without post-training methodology
+      - pure long-context, tool use, or agent papers unless post-training is central
+
+clean:
+  output_path: data/domains/llm_finetuning_post_training/clean/core_papers.jsonl
+  stats_output: data/domains/llm_finetuning_post_training/clean/core_stats.json

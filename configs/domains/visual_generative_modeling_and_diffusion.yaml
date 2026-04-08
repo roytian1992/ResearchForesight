@@ -1,0 +1,65 @@
+domain_id: visual_generative_modeling_and_diffusion
+raw_inputs:
+  - data/raw/paper_metadata_visual_generative_modeling_and_diffusion.jsonl
+  - data/raw/paper_metadata_visual_generative_modeling_and_diffusion_legacy_supplement.jsonl
+  - data/raw/metadata.jsonl
+
+corpus:
+  merged_output: data/domains/visual_generative_modeling_and_diffusion/interim/papers_merged.jsonl
+  candidate_output: data/domains/visual_generative_modeling_and_diffusion/interim/candidate_papers.jsonl
+  summary_output: data/domains/visual_generative_modeling_and_diffusion/interim/corpus_summary.json
+
+annotation:
+  prompt_id: curation/domain_scope_and_taxonomy
+  input_path: data/domains/visual_generative_modeling_and_diffusion/interim/candidate_papers.jsonl
+  output_path: data/domains/visual_generative_modeling_and_diffusion/annotations/paper_labels.jsonl
+  error_path: data/domains/visual_generative_modeling_and_diffusion/annotations/paper_labels.errors.jsonl
+  request_timeout: 240
+  temperature: 0.0
+  workers: 8
+  max_retries: 2
+  candidate_tier: core_candidate
+  prompt_static:
+    domain_name: Visual Generative Modeling and Diffusion
+    domain_summary: >
+      A benchmark domain centered on visual generative modeling after 2023,
+      especially diffusion-based or closely related methods for image
+      generation, image editing, video generation, controllable generation,
+      visual personalization, and 3D-consistent generation.
+    core_definition: >
+      论文的核心贡献直接面向视觉生成建模，尤其是 diffusion 或 closely related
+      visual generative modeling methods 本身，包括 text-to-image、
+      image editing、text-to-video、image-to-video、3D generation、
+      controllable generation、alignment、以及 visual generative evaluation。
+    adjacent_definition: >
+      与 diffusion、flow matching、consistency、视觉生成或多模态建模相关，
+      但视觉生成不是论文核心对象，例如分子/蛋白生成、机器人控制轨迹扩散、
+      纯理论 score-based 分析、语言 diffusion、或者把 diffusion 仅当一个组件。
+    out_of_scope_definition: >
+      不以视觉生成建模为核心对象，例如 molecule/protein diffusion、
+      trajectory diffusion、time-series diffusion、graph diffusion、
+      纯 language diffusion、或一般多模态理解而非生成。
+    boundary_rules: |
+      优先纳入：
+      - text-to-image, text-to-video, image-to-video generation
+      - image editing, controllable generation, instruction-based editing
+      - visual personalization, identity consistency, style control
+      - 3D generation, multi-view generation, view-consistent generation
+      - diffusion transformers, latent diffusion, consistency/distillation/acceleration for visual generation
+      - evaluation and alignment for visual generative models
+
+      倾向判为 adjacent：
+      - generic multimodal models where generation is not central
+      - score-based or flow-matching theory papers without a visual-generation core
+      - robotics or planning papers using diffusion for control instead of visual generation
+      - language diffusion papers without a visual generation focus
+
+      排除：
+      - molecule/protein/drug diffusion
+      - graph diffusion and social diffusion
+      - time-series or trajectory diffusion without visual generation
+      - pure image understanding without visual generation
+
+clean:
+  output_path: data/domains/visual_generative_modeling_and_diffusion/clean/core_papers.jsonl
+  stats_output: data/domains/visual_generative_modeling_and_diffusion/clean/core_stats.json

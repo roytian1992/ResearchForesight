@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://researchtrajectorylab.local/schemas/hidden_eval_v3.schema.json",
+  "title": "ResearchTrajectoryLab Hidden Eval V3",
+  "type": "object",
+  "required": [
+    "task_id",
+    "family",
+    "domain",
+    "gold_answer",
+    "slot_targets",
+    "claim_bank",
+    "judge_profile",
+    "temporal_policy"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string"
+    },
+    "internal_task_id": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string",
+      "enum": [
+        "bottleneck_opportunity_discovery",
+        "direction_forecasting",
+        "strategic_research_planning"
+      ]
+    },
+    "domain": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "gold_answer": {
+      "type": "string"
+    },
+    "expected_answer_points": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "slot_targets": {
+      "type": "object",
+      "description": "Family-specific structured targets used for slot matching and structured judging."
+    },
+    "claim_bank": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "claim_id",
+          "text",
+          "claim_type",
+          "time_scope",
+          "importance",
+          "canonical_objects",
+          "aliases"
+        ],
+        "properties": {
+          "claim_id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "claim_type": {
+            "type": "string",
+            "enum": [
+              "historical_fact",
+              "future_realization_fact",
+              "statistical_fact",
+              "taxonomy_fact",
+              "venue_fact",
+              "paper_level_fact",
+              "interpretive_fact"
+            ]
+          },
+          "time_scope": {
+            "type": "string",
+            "enum": [
+              "history",
+              "future",
+              "cross_temporal"
+            ]
+          },
+          "importance": {
+            "type": "number"
+          },
+          "canonical_objects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "aliases": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "match_policy": {
+            "type": "string",
+            "enum": [
+              "all_of",
+              "at_least_one"
+            ]
+          },
+          "min_match_count": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "source_pointer": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "judge_profile": {
+      "type": "object",
+      "required": [
+        "mode",
+        "dimensions",
+        "score_weights"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string"
+        },
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "weight"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "weight": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "score_weights": {
+          "type": "object",
+          "properties": {
+            "fact_precision": {
+              "type": "number"
+            },
+            "slot_match": {
+              "type": "number"
+            },
+            "insight_judge": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "temporal_policy": {
+      "type": "object",
+      "required": [
+        "history_cutoff"
+      ],
+      "properties": {
+        "history_cutoff": {
+          "type": "string"
+        },
+        "history_slice": {
+          "type": "string"
+        },
+        "future_start": {
+          "type": "string"
+        },
+        "future_end": {
+          "type": "string"
+        },
+        "future_window_label": {
+          "type": "string"
+        },
+        "history_evidence_only_for_reasoning": {
+          "type": "boolean"
+        },
+        "future_window_hidden_for_fact_verification": {
+          "type": "boolean"
+        }
+      }
+    },
+    "raw_trace_links": {
+      "type": "object"
+    }
+  }
+}

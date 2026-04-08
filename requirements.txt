@@ -1,0 +1,7 @@
+beautifulsoup4
+json-repair
+numpy
+PyYAML
+rank-bm25
+requests
+scikit-learn

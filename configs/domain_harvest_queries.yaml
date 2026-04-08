@@ -1,0 +1,128 @@
+domains:
+  llm_agent:
+    save_dir: data/raw/harvest_llm_agent_2023plus
+    meta_file: data/raw/paper_metadata_llm_agent.jsonl
+    download_pdf: false
+    page_size: 200
+    delay_seconds: 3.0
+    num_retries: 8
+    start: "2023-01-01T00:00:00"
+    end: "2026-03-01T00:00:00"
+    base_query: >
+      ("large language model" OR LLM OR "foundation model" OR GPT OR "chatgpt")
+      AND
+      (agent OR agents OR autonomous OR "tool use" OR tools OR "function calling"
+      OR planning OR reasoning OR "task decomposition" OR "multi-agent"
+      OR memory OR "long-term memory" OR reflection OR "self-improvement")
+
+  llm_finetuning_post_training:
+    save_dir: data/raw/harvest_llm_post_training_2023plus
+    meta_file: data/raw/paper_metadata_llm_post_training.jsonl
+    download_pdf: false
+    page_size: 200
+    delay_seconds: 3.0
+    num_retries: 8
+    start: "2023-01-01T00:00:00"
+    end: "2026-03-01T00:00:00"
+    base_query: >
+      ("large language model" OR LLM OR "foundation model" OR GPT OR "chatgpt" OR VLM OR MLLM)
+      AND
+      ("fine-tuning" OR finetuning OR "post-training" OR "post training"
+      OR "instruction tuning" OR "supervised fine-tuning" OR SFT
+      OR DPO OR "direct preference optimization" OR ORPO OR IPO
+      OR RLHF OR RLAIF OR RFT OR "reinforcement fine-tuning"
+      OR "preference learning" OR "preference optimization"
+      OR "reward model" OR "reward modeling" OR "process supervision"
+      OR verifier OR "data curation" OR "data selection" OR "data synthesis"
+      OR "alignment efficiency" OR LoRA OR PEFT OR "model merging"
+      OR "test-time scaling")
+
+  rag_and_retrieval_structuring:
+    save_dir: data/raw/harvest_rag_2023plus
+    meta_file: data/raw/paper_metadata_rag.jsonl
+    download_pdf: false
+    page_size: 200
+    delay_seconds: 3.0
+    num_retries: 8
+    start: "2023-01-01T00:00:00"
+    end: "2026-03-01T00:00:00"
+    base_query: >
+      ("large language model" OR LLM OR GPT OR "foundation model" OR
+      "language model" OR MLLM OR VLM OR "large multimodal model")
+      AND
+      ("retrieval-augmented generation" OR "retrieval augmented generation" OR RAG
+      OR "agentic rag" OR "reasoning rag" OR "graph rag" OR "graph-based rag"
+      OR "multimodal rag" OR "memory-augmented rag"
+      OR "retrieval-augmented language model" OR "retrieval augmented language model"
+      OR "retrieval-based generation" OR "retrieval-enhanced generation"
+      OR "knowledge-augmented generation" OR "knowledge grounded generation"
+      OR "grounded generation" OR "document-grounded generation"
+      OR "evidence-grounded generation" OR "search-augmented generation"
+      OR "retrieval and structuring" OR "retrieval plus structuring"
+      OR "external knowledge integration" OR "knowledge integration"
+      OR "multi-hop retrieval" OR "iterative retrieval"
+      OR "retrieval planning" OR "evidence aggregation"
+      OR "citation verification" OR "document grounding")
+      AND
+      (retrieval OR retriever OR search OR indexing OR reranking OR re-ranking
+      OR "dense retrieval" OR "sparse retrieval" OR "hybrid retrieval"
+      OR "vector database" OR embedding OR "external knowledge"
+      OR "knowledge source" OR grounding OR grounded
+      OR citation OR verification OR memory OR graph
+      OR structure OR structured OR schema OR evidence)
+
+  visual_generative_modeling_and_diffusion:
+    save_dir: data/raw/harvest_visual_generative_modeling_and_diffusion_2023plus
+    meta_file: data/raw/paper_metadata_visual_generative_modeling_and_diffusion.jsonl
+    download_pdf: false
+    page_size: 200
+    delay_seconds: 3.0
+    num_retries: 8
+    start: "2023-01-01T00:00:00"
+    end: "2026-03-01T00:00:00"
+    semantic_scholar_queries:
+      - text-to-image diffusion
+      - diffusion image generation
+      - latent diffusion image generation
+      - stable diffusion text-to-image
+      - stable diffusion image generation
+      - image editing diffusion
+      - instruction-based image editing diffusion
+      - text-guided image editing diffusion
+      - visual instruction image editing diffusion
+      - controllable generation diffusion
+      - controllable image generation diffusion
+      - subject-driven generation diffusion
+      - personalization diffusion image generation
+      - image customization diffusion
+      - diffusion transformer image generation
+      - diffusion transformer text-to-image
+      - DiT image generation
+      - flow matching image generation
+      - consistency model image generation
+      - text-to-video diffusion
+      - video generation diffusion
+      - video diffusion transformer
+      - image-to-video diffusion
+      - 3d generation diffusion
+      - 3d diffusion generation
+      - multiview diffusion generation
+      - view synthesis diffusion
+    base_query: >
+      (
+        ("diffusion model" OR "latent diffusion" OR "score-based model"
+        OR "consistency model" OR "diffusion transformer" OR "diffusion transformers"
+        OR "flow matching" OR "rectified flow")
+        AND
+        ("text-to-image" OR "text to image" OR "image generation"
+        OR "image synthesis" OR "visual generation" OR "image editing"
+        OR "instruction-based image editing" OR "text-to-video" OR "text to video"
+        OR "video generation" OR "video synthesis" OR "image-to-video"
+        OR "image to video" OR "3d generation" OR "multi-view generation"
+        OR "view synthesis" OR "visual content generation")
+      )
+      AND
+      (cat:cs.CV OR cat:cs.LG OR cat:cs.AI OR cat:eess.IV OR cat:stat.ML OR cat:cs.GR)
+      ANDNOT
+      (protein OR molecule OR molecular OR drug OR weather OR traffic
+      OR recommendation OR graph OR social OR tabular)

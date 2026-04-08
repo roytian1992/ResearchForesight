@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://researchtrajectorylab.local/schemas/experiment_eval_result_v3.schema.json",
+  "title": "Benchmark v3 experiment evaluation result",
+  "type": "object",
+  "required": [
+    "run_id",
+    "task_id",
+    "family",
+    "domain",
+    "method",
+    "answer",
+    "scores"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "family": {
+      "type": "string",
+      "enum": [
+        "direction_forecasting",
+        "bottleneck_opportunity_discovery",
+        "strategic_research_planning"
+      ]
+    },
+    "domain": {
+      "type": "string"
+    },
+    "method": {
+      "type": "string"
+    },
+    "answer": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "task_title": {
+          "type": "string"
+        },
+        "time_cutoff": {
+          "type": "string"
+        },
+        "latency_sec": {
+          "type": "number"
+        },
+        "prompt_tokens": {
+          "type": "integer"
+        },
+        "completion_tokens": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": true
+    },
+    "retrieval_diagnostics": {
+      "type": "object",
+      "properties": {
+        "retrieval_mode": {
+          "type": "string"
+        },
+        "retrieved_doc_count": {
+          "type": "integer"
+        },
+        "unique_paper_count": {
+          "type": "integer"
+        },
+        "pageindex_hit_count": {
+          "type": "integer"
+        },
+        "tool_call_count": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": true
+    },
+    "agent_diagnostics": {
+      "type": "object",
+      "properties": {
+        "reflection_steps": {
+          "type": "integer"
+        },
+        "memory_updates": {
+          "type": "integer"
+        },
+        "revision_rounds": {
+          "type": "integer"
+        },
+        "answer_changed_after_revision": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "scores": {
+      "type": "object",
+      "required": [
+        "hybrid_score",
+        "fact_precision_score",
+        "slot_match_score",
+        "insight_judge_score"
+      ],
+      "properties": {
+        "hybrid_score": {
+          "type": "number"
+        },
+        "fact_precision_score": {
+          "type": "number"
+        },
+        "slot_match_score": {
+          "type": "number"
+        },
+        "insight_judge_score": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": true
+    },
+    "fact_eval": {
+      "type": "object",
+      "properties": {
+        "weighted_claim_precision": {
+          "type": "number"
+        },
+        "weighted_claim_coverage": {
+          "type": "number"
+        },
+        "benchmark_factscore": {
+          "type": "number"
+        },
+        "history_claim_precision": {
+          "type": "number"
+        },
+        "future_claim_precision": {
+          "type": "number"
+        },
+        "cross_temporal_claim_precision": {
+          "type": "number"
+        },
+        "unsupported_claim_rate": {
+          "type": "number"
+        },
+        "temporal_leakage_violation": {
+          "type": "boolean"
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "slot_eval": {
+      "type": "object",
+      "properties": {
+        "slot_match_score": {
+          "type": "number"
+        },
+        "trajectory_match": {
+          "type": "number"
+        },
+        "direction_match": {
+          "type": "number"
+        },
+        "trend_signal_match": {
+          "type": "number"
+        },
+        "bottleneck_match": {
+          "type": "number"
+        },
+        "opportunity_match": {
+          "type": "number"
+        },
+        "bottleneck_opportunity_coupling": {
+          "type": "number"
+        },
+        "priority_direction_match": {
+          "type": "number"
+        },
+        "priority_ranking_quality": {
+          "type": "number"
+        },
+        "future_signal_alignment": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": true
+    },
+    "judge_eval": {
+      "type": "object",
+      "properties": {
+        "insight_judge_score": {
+          "type": "number"
+        },
+        "rubric_scores": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "weaknesses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,154 @@
+id: extract_paper_structure_from_fulltext
+category: analysis
+name: Extract Paper Structure From Full Text
+description: >
+  Extract technical problem, limitations, ideas, experiment signals, and
+  falsification cues from source-first paper content and a PageIndex-compatible outline.
+
+task_variables:
+  - name: paper_id
+    type: string
+    required: true
+  - name: title
+    type: string
+    required: true
+  - name: abstract
+    type: string
+    required: true
+  - name: taxonomy
+    type: string
+    required: true
+  - name: categories
+    type: string
+    required: true
+  - name: source_type
+    type: string
+    required: true
+  - name: index_outline
+    type: string
+    required: true
+  - name: selected_sections
+    type: string
+    required: true
+
+static_variables: []
+
+template: |
+  You are extracting structured technical signals for a scientific benchmark.
+  This time you are not limited to the abstract. You may use the paper outline and the selected
+  full-text sections.
+
+  Paper metadata:
+  - paper_id: {paper_id}
+  - title: {title}
+  - categories: {categories}
+  - taxonomy: {taxonomy}
+  - source_type: {source_type}
+
+  abstract:
+  {abstract}
+
+  PageIndex-compatible outline:
+  {index_outline}
+
+  selected full-text sections:
+  {selected_sections}
+
+  Prioritize the selected full-text sections. Use the abstract only as supporting context.
+  If the abstract and the full-text evidence disagree, trust the full-text evidence.
+  Output exactly one JSON object and nothing else.
+
+  The JSON schema must be:
+  {{
+    "paper_id": "string",
+    "problem_statement": "1-3 sentence English summary of the core technical problem",
+    "explicit_limitations": [
+      {{
+        "name": "string",
+        "description": "string",
+        "evidence_phrases": ["short quote from the selected sections or abstract"],
+        "evidence_refs": [
+          {{
+            "node_id": "node id from selected full-text sections",
+            "section_path": "section path from selected full-text sections",
+            "quote": "optional short quote"
+          }}
+        ]
+      }}
+    ],
+    "core_ideas": [
+      {{
+        "name": "string",
+        "mechanism": "string",
+        "target_limitations": ["string"],
+        "evidence_phrases": ["short quote from the selected sections or abstract"],
+        "evidence_refs": [
+          {{
+            "node_id": "node id from selected full-text sections",
+            "section_path": "section path from selected full-text sections",
+            "quote": "optional short quote"
+          }}
+        ]
+      }}
+    ],
+    "experiment_signals": [
+      {{
+        "setting": "string",
+        "metrics": ["string"],
+        "baselines": ["string"],
+        "claim": "string",
+        "evidence_phrases": ["short quote from the selected sections or abstract"],
+        "evidence_refs": [
+          {{
+            "node_id": "node id from selected full-text sections",
+            "section_path": "section path from selected full-text sections",
+            "quote": "optional short quote"
+          }}
+        ]
+      }}
+    ],
+    "falsification_signals": [
+      {{
+        "hypothesis": "string",
+        "critical_failure_mode": "string",
+        "decisive_test": "string",
+        "evidence_phrases": ["short quote from the selected sections or abstract"],
+        "evidence_refs": [
+          {{
+            "node_id": "node id from selected full-text sections",
+            "section_path": "section path from selected full-text sections",
+            "quote": "optional short quote"
+          }}
+        ]
+      }}
+    ],
+    "future_work": [
+      {{
+        "direction": "string",
+        "evidence_phrases": ["short quote from the selected sections or abstract"],
+        "evidence_refs": [
+          {{
+            "node_id": "node id from selected full-text sections",
+            "section_path": "section path from selected full-text sections",
+            "quote": "optional short quote"
+          }}
+        ]
+      }}
+    ]
+  }}
+
+  Constraints:
+  - Return `paper_id` exactly as given.
+  - Use English for every free-text field.
+  - If the paper does not clearly state a limitation, experiment, or future work direction,
+    return an empty array for that field.
+  - If the paper clearly proposes a method or system, extract at least one `core_ideas` item.
+  - If the selected sections contain an evaluation setup or results section, extract at least one
+    `experiment_signals` item.
+  - `evidence_phrases` should come from the selected full-text sections whenever possible.
+    Use the abstract only if the full-text sections do not cover the point.
+  - `evidence_refs` should cite the most relevant `node_id` and `section_path` from the
+    selected full-text sections whenever possible.
+  - Focus on concrete technical limitations, mechanisms, experiments, and failure modes.
+  - Do not infer unsupported claims from the abstract alone if the selected full-text sections
+    do not support them.

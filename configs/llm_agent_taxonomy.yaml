@@ -1,0 +1,92 @@
+dimensions:
+  task_settings:
+    description: The core task or application setting studied by the paper.
+    labels:
+      general_llm_agent:
+        description: General-purpose autonomous or semi-autonomous LLM agent systems.
+      embodied_or_robotic_agent:
+        description: Agents acting in robotics, embodied, or physical environments.
+      software_engineering_agent:
+        description: Agents operating on code, repositories, or software workflows.
+      web_or_tool_using_agent:
+        description: Agents using tools, APIs, web browsing, or external software.
+      scientific_research_agent:
+        description: Agents assisting scientific discovery, experimentation, or literature workflows.
+      multi_agent_system:
+        description: Multiple LLM agents coordinating or competing.
+      role_play_or_social_simulation:
+        description: Agent societies, social simulation, or role-based interaction.
+      benchmark_or_evaluation_suite:
+        description: A paper centered on benchmarking, evaluation, or task suites for agents.
+
+  method_modules:
+    description: The main method components introduced, improved, or emphasized.
+    labels:
+      planning_and_decomposition:
+        description: Planning, subgoal decomposition, search, or decision structure.
+      reasoning_and_deliberation:
+        description: Explicit reasoning, reflection, self-consistency, or deliberation.
+      memory:
+        description: Short-term, long-term, episodic, or retrieval memory for agents.
+      tool_use_and_action_interface:
+        description: Tool invocation, API calling, environment actions, or execution modules.
+      retrieval_and_grounding:
+        description: Retrieval, document grounding, knowledge access, or evidence integration.
+      self_reflection_and_critique:
+        description: Self-critique, revision, self-improvement, or verifier-style loops.
+      coordination_and_communication:
+        description: Communication, delegation, negotiation, or collaboration across agents.
+      training_or_optimization:
+        description: Fine-tuning, RL, DPO, preference optimization, or agent policy learning.
+
+  interaction_modes:
+    description: The environment or interaction mode used by the agent.
+    labels:
+      static_text_only:
+        description: Pure text input and output without external environment interaction.
+      api_and_tool_execution:
+        description: External APIs, tools, or code execution are central to the setup.
+      web_navigation:
+        description: Web browsing, web tasks, or internet interaction is central.
+      code_environment:
+        description: Code repositories, terminals, or software environments are central.
+      embodied_environment:
+        description: Simulated or physical embodied environments are central.
+      human_in_the_loop:
+        description: Human feedback, human collaboration, or human supervision is explicit.
+
+  evaluation_focus:
+    description: The primary evaluation angle emphasized by the paper.
+    labels:
+      task_success:
+        description: End-task completion, pass rate, or success rate.
+      benchmark_construction:
+        description: New benchmarks, tasks, datasets, or evaluation suites.
+      process_quality:
+        description: Trajectory quality, reasoning quality, decomposition quality, or evidence quality.
+      efficiency_and_cost:
+        description: Latency, token cost, call budget, or computation efficiency.
+      robustness_and_generalization:
+        description: OOD robustness, transfer, stability, or generalization under variation.
+      long_horizon_capability:
+        description: Long-horizon task completion, persistence, or memory over time.
+      human_judgment:
+        description: Human evaluation, preference, or expert review is central.
+      failure_analysis:
+        description: Error modes, failure taxonomies, or limits are a main focus.
+
+  reliability_safety:
+    description: Reliability, trustworthiness, and safety topics explicitly addressed.
+    labels:
+      none_explicit:
+        description: Reliability or safety is not a main stated focus.
+      hallucination_and_verification:
+        description: Factuality, hallucination control, or verification of agent outputs and actions.
+      safety_alignment:
+        description: Harm reduction, alignment, safe action selection, or policy constraints.
+      robustness_and_stability:
+        description: Reliability under perturbation, attack, drift, or repeated use.
+      interpretability_and_monitoring:
+        description: Transparency, interpretability, monitoring, or agent introspection.
+      oversight_and_control:
+        description: Human oversight, governance, intervention, or approval mechanisms.

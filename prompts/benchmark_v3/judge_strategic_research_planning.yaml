@@ -1,0 +1,46 @@
+id: benchmark_v3/judge_strategic_research_planning
+task_variables:
+  - name: candidate_json
+    required: true
+template: |
+  You are judging whether a "strategic_research_planning" benchmark item is high-quality enough for release.
+
+  Evaluate:
+  - family_fit
+  - temporal_discipline
+  - planning_scope_clarity
+  - prioritization_quality
+  - evidence_grounding
+  - strategic_value
+  - future_alignment
+  - surface_naturalness
+  - public_benchmark_suitability
+
+  Scoring:
+  - 1.0 = excellent
+  - 0.7 = acceptable
+  - 0.4 = weak
+  - 0.1 = poor
+
+  Candidate:
+  {candidate_json}
+
+  Return valid JSON only:
+  {{
+    "scores": {{
+      "family_fit": 0.0,
+      "temporal_discipline": 0.0,
+      "planning_scope_clarity": 0.0,
+      "prioritization_quality": 0.0,
+      "evidence_grounding": 0.0,
+      "strategic_value": 0.0,
+      "future_alignment": 0.0,
+      "surface_naturalness": 0.0,
+      "public_benchmark_suitability": 0.0
+    }},
+    "overall_score": 0.0,
+    "decision": "accept|borderline|reject",
+    "strengths": ["...", "..."],
+    "weaknesses": ["...", "..."],
+    "suggested_fix": "..."
+  }}
