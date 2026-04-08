@@ -28,6 +28,10 @@ def public_domain_label(domain: str) -> str:
     return DOMAIN_PUBLIC.get(str(domain or ""), str(domain or ""))
 
 
+def candidate_quality_judge(row: Dict[str, Any]) -> Dict[str, Any]:
+    return row.get("candidate_quality_judge") or row.get("judge") or {}
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Assemble a benchmark v3 release bundle.")
     parser.add_argument("--input", default=str(ROOT / "data" / "task_candidates_v3" / "all_candidates.judged.jsonl"))
@@ -53,7 +57,7 @@ def family_requirements_met(row: Dict[str, Any]) -> bool:
 
 
 def keep_row(row: Dict[str, Any], args: argparse.Namespace) -> bool:
-    judge = row.get("judge") or {}
+    judge = candidate_quality_judge(row)
     decision = str(judge.get("decision") or "").lower()
     overall = float(judge.get("overall_score") or 0.0)
     heuristic = float((row.get("quality_signals") or {}).get("heuristic_score") or 0.0)
@@ -101,7 +105,7 @@ def main() -> None:
     for key, rows in sorted(buckets.items()):
         rows.sort(
             key=lambda row: (
-                -float((row.get("judge") or {}).get("overall_score") or 0.0),
+                -float((candidate_quality_judge(row)).get("overall_score") or 0.0),
                 -float((row.get("quality_signals") or {}).get("heuristic_score") or 0.0),
                 row.get("task_id"),
             )
@@ -149,6 +153,7 @@ def main() -> None:
                 "expected_answer_points": row.get("expected_answer_points") or [],
                 "evaluation_rubric": row.get("evaluation_rubric"),
                 "judge": row.get("judge"),
+                "candidate_quality_judge": candidate_quality_judge(row),
                 "ground_truth": row.get("ground_truth"),
                 "public_metadata": row.get("public_metadata"),
             }
@@ -168,6 +173,7 @@ def main() -> None:
                 "rewrite_leakage_check": row.get("rewrite_leakage_check"),
                 "rewrite_surface_check": row.get("rewrite_surface_check"),
                 "judge": row.get("judge"),
+                "candidate_quality_judge": candidate_quality_judge(row),
                 "public_metadata": row.get("public_metadata"),
             }
             trace_handle.write(json.dumps(trace_row, ensure_ascii=False) + "\n")

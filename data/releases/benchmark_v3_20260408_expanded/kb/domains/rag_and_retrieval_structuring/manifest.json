@@ -1,0 +1,36 @@
+{
+  "domain_slug": "rag_and_retrieval_structuring",
+  "domain": "RAG and retrieval structuring",
+  "history_cutoff": "2025-08-31",
+  "source_files": {
+    "papers": "data/domains/rag_and_retrieval_structuring/interim/papers_merged.publication_enriched.semanticscholar.jsonl",
+    "pageindex": "data/support_packets/pageindex/rag_and_retrieval_structuring/pageindex.jsonl",
+    "structures": "data/support_packets/paper_structures/rag_and_retrieval_structuring/paper_structures.jsonl",
+    "content": "data/support_packets/fulltext_content/rag_and_retrieval_structuring/content.jsonl"
+  },
+  "files": {
+    "papers": "domains/rag_and_retrieval_structuring/papers.jsonl",
+    "pageindex": "domains/rag_and_retrieval_structuring/pageindex.jsonl",
+    "structures": "domains/rag_and_retrieval_structuring/structures.jsonl",
+    "content": "domains/rag_and_retrieval_structuring/content.jsonl",
+    "sections": "domains/rag_and_retrieval_structuring/sections.jsonl",
+    "manifest": "domains/rag_and_retrieval_structuring/manifest.json"
+  },
+  "coverage": {
+    "source_papers_total": 6163,
+    "papers_exported": 4805,
+    "pageindex_rows_exported": 79,
+    "structures_rows_exported": 79,
+    "content_rows_exported": 79,
+    "section_rows_exported": 79,
+    "papers_missing_published_date": 0,
+    "papers_with_pageindex_share": 0.0164,
+    "papers_with_structures_share": 0.0164,
+    "papers_with_content_share": 0.0164
+  },
+  "notes": [
+    "This KB contains only papers published on or before the history cutoff.",
+    "pageindex/content/structures are partial layers and do not cover all exported papers.",
+    "The current content layer is abstract-derived normalized content rather than uniformly recovered raw full text."
+  ]
+}

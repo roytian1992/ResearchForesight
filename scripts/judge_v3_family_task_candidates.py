@@ -128,7 +128,7 @@ def judge_one(
                     max_parse_attempts=3,
                 )
                 out = dict(row)
-                judge = obj
+                judge = dict(obj)
                 overall = float(judge.get("overall_score") or 0.0)
                 decision = str(judge.get("decision") or "").strip().lower()
                 if not decision:
@@ -138,9 +138,13 @@ def judge_one(
                         decision = "borderline"
                     else:
                         decision = "reject"
-                out["judge"] = judge
-                out["judge"]["decision"] = decision
-                out["judge"]["overall_score"] = overall
+                judge["decision"] = decision
+                judge["overall_score"] = overall
+                # Backward-compatible aliasing:
+                # - judge: legacy field used by existing scripts
+                # - candidate_quality_judge: clearer field name for construction-stage screening
+                out["judge"] = dict(judge)
+                out["candidate_quality_judge"] = dict(judge)
                 out["judge_model_source"] = client_name
                 return True, out
             except Exception as exc:

@@ -1,0 +1,32 @@
+{
+  "domain_slug": "rag_and_retrieval_structuring",
+  "domain": "RAG and retrieval structuring",
+  "future_start": "2025-09-01",
+  "future_end": "2026-02-28",
+  "coverage": {
+    "source_papers_total": 6163,
+    "papers_exported": 1358,
+    "pageindex_rows_exported": 100,
+    "structures_rows_exported": 100,
+    "content_rows_exported": 100,
+    "section_rows_exported": 100
+  },
+  "files": {
+    "papers": "domains/rag_and_retrieval_structuring/papers.jsonl",
+    "pageindex": "domains/rag_and_retrieval_structuring/pageindex.jsonl",
+    "structures": "domains/rag_and_retrieval_structuring/structures.jsonl",
+    "content": "domains/rag_and_retrieval_structuring/content.jsonl",
+    "sections": "domains/rag_and_retrieval_structuring/sections.jsonl",
+    "manifest": "domains/rag_and_retrieval_structuring/manifest.json"
+  },
+  "source_files": {
+    "papers": "data/domains/rag_and_retrieval_structuring/interim/papers_merged.publication_enriched.semanticscholar.jsonl",
+    "pageindex": "data/support_packets/pageindex/rag_and_retrieval_structuring/pageindex.jsonl",
+    "structures": "data/support_packets/paper_structures/rag_and_retrieval_structuring/paper_structures.jsonl",
+    "content": "data/support_packets/fulltext_content/rag_and_retrieval_structuring/content.jsonl"
+  },
+  "notes": [
+    "This KB is hidden and intended only for future-window fact verification.",
+    "It must not be exposed to evaluated systems."
+  ]
+}

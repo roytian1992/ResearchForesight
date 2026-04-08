@@ -1,0 +1,32 @@
+{
+  "domain_slug": "llm_finetuning_post_training",
+  "domain": "LLM fine-tuning and post-training",
+  "future_start": "2025-09-01",
+  "future_end": "2026-02-28",
+  "coverage": {
+    "source_papers_total": 26643,
+    "papers_exported": 7402,
+    "pageindex_rows_exported": 84,
+    "structures_rows_exported": 84,
+    "content_rows_exported": 84,
+    "section_rows_exported": 84
+  },
+  "files": {
+    "papers": "domains/llm_finetuning_post_training/papers.jsonl",
+    "pageindex": "domains/llm_finetuning_post_training/pageindex.jsonl",
+    "structures": "domains/llm_finetuning_post_training/structures.jsonl",
+    "content": "domains/llm_finetuning_post_training/content.jsonl",
+    "sections": "domains/llm_finetuning_post_training/sections.jsonl",
+    "manifest": "domains/llm_finetuning_post_training/manifest.json"
+  },
+  "source_files": {
+    "papers": "data/domains/llm_finetuning_post_training/interim/papers_merged.publication_enriched.semanticscholar.jsonl",
+    "pageindex": "data/support_packets/pageindex/llm_finetuning_post_training/pageindex.jsonl",
+    "structures": "data/support_packets/paper_structures/llm_finetuning_post_training/paper_structures.jsonl",
+    "content": "data/support_packets/fulltext_content/llm_finetuning_post_training/content.jsonl"
+  },
+  "notes": [
+    "This KB is hidden and intended only for future-window fact verification.",
+    "It must not be exposed to evaluated systems."
+  ]
+}

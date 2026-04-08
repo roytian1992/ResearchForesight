@@ -1,0 +1,36 @@
+{
+  "domain_slug": "llm_agent",
+  "domain": "LLM agents",
+  "history_cutoff": "2025-08-31",
+  "source_files": {
+    "papers": "data/domains/llm_agent/interim/papers_merged.publication_enriched.semanticscholar.jsonl",
+    "pageindex": "data/support_packets/pageindex/llm_agent/pageindex.jsonl",
+    "structures": "data/support_packets/paper_structures/llm_agent/paper_structures.jsonl",
+    "content": "data/support_packets/fulltext_content/llm_agent/content.jsonl"
+  },
+  "files": {
+    "papers": "domains/llm_agent/papers.jsonl",
+    "pageindex": "domains/llm_agent/pageindex.jsonl",
+    "structures": "domains/llm_agent/structures.jsonl",
+    "content": "domains/llm_agent/content.jsonl",
+    "sections": "domains/llm_agent/sections.jsonl",
+    "manifest": "domains/llm_agent/manifest.json"
+  },
+  "coverage": {
+    "source_papers_total": 39426,
+    "papers_exported": 26432,
+    "pageindex_rows_exported": 78,
+    "structures_rows_exported": 78,
+    "content_rows_exported": 78,
+    "section_rows_exported": 78,
+    "papers_missing_published_date": 0,
+    "papers_with_pageindex_share": 0.003,
+    "papers_with_structures_share": 0.003,
+    "papers_with_content_share": 0.003
+  },
+  "notes": [
+    "This KB contains only papers published on or before the history cutoff.",
+    "pageindex/content/structures are partial layers and do not cover all exported papers.",
+    "The current content layer is abstract-derived normalized content rather than uniformly recovered raw full text."
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "domain_slug": "llm_agent",
+  "domain": "LLM agents",
+  "future_start": "2025-09-01",
+  "future_end": "2026-02-28",
+  "coverage": {
+    "source_papers_total": 39426,
+    "papers_exported": 12994,
+    "pageindex_rows_exported": 110,
+    "structures_rows_exported": 110,
+    "content_rows_exported": 110,
+    "section_rows_exported": 110
+  },
+  "files": {
+    "papers": "domains/llm_agent/papers.jsonl",
+    "pageindex": "domains/llm_agent/pageindex.jsonl",
+    "structures": "domains/llm_agent/structures.jsonl",
+    "content": "domains/llm_agent/content.jsonl",
+    "sections": "domains/llm_agent/sections.jsonl",
+    "manifest": "domains/llm_agent/manifest.json"
+  },
+  "source_files": {
+    "papers": "data/domains/llm_agent/interim/papers_merged.publication_enriched.semanticscholar.jsonl",
+    "pageindex": "data/support_packets/pageindex/llm_agent/pageindex.jsonl",
+    "structures": "data/support_packets/paper_structures/llm_agent/paper_structures.jsonl",
+    "content": "data/support_packets/fulltext_content/llm_agent/content.jsonl"
+  },
+  "notes": [
+    "This KB is hidden and intended only for future-window fact verification.",
+    "It must not be exposed to evaluated systems."
+  ]
+}

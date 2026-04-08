@@ -1,0 +1,43 @@
+{
+  "release_name": "benchmark_v3_20260408_expanded",
+  "task_count": 356,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 70,
+    "direction_forecasting": 61,
+    "strategic_research_planning": 125,
+    "venue_aware_research_positioning": 100
+  },
+  "domain_counts": {
+    "LLM agents": 93,
+    "LLM fine-tuning and post-training": 106,
+    "RAG and retrieval structuring": 73,
+    "Visual generative modeling and diffusion": 84
+  },
+  "subtype_counts": {
+    "pageindex_grounded_bottleneck": 70,
+    "chain_terminal_forecast": 61,
+    "agenda_priority_selection": 81,
+    "venue_aware_direction_forecast": 40,
+    "venue_targeted_planning": 60,
+    "comparative_opportunity_prioritization": 44
+  },
+  "files": {
+    "tasks_public": "tasks.jsonl",
+    "tasks_internal_full": "tasks_internal_full.jsonl",
+    "tasks_hidden_eval": "tasks_hidden_eval.jsonl",
+    "tasks_build_trace": "tasks_build_trace.jsonl"
+  },
+  "sources": {
+    "base_release": "data/releases/benchmark_v3_20260407_venue",
+    "expanded_public": "tmp/full_expansion_four_domains/expanded_tasks_public_venue_polished.jsonl",
+    "expanded_internal_additions": "tmp/full_expansion_four_domains/expanded_internal_additions_venue_polished.jsonl",
+    "venue_qc_summary": "tmp/full_expansion_four_domains/venue_polish_qc_summary.json"
+  },
+  "expansion": {
+    "pre_qa_total": 363,
+    "venue_tasks_audited": 107,
+    "venue_tasks_kept": 100,
+    "venue_tasks_dropped": 7,
+    "post_qa_total": 356
+  }
+}

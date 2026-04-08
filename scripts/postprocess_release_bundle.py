@@ -43,6 +43,16 @@ def join_rubric_dimensions(rubric: dict[str, Any] | None) -> str:
     return " || ".join(items)
 
 
+def candidate_quality_judge(hidden: dict[str, Any], trace: dict[str, Any]) -> dict[str, Any]:
+    return (
+        hidden.get("candidate_quality_judge")
+        or trace.get("candidate_quality_judge")
+        or hidden.get("judge")
+        or trace.get("judge")
+        or {}
+    )
+
+
 def build_csvs(release_dir: Path) -> None:
     public_rows = list(iter_jsonl(release_dir / "tasks.jsonl"))
     hidden_rows = list(iter_jsonl(release_dir / "tasks_hidden_eval.jsonl"))
@@ -65,7 +75,7 @@ def build_csvs(release_dir: Path) -> None:
         time_context = trace.get("time_context") or {}
         support = trace.get("support_context") or {}
         gt = trace.get("ground_truth") or {}
-        judge = hidden.get("judge") or trace.get("judge") or {}
+        judge = candidate_quality_judge(hidden, trace)
 
         public_csv_rows.append(
             {
