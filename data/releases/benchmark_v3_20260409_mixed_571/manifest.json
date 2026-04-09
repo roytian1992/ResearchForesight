@@ -1,0 +1,37 @@
+{
+  "release_name": "benchmark_v3_20260409_mixed_571",
+  "task_count": 571,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 145,
+    "direction_forecasting": 80,
+    "strategic_research_planning": 246,
+    "venue_aware_research_positioning": 100
+  },
+  "domain_counts": {
+    "LLM agents": 155,
+    "LLM fine-tuning and post-training": 137,
+    "RAG and retrieval structuring": 107,
+    "Visual generative modeling and diffusion": 172
+  },
+  "subtype_counts": {
+    "pageindex_grounded_bottleneck": 100,
+    "chain_terminal_forecast": 63,
+    "agenda_priority_selection": 133,
+    "venue_aware_direction_forecast": 40,
+    "venue_targeted_planning": 60,
+    "comparative_opportunity_prioritization": 44,
+    "q1_pageindex_grounded_bottleneck": 45,
+    "q1_terminal_forecast": 17,
+    "q1_agenda_priority_selection": 69
+  },
+  "files": {
+    "tasks_public": "tasks.jsonl",
+    "tasks_internal_full": "tasks_internal_full.jsonl",
+    "tasks_hidden_eval": "tasks_hidden_eval.jsonl",
+    "tasks_build_trace": "tasks_build_trace.jsonl"
+  },
+  "sources": {
+    "hy_6m_release": "data/releases/benchmark_v3_20260409_hy_6m_440",
+    "q1_3m_release": "data/releases/benchmark_v3_20260409_q1_3m_131"
+  }
+}

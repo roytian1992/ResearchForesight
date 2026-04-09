@@ -1,0 +1,211 @@
+clusters:
+  - cluster_id: llm_agent_safety_alignment_oversight
+    domain_id: llm_agent
+    display_name: Agent Safety, Alignment, and Oversight
+    priority: 1
+    rationale: >
+      Fills the current gap in reliability, oversight, and risk-aware agent behavior.
+      Extends the benchmark beyond capability-building into robust deployment-facing agent research.
+    query_terms:
+      - agent safety
+      - safe tool use
+      - agent alignment
+      - agent oversight
+      - verifier for llm agents
+      - reward hacking in agents
+      - risk-aware agent planning
+      - multi-agent oversight
+    include_keywords:
+      - safety
+      - security
+      - alignment
+      - oversight
+      - verifier
+      - monitor
+      - guardrail
+      - jailbreak
+      - backdoor
+      - reward hacking
+      - specification gaming
+      - red teaming
+      - risk-aware
+    preferred_families:
+      - bottleneck_opportunity_discovery
+      - strategic_research_planning
+      - venue_aware_research_positioning
+    target_new_tasks_range: [6, 10]
+
+  - cluster_id: llm_agent_personalization_user_modeling
+    domain_id: llm_agent
+    display_name: Agent Personalization and User Modeling
+    priority: 2
+    rationale: >
+      Connects memory, multi-session interaction, and adaptive tool use around long-term user modeling.
+      Adds a strong user-facing agent axis that is currently underrepresented.
+    query_terms:
+      - personalized llm agents
+      - user modeling for agents
+      - long-term preference tracking agents
+      - adaptive agent personalization
+      - multi-session personalization llm agent
+      - personalized memory agent
+    include_keywords:
+      - memory
+      - personalization
+      - personalized
+      - user modeling
+      - user preference
+      - preference tracking
+      - profile
+      - recommendation
+      - recommender
+      - behavior simulation
+      - adaptive assistant
+      - long-term user
+    preferred_families:
+      - bottleneck_opportunity_discovery
+      - direction_forecasting
+      - strategic_research_planning
+    target_new_tasks_range: [5, 8]
+
+  - cluster_id: llm_agent_workflow_enterprise_collaboration
+    domain_id: llm_agent
+    display_name: Workflow, Enterprise, and Collaborative Agents
+    priority: 3
+    rationale: >
+      Generalizes beyond software-engineering agents into workflow orchestration,
+      collaborative task decomposition, and multi-role enterprise agent pipelines.
+    query_terms:
+      - workflow orchestration agents
+      - enterprise llm agents
+      - collaborative llm agents
+      - multi-role agent workflow
+      - agent handoff orchestration
+      - business process agents
+    include_keywords:
+      - workflow
+      - orchestration
+      - enterprise
+      - collaboration
+      - handoff
+      - multi-role
+      - coordinator
+      - task decomposition
+      - process automation
+    preferred_families:
+      - bottleneck_opportunity_discovery
+      - strategic_research_planning
+      - venue_aware_research_positioning
+    target_new_tasks_range: [7, 12]
+
+  - cluster_id: diffusion_transformer_architecture_evolution
+    domain_id: visual_generative_modeling_and_diffusion
+    display_name: Diffusion Transformers and Architecture Evolution
+    priority: 4
+    rationale: >
+      Expands the architecture-side frontier beyond metrics and editing into model scaling,
+      representation design, and the UNet-to-transformer transition.
+    query_terms:
+      - diffusion transformer
+      - dit architecture
+      - diffusion architecture scaling
+      - latent diffusion transformer
+      - transformer diffusion efficiency
+    include_keywords:
+      - diffusion transformer
+      - dit
+      - transformer
+      - architecture
+      - scaling
+      - tokenization
+      - representation
+      - latent
+    preferred_families:
+      - direction_forecasting
+      - strategic_research_planning
+      - bottleneck_opportunity_discovery
+    target_new_tasks_range: [6, 10]
+
+  - cluster_id: diffusion_controllable_generation
+    domain_id: visual_generative_modeling_and_diffusion
+    display_name: Controllable Visual Generation
+    priority: 5
+    rationale: >
+      Expands a major application-methodology frontier around controllability,
+      instruction following, and compositional constraint satisfaction.
+    query_terms:
+      - controllable diffusion generation
+      - instruction-guided diffusion
+      - layout control diffusion
+      - compositional control visual generation
+      - region control diffusion
+    include_keywords:
+      - controllable
+      - control
+      - instruction
+      - layout
+      - compositional
+      - region
+      - constraint
+      - guidance
+    preferred_families:
+      - bottleneck_opportunity_discovery
+      - direction_forecasting
+      - strategic_research_planning
+    target_new_tasks_range: [7, 12]
+
+  - cluster_id: diffusion_personalization_customization
+    domain_id: visual_generative_modeling_and_diffusion
+    display_name: Personalization and Customization for Visual Generation
+    priority: 6
+    rationale: >
+      Extends the current editing-heavy coverage toward identity preservation,
+      few-shot customization, and interference between personalization and controllability.
+    query_terms:
+      - diffusion personalization
+      - visual generation personalization
+      - identity-preserving diffusion
+      - few-shot customization diffusion
+      - personalized image generation
+    include_keywords:
+      - personalization
+      - personalized
+      - customization
+      - identity
+      - subject-driven
+      - concept injection
+      - consistency
+      - style preservation
+    preferred_families:
+      - bottleneck_opportunity_discovery
+      - strategic_research_planning
+      - venue_aware_research_positioning
+    target_new_tasks_range: [5, 8]
+
+  - cluster_id: diffusion_reward_post_training_preference
+    domain_id: visual_generative_modeling_and_diffusion
+    display_name: Reward, Post-Training, and Preference Learning for Diffusion
+    priority: 7
+    rationale: >
+      Adds a strong alignment/post-training dimension to the diffusion domain,
+      creating structural symmetry with the LLM post-training domain.
+    query_terms:
+      - reward-guided diffusion
+      - preference learning for diffusion
+      - post-training diffusion models
+      - human preference diffusion
+      - alignment for visual generation
+    include_keywords:
+      - reward
+      - preference
+      - post-training
+      - alignment
+      - human feedback
+      - reinforcement learning
+      - ranking
+      - reward model
+    preferred_families:
+      - bottleneck_opportunity_discovery
+      - direction_forecasting
+      - strategic_research_planning
+    target_new_tasks_range: [6, 10]
