@@ -1,4 +1,4 @@
-id: benchmark_v3/rewrite_direction_forecasting
+id: task_generation/rewrite_direction_forecasting
 task_variables:
   - name: candidate_json
     required: true

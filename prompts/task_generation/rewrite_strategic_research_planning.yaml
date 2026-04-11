@@ -1,4 +1,4 @@
-id: benchmark_v3/rewrite_strategic_research_planning
+id: task_generation/rewrite_strategic_research_planning
 task_variables:
   - name: candidate_json
     required: true

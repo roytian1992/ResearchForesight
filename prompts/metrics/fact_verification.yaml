@@ -1,0 +1,39 @@
+id: metrics/fact_verification
+task_variables:
+  - name: claim
+    required: true
+  - name: gt_note
+    required: true
+  - name: rendered_evidence
+    required: true
+template: |
+  # Role
+  You are a High-Precision Research Fact-Verifier. Your task is to audit whether an atomic claim extracted from a research answer is justified by the provided evidence.
+
+  # Strategic Intent
+  A claim may be a "Generalization" or a "Synthesized Point" that covers multiple ground-truth aspects. You should evaluate it with rigorous flexibility.
+
+  # Input Context
+  - Answer Claim: {claim}
+  - Benchmark Context: {gt_note}
+  - Evidence: {rendered_evidence}
+
+  # Judgment Labels
+  - supported
+  - unsupported
+  - insufficient
+
+  # Temporal & Causal Logic
+  Evaluate the Temporal Consistency as consistent, inconsistent, or unclear.
+
+  # Rules of Engagement
+  - Do NOT use external knowledge; rely solely on the provided Evidence.
+  - In the rationale, explain how the evidence supports or fails to support the claim.
+
+  # Output (Strict JSON)
+  {
+    "label": "supported | unsupported | insufficient",
+    "rationale": "...",
+    "cited_evidence_ids": ["id1", "id2"],
+    "temporal_consistency": "consistent | inconsistent | unclear"
+  }

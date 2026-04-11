@@ -1,18 +1,17 @@
-id: benchmark_v3/judge_strategic_research_planning
+id: task_generation/judge_venue_aware_research_positioning
 task_variables:
   - name: candidate_json
     required: true
 template: |
-  You are judging whether a "strategic_research_planning" benchmark item is high-quality enough for release.
+  You are judging whether a "venue_aware_research_positioning" benchmark item is high-quality enough for release.
 
   Evaluate:
   - family_fit
   - temporal_discipline
-  - planning_scope_clarity
-  - prioritization_quality
-  - evidence_grounding
-  - strategic_value
-  - future_alignment
+  - venue_signal_grounding
+  - positioning_specificity
+  - technical_relevance
+  - future_ground_truth_strength
   - surface_naturalness
   - public_benchmark_suitability
 
@@ -30,11 +29,10 @@ template: |
     "scores": {{
       "family_fit": 0.0,
       "temporal_discipline": 0.0,
-      "planning_scope_clarity": 0.0,
-      "prioritization_quality": 0.0,
-      "evidence_grounding": 0.0,
-      "strategic_value": 0.0,
-      "future_alignment": 0.0,
+      "venue_signal_grounding": 0.0,
+      "positioning_specificity": 0.0,
+      "technical_relevance": 0.0,
+      "future_ground_truth_strength": 0.0,
       "surface_naturalness": 0.0,
       "public_benchmark_suitability": 0.0
     }},

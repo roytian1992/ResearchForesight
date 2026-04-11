@@ -20,9 +20,10 @@ from researchworld.prompting import YAMLPromptLoader
 
 
 PROMPT_BY_FAMILY = {
-    "direction_forecasting": "benchmark_v3/rewrite_direction_forecasting",
-    "bottleneck_opportunity_discovery": "benchmark_v3/rewrite_bottleneck_opportunity_discovery",
-    "strategic_research_planning": "benchmark_v3/rewrite_strategic_research_planning",
+    "direction_forecasting": "task_generation/rewrite_direction_forecasting",
+    "bottleneck_opportunity_discovery": "task_generation/rewrite_bottleneck_opportunity_discovery",
+    "strategic_research_planning": "task_generation/rewrite_strategic_research_planning",
+    "venue_aware_research_positioning": "task_generation/rewrite_venue_aware_research_positioning",
 }
 
 
@@ -103,6 +104,14 @@ def candidate_brief(row: Dict[str, Any]) -> Dict[str, Any]:
             "future_themes": public.get("future_themes") or [],
             "target_window_stats": gt.get("target_window_stats"),
             "planning_priority_score": gt.get("planning_priority_score"),
+        }
+    elif family == "venue_aware_research_positioning":
+        brief["candidate_directions"] = support.get("candidate_directions") or []
+        brief["venue_signals"] = support.get("venue_signals") or support.get("ranking_axes")
+        brief["ground_truth_core"] = {
+            "future_themes": public.get("future_themes") or [],
+            "target_venue_bucket": gt.get("target_venue_bucket"),
+            "venue_forecast": gt.get("venue_forecast") or {},
         }
     return brief
 

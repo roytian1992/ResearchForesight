@@ -1,0 +1,20 @@
+id: metrics/fact_claim_extraction
+task_variables:
+  - name: max_claims
+    required: true
+  - name: answer
+    required: true
+template: |
+  Decompose the answer into a small set of atomic benchmark-relevant factual claims.
+
+  Rules:
+  - Keep only claims that could be grounded in a research-paper benchmark.
+  - Prefer claims about bottlenecks, opportunities, trajectories, emergent directions, venues, metrics, counts, or representative papers.
+  - Ignore purely stylistic statements and generic advice.
+  - Ignore duplicates.
+  - At most {max_claims} claims.
+
+  Answer:
+  {answer}
+
+  Return JSON with key "claims" containing a list of strings.

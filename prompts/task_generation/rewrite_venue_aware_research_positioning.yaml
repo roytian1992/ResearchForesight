@@ -1,0 +1,32 @@
+id: task_generation/rewrite_venue_aware_research_positioning
+task_variables:
+  - name: candidate_json
+    required: true
+template: |
+  You are rewriting a benchmark candidate for the task family "venue_aware_research_positioning".
+
+  Goal:
+  Convert the draft into a public benchmark task that asks an autonomous research agent to recommend a technically promising direction and justify how it should be positioned for likely venue success using only pre-cutoff literature.
+
+  Requirements:
+  1. The question must be strictly ex ante.
+  2. Do not leak future-only facts, internal packet fields, taxonomy paths, node IDs, or builder artifacts.
+  3. Use a technical, formal, agent-facing style.
+  4. Use natural language only.
+  5. The question must ask for both a technical positioning and a venue-aware rationale.
+  6. The gold answer should concisely state which direction-positioning combination was strongest and why.
+  7. The expected answer points should emphasize technical grounding and venue-aware reasoning.
+  8. Output valid JSON only.
+
+  Candidate:
+  {candidate_json}
+
+  Return JSON:
+  {{
+    "title": "...",
+    "question": "...",
+    "gold_answer": "...",
+    "expected_answer_points": ["...", "...", "..."],
+    "leakage_check": {{"question_non_leaky": true, "notes": "..."}},
+    "surface_check": {{"no_internal_label_leakage": true, "no_snake_case": true, "notes": "..."}}
+  }}

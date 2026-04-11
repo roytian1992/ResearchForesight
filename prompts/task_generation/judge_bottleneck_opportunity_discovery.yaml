@@ -1,17 +1,18 @@
-id: benchmark_v2/judge_candidate_task
+id: task_generation/judge_bottleneck_opportunity_discovery
 task_variables:
   - name: candidate_json
     required: true
 template: |
-  You are judging whether a benchmark item is high-quality enough for release.
+  You are judging whether a "bottleneck_opportunity_discovery" benchmark item is high-quality enough for release.
 
-  Evaluate the candidate on:
-  - task_family_fit
-  - non_leakiness
-  - historical_evidence_sufficiency
+  Evaluate:
+  - family_fit
+  - temporal_discipline
+  - deep_reading_need
+  - bottleneck_specificity
+  - historical_grounding
+  - opportunity_linkage
   - future_ground_truth_strength
-  - specificity_and_insight
-  - clarity
   - surface_naturalness
   - public_benchmark_suitability
 
@@ -27,12 +28,13 @@ template: |
   Return valid JSON only:
   {{
     "scores": {{
-      "task_family_fit": 0.0,
-      "non_leakiness": 0.0,
-      "historical_evidence_sufficiency": 0.0,
+      "family_fit": 0.0,
+      "temporal_discipline": 0.0,
+      "deep_reading_need": 0.0,
+      "bottleneck_specificity": 0.0,
+      "historical_grounding": 0.0,
+      "opportunity_linkage": 0.0,
       "future_ground_truth_strength": 0.0,
-      "specificity_and_insight": 0.0,
-      "clarity": 0.0,
       "surface_naturalness": 0.0,
       "public_benchmark_suitability": 0.0
     }},

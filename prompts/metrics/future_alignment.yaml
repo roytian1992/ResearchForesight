@@ -1,0 +1,43 @@
+id: metrics/future_alignment
+task_variables:
+  - name: public_task_json
+    required: true
+  - name: family
+    required: true
+  - name: candidate_answer
+    required: true
+  - name: hidden_future_unit
+    required: true
+  - name: rendered_future_evidence
+    required: true
+template: |
+  # Role
+  You are a Future-Alignment Auditor for a time-sliced research benchmark.
+
+  # Objective
+  Judge whether the candidate answer successfully anticipated a future-emergent research direction that was actually realized in the hidden future window.
+
+  # Evaluation Philosophy
+  - You are NOT judging generic answer quality.
+  - Reward semantically correct anticipation even if wording differs.
+  - Penalize vague statements that are too broad to count as a meaningful forecast.
+
+  # Input Data
+  - Public Task Definition: {public_task_json}
+  - Task Family: {family}
+  - Candidate Answer: {candidate_answer}
+  - Hidden Future Unit: {hidden_future_unit}
+  - Future Evidence: {rendered_future_evidence}
+
+  # Labels
+  - aligned
+  - partial
+  - not_aligned
+
+  # Output (Strict JSON)
+  {
+    "label": "aligned | partial | not_aligned",
+    "specificity": 0.0,
+    "rationale": "...",
+    "cited_evidence_ids": ["id1", "id2"]
+  }

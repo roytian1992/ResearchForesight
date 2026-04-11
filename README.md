@@ -1,35 +1,63 @@
 # ResearchInsightBenchmark
 
-This repository contains the cleaned core code, public benchmark release files, and aggregated experiment results for the current Research Insight Benchmark.
+ResearchInsightBenchmark is a time-sliced benchmark for evaluating whether research agents can reason from pre-cutoff literature and produce forward-looking research insight.
 
-## Included assets
+This repository contains the current benchmark code, official benchmark releases, and the latest prompt assets used for task construction and evaluation.
 
-### 1. Core benchmark construction and evaluation code
-- `src/researchworld/`: benchmark construction, taxonomy induction, offline retrieval, agent/baseline runners, and evaluation utilities
-- `scripts/`: end-to-end construction, release building, evaluation, and aggregation scripts
-- `configs/`, `prompts/`, `schemas/`: configuration files, prompts, and schemas used by the pipeline
+## Repository structure
 
-### 2. Public benchmark release
-- `benchmark_release/benchmark_v3_20260407_venue/README.md`
-- `benchmark_release/benchmark_v3_20260407_venue/manifest.json`
-- `benchmark_release/benchmark_v3_20260407_venue/tasks.jsonl`
-- `benchmark_release/benchmark_v3_20260407_venue/venue_task_summary.csv`
+### 1. Core code
+- `src/researchworld/`: benchmark construction, offline retrieval, agent runners, and evaluation logic
+- `scripts/`: release building, evaluation, aggregation, and utility scripts
+- `configs/`: benchmark, domain, and model configuration files
 
-Release summary:
-- task count: **168**
-- families: **3**
-- domains: **4**
-- history cutoff: **2025-08-31**
-- forecast window: **2025-09-01 to 2026-02-28**
+### 2. Official benchmark releases
+We currently maintain three official releases under `data/releases/`:
+- `benchmark_v1_halfyear_440`
+- `benchmark_v1_quarter_131`
+- `benchmark_v1_mixed_571`
 
-### 3. Aggregated experiment results
-- `results/final_metrics/`: merged metric tables for the full 168-task benchmark
-- `results/pairwise_round_robin/`: round-robin pairwise comparison summaries
+These correspond to:
+- **halfyear**: 440 tasks, cutoff `2025-08-31`
+- **quarter**: 131 tasks, cutoff `2025-11-30`
+- **mixed**: 571 tasks = halfyear + quarter
+
+Each release stores benchmark tasks, hidden evaluation views, build traces, and release metadata. Experiment output files are intentionally kept outside the release folders.
+
+### 3. Prompt assets
+We only keep the **latest** prompt inventory in-repo.
+
+- `prompts/task_generation/`: latest task-construction prompts
+- `prompts/metrics/`: latest evaluation and comparison prompts
+- `src/researchworld/prompting.py`: YAML prompt loader
+
+#### Task-generation prompt inventory
+- Generic candidate polish/judging
+- Family-specific judge/rewrite prompts for:
+  - `bottleneck_opportunity_discovery`
+  - `direction_forecasting`
+  - `strategic_research_planning`
+  - `venue_aware_research_positioning`
+
+#### Metric prompt inventory
+- `fact_claim_extraction.yaml`
+- `fact_verification.yaml`
+- `future_alignment.yaml`
+- `evidence_traceability.yaml`
+- `family_auxiliary.yaml`
+- `pairwise_round_robin.yaml`
+
+These prompt files are the canonical latest snapshots we want visible on GitHub for transparency and reproducibility.
+
+### 4. Results and summaries
+- `results/final_metrics/`: merged metric tables for the standardized 168-task comparison subset
+- `results/pairwise_round_robin/`: pairwise round-robin comparison summaries
 
 ## Current task families
 1. `bottleneck_opportunity_discovery`
 2. `direction_forecasting`
 3. `strategic_research_planning`
+4. `venue_aware_research_positioning`
 
 ## Current domains
 1. `LLM agents`
@@ -37,11 +65,17 @@ Release summary:
 3. `RAG and retrieval structuring`
 4. `Visual generative modeling and diffusion`
 
-## Main files for quick inspection
-- Public tasks: `benchmark_release/benchmark_v3_20260407_venue/tasks.jsonl`
-- Metric summary: `results/final_metrics/final_metric_results_summary.md`
-- Pairwise summary: `results/pairwise_round_robin/pairwise_round_robin_summary.md`
+## Current evaluation metrics
+### Primary
+- `Fact`
+- `Future Alignment`
+- `Evidence Traceability`
+
+### Family-specific auxiliary metrics
+- `Opportunity Grounding`
+- `Forecast Grounding`
+- `Technical Dependency Grounding`
 
 ## Notes
-- The internal hidden evaluation targets are intentionally not included in this cleaned repository snapshot.
 - The Python package namespace remains `researchworld` to avoid breaking existing imports.
+- The current paper workspace lives outside this repository under `papers/ResearchBenchmark`.

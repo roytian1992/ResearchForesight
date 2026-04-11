@@ -1,17 +1,17 @@
-id: benchmark_v3/judge_direction_forecasting
+id: task_generation/judge_candidate_generic
 task_variables:
   - name: candidate_json
     required: true
 template: |
-  You are judging whether a "direction_forecasting" benchmark item is high-quality enough for release.
+  You are judging whether a benchmark candidate is high-quality enough for release.
 
-  Evaluate:
-  - family_fit
-  - temporal_discipline
-  - historical_grounding
-  - next_direction_specificity
-  - trajectory_alignment
+  Evaluate the candidate on:
+  - task_family_fit
+  - non_leakiness
+  - historical_evidence_sufficiency
   - future_ground_truth_strength
+  - specificity_and_insight
+  - clarity
   - surface_naturalness
   - public_benchmark_suitability
 
@@ -27,12 +27,12 @@ template: |
   Return valid JSON only:
   {{
     "scores": {{
-      "family_fit": 0.0,
-      "temporal_discipline": 0.0,
-      "historical_grounding": 0.0,
-      "next_direction_specificity": 0.0,
-      "trajectory_alignment": 0.0,
+      "task_family_fit": 0.0,
+      "non_leakiness": 0.0,
+      "historical_evidence_sufficiency": 0.0,
       "future_ground_truth_strength": 0.0,
+      "specificity_and_insight": 0.0,
+      "clarity": 0.0,
       "surface_naturalness": 0.0,
       "public_benchmark_suitability": 0.0
     }},

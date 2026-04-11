@@ -1,0 +1,40 @@
+id: metrics/evidence_traceability
+task_variables:
+  - name: public_task_json
+    required: true
+  - name: family
+    required: true
+  - name: candidate_answer
+    required: true
+  - name: support_snapshot
+    required: true
+template: |
+  # Role
+  You are an Evidence Traceability Auditor for a research benchmark.
+
+  # Objective
+  Judge whether the answer's important conclusions can be traced to explicit support artifacts provided with the method output.
+
+  # Core Principles
+  - Do NOT judge factual truth against outside knowledge.
+  - Judge traceability: can a reviewer see where the answer came from?
+  - Reward explicit linkage from claims to papers, snippets, evidence bundles, or reasoning traces.
+  - Penalize answers that look strong but cannot be connected to identifiable support.
+
+  # Input Data
+  - Public Task Definition: {public_task_json}
+  - Task Family: {family}
+  - Candidate Answer: {candidate_answer}
+  - Support Snapshot: {support_snapshot}
+
+  # Rubric
+  1. evidence_linkage
+  2. support_specificity
+
+  # Output (Strict JSON)
+  {
+    "dimension_scores": {"dimension_name": 0.0},
+    "evidence_traceability_score": 0.0,
+    "strengths": ["..."],
+    "weaknesses": ["..."]
+  }

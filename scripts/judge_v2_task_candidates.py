@@ -72,7 +72,7 @@ def candidate_brief(row: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def judge_one(row: Dict[str, Any], prompt_loader: YAMLPromptLoader, llm: OpenAICompatChatClient, args: argparse.Namespace) -> Tuple[bool, Dict[str, Any]]:
-    prompt = prompt_loader.render("benchmark_v2/judge_candidate_task", task_values={"candidate_json": candidate_brief(row)})
+    prompt = prompt_loader.render("task_generation/judge_candidate_generic", task_values={"candidate_json": candidate_brief(row)})
     raw_text = ""
     last_error = ""
     for _ in range(args.max_retries + 1):

@@ -1,18 +1,18 @@
-id: benchmark_v3/judge_bottleneck_opportunity_discovery
+id: task_generation/judge_strategic_research_planning
 task_variables:
   - name: candidate_json
     required: true
 template: |
-  You are judging whether a "bottleneck_opportunity_discovery" benchmark item is high-quality enough for release.
+  You are judging whether a "strategic_research_planning" benchmark item is high-quality enough for release.
 
   Evaluate:
   - family_fit
   - temporal_discipline
-  - deep_reading_need
-  - bottleneck_specificity
-  - historical_grounding
-  - opportunity_linkage
-  - future_ground_truth_strength
+  - planning_scope_clarity
+  - prioritization_quality
+  - evidence_grounding
+  - strategic_value
+  - future_alignment
   - surface_naturalness
   - public_benchmark_suitability
 
@@ -30,11 +30,11 @@ template: |
     "scores": {{
       "family_fit": 0.0,
       "temporal_discipline": 0.0,
-      "deep_reading_need": 0.0,
-      "bottleneck_specificity": 0.0,
-      "historical_grounding": 0.0,
-      "opportunity_linkage": 0.0,
-      "future_ground_truth_strength": 0.0,
+      "planning_scope_clarity": 0.0,
+      "prioritization_quality": 0.0,
+      "evidence_grounding": 0.0,
+      "strategic_value": 0.0,
+      "future_alignment": 0.0,
       "surface_naturalness": 0.0,
       "public_benchmark_suitability": 0.0
     }},
