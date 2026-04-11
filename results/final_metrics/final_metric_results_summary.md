@@ -2,10 +2,11 @@
 
 ## 评测范围
 - 任务总数：**168**
-- 对比方法：**Native LLM**、**Hybrid RAG**、**ResearchArc（accepted v6 optimized）**、**CoI**、**ARIS-Offline v4**、**ResearchAgent-Offline**
-- 结果按照三层指标汇报：
+- 对比方法：**Native LLM**、**Hybrid RAG**、**ResearchArc（accepted v6 optimized）**、**CoI**、**ARIS-Offline v7**、**ResearchAgent-Offline**
+- 结果按照两层指标汇报：
   1. **Primary**
   2. **Family-specific**
+- **Task Fulfillment** 不再纳入主结果表。
 - ResearchArc 当前接受版本机制说明：`docs/research_arc_current_mechanism.md`
 
 ## 指标层级
@@ -24,7 +25,7 @@
 
 | Method | Evidence-Grounded Factuality | Future Alignment | Evidence Traceability |
 |---|---:|---:|---:|
-| ARIS-Offline v4 | 0.4479 | 0.3034 | 0.5098 |
+| ARIS-Offline v7 | 0.4388 | 0.3269 | 0.5635 |
 | CoI | 0.5277 | 0.4567 | **0.7180** |
 | Hybrid RAG | 0.5209 | 0.3960 | 0.5191 |
 | Native LLM | 0.4160 | 0.4411 | 0.0555 |
@@ -37,7 +38,7 @@
 
 | Method | Opportunity Grounding |
 |---|---:|
-| ARIS-Offline v4 | 0.5006 |
+| ARIS-Offline v7 | 0.5875 |
 | CoI | 0.7627 |
 | Hybrid RAG | 0.6919 |
 | Native LLM | 0.6124 |
@@ -48,7 +49,7 @@
 
 | Method | Forecast Grounding |
 |---|---:|
-| ARIS-Offline v4 | 0.3596 |
+| ARIS-Offline v7 | 0.3112 |
 | CoI | 0.4647 |
 | Hybrid RAG | 0.5002 |
 | Native LLM | 0.4706 |
@@ -59,7 +60,7 @@
 
 | Method | Technical Dependency Grounding |
 |---|---:|
-| ARIS-Offline v4 | 0.8159 |
+| ARIS-Offline v7 | 0.7382 |
 | CoI | 0.8121 |
 | Hybrid RAG | 0.8143 |
 | Native LLM | 0.7436 |
@@ -72,7 +73,7 @@
 
 | Method | Evidence-Grounded Factuality | Future Alignment | Evidence Traceability | Opportunity Grounding |
 |---|---:|---:|---:|---:|
-| ARIS-Offline v4 | 0.5041 | 0.4005 | 0.4053 | 0.5006 |
+| ARIS-Offline v7 | 0.4879 | 0.4479 | 0.4098 | 0.5875 |
 | CoI | 0.5002 | 0.4341 | **0.7092** | 0.7627 |
 | Hybrid RAG | **0.5478** | 0.4432 | 0.3986 | 0.6919 |
 | Native LLM | 0.4399 | **0.5154** | 0.0723 | 0.6124 |
@@ -83,7 +84,7 @@
 
 | Method | Evidence-Grounded Factuality | Future Alignment | Evidence Traceability | Forecast Grounding |
 |---|---:|---:|---:|---:|
-| ARIS-Offline v4 | 0.4260 | 0.2321 | 0.5105 | 0.3596 |
+| ARIS-Offline v7 | 0.4356 | 0.2550 | 0.5803 | 0.3112 |
 | CoI | 0.5663 | **0.5672** | 0.6004 | 0.4647 |
 | Hybrid RAG | 0.5271 | 0.3867 | 0.5399 | 0.5002 |
 | Native LLM | 0.5326 | 0.4254 | 0.0055 | 0.4706 |
@@ -94,7 +95,7 @@
 
 | Method | Evidence-Grounded Factuality | Future Alignment | Evidence Traceability | Technical Dependency Grounding |
 |---|---:|---:|---:|---:|
-| ARIS-Offline v4 | 0.4272 | 0.2900 | 0.5751 | 0.8159 |
+| ARIS-Offline v7 | 0.4101 | 0.2989 | 0.6490 | 0.7382 |
 | CoI | **0.5192** | 0.3968 | **0.8024** | 0.8121 |
 | Hybrid RAG | 0.4998 | 0.3725 | 0.5811 | 0.8143 |
 | Native LLM | 0.3227 | 0.4048 | 0.0785 | 0.7436 |
@@ -104,10 +105,10 @@
 ## 原始结果文件
 - `tmp/final_metric_bundle_v1/final_overall.csv`
 - `tmp/final_metric_bundle_v1/final_by_family.csv`
-- `results/aris_offline_168_v4_qwen/results.jsonl`
-- `results/aris_offline_168_v4_qwen/eval_v31/summary.json`
-- `results/aris_offline_168_v4_qwen/eval_v4/summary.json`
-- `results/aris_offline_168_v4_qwen/eval_aux/summary.json`
+- `results/aris_offline_168_v7_qwen/results.jsonl`
+- `results/aris_offline_168_v7_qwen/eval_v31/summary.json`
+- `results/aris_offline_168_v7_qwen/eval_v4/summary.json`
+- `results/aris_offline_168_v7_qwen/eval_aux/summary.json`
 - `results/researchagent_offline_168_qwen/results.jsonl`
 - `results/researchagent_offline_168_qwen/eval_v31/summary.json`
 - `results/researchagent_offline_168_qwen/eval_v4/summary.json`
