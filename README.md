@@ -67,7 +67,7 @@ These prompt files are the canonical latest snapshots we want visible on GitHub 
 
 ## Current evaluation metrics
 ### Primary
-- `Fact`
+- `Evidence-Grounded Factuality`
 - `Future Alignment`
 - `Evidence Traceability`
 

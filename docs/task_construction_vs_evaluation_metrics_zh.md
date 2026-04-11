@@ -98,7 +98,7 @@
 目前实验阶段的指标体系包括：
 
 #### Universal Primary
-- Fact
+- Evidence-Grounded Factuality
 - Future Alignment
 - Evidence Traceability
 

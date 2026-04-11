@@ -11,7 +11,7 @@
 ## 指标层级
 
 ### Primary
-- **Fact**
+- **Evidence-Grounded Factuality**
 - **Future Alignment**
 - **Evidence Traceability**
 
@@ -22,7 +22,7 @@
 
 ## 1. Primary 指标
 
-| Method | Fact | Future Alignment | Evidence Traceability |
+| Method | Evidence-Grounded Factuality | Future Alignment | Evidence Traceability |
 |---|---:|---:|---:|
 | ARIS-Offline v4 | 0.4479 | 0.3034 | 0.5098 |
 | CoI | 0.5277 | 0.4567 | **0.7180** |
@@ -70,7 +70,7 @@
 
 ### 3.1 Bottleneck / Opportunity Discovery（46 题）
 
-| Method | Fact | Future Alignment | Evidence Traceability | Opportunity Grounding |
+| Method | Evidence-Grounded Factuality | Future Alignment | Evidence Traceability | Opportunity Grounding |
 |---|---:|---:|---:|---:|
 | ARIS-Offline v4 | 0.5041 | 0.4005 | 0.4053 | 0.5006 |
 | CoI | 0.5002 | 0.4341 | **0.7092** | 0.7627 |
@@ -81,7 +81,7 @@
 
 ### 3.2 Direction Forecasting（49 题）
 
-| Method | Fact | Future Alignment | Evidence Traceability | Forecast Grounding |
+| Method | Evidence-Grounded Factuality | Future Alignment | Evidence Traceability | Forecast Grounding |
 |---|---:|---:|---:|---:|
 | ARIS-Offline v4 | 0.4260 | 0.2321 | 0.5105 | 0.3596 |
 | CoI | 0.5663 | **0.5672** | 0.6004 | 0.4647 |
@@ -92,7 +92,7 @@
 
 ### 3.3 Strategic Research Planning（73 题）
 
-| Method | Fact | Future Alignment | Evidence Traceability | Technical Dependency Grounding |
+| Method | Evidence-Grounded Factuality | Future Alignment | Evidence Traceability | Technical Dependency Grounding |
 |---|---:|---:|---:|---:|
 | ARIS-Offline v4 | 0.4272 | 0.2900 | 0.5751 | 0.8159 |
 | CoI | **0.5192** | 0.3968 | **0.8024** | 0.8121 |
