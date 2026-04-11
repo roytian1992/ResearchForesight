@@ -1,11 +1,11 @@
-# benchmark_v3_20260409_q1_3m_131
+# benchmark_v1_halfyear_440
 
 ## Summary
-- tasks: 131
-- families: 3
+- tasks: 440
+- families: 4
 - domains: 4
 - per family × domain cap: None
-- history cutoff: 2025-11-30
+- history cutoff: 2025-08-31
 - future windows:
   - quarterly: 2025-09-01 ~ 2025-11-30, 2025-12-01 ~ 2026-02-28
   - half-year: 2025-09-01 ~ 2026-02-28

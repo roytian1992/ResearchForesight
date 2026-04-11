@@ -1,4 +1,4 @@
-# benchmark_v3_20260409_mixed_571
+# benchmark_v1_mixed_571
 
 ## Summary
 - tasks: 571

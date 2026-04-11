@@ -1,5 +1,5 @@
 {
-  "release_name": "benchmark_v3_20260409_mixed_571",
+  "release_name": "benchmark_v1_mixed_571",
   "task_count": 571,
   "family_counts": {
     "bottleneck_opportunity_discovery": 145,
@@ -31,7 +31,7 @@
     "tasks_build_trace": "tasks_build_trace.jsonl"
   },
   "sources": {
-    "hy_6m_release": "data/releases/benchmark_v3_20260409_hy_6m_440",
-    "q1_3m_release": "data/releases/benchmark_v3_20260409_q1_3m_131"
+    "hy_6m_release": "data/releases/benchmark_v1_halfyear_440",
+    "q1_3m_release": "data/releases/benchmark_v1_quarter_131"
   }
 }

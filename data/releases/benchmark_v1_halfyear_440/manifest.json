@@ -1,5 +1,5 @@
 {
-  "release_name": "benchmark_v3_20260409_hy_6m_440",
+  "release_name": "benchmark_v1_halfyear_440",
   "task_count": 440,
   "family_counts": {
     "bottleneck_opportunity_discovery": 100,
