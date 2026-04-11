@@ -27,13 +27,21 @@ STOPWORDS = {
 }
 
 TITLE_PATTERNS = [
+    r'^Identifying a Key Bottleneck in\s+',
+    r'^Identifying a Key Bottleneck for\s+',
     r'^Bottleneck and Opportunity Discovery in\s+',
     r'^Bottleneck and Opportunity Discovery for\s+',
+    r'^Ex Ante Forecast for\s+',
+    r'^Ex Ante Forecast on\s+',
     r'^Forecasting the Trajectory of\s+',
     r'^Forecasting Research Trajectory in\s+',
     r'^Forecasting Research Trajectory for\s+',
     r'^Forecasting Trajectory and Subdirections in\s+',
     r'^Forecast for\s+',
+    r'^Prioritization of Research Directions in\s+',
+    r'^Prioritization of Research Directions for\s+',
+    r'^Prioritizing Research Directions in\s+',
+    r'^Prioritizing Research Directions for\s+',
     r'^Strategic Research Planning for\s+',
     r'^Strategic Research Agenda for\s+',
 ]
@@ -67,10 +75,22 @@ def _normalize_label(text: Any) -> str:
     return re.sub(r'\s+', ' ', str(text or '').replace('_', ' ')).strip().lower()
 
 
+def _is_degenerate_focus_text(text: Any) -> bool:
+    value = _normalize_label(text)
+    if not value:
+        return True
+    if value in {'the subsequent six months', 'subsequent six months', 'next quarter', 'the next quarter'}:
+        return True
+    if any(token in value for token in ['subsequent six months', 'next quarter', 'following quarter']):
+        return True
+    return False
+
+
 def _extract_focus_text(task: Dict[str, Any]) -> str:
     contract = extract_task_contract(task)
-    if str(contract.get('topic_text') or '').strip():
-        return str(contract.get('topic_text') or '').strip()
+    topic_text = str(contract.get('topic_text') or '').strip()
+    if topic_text and not _is_degenerate_focus_text(topic_text):
+        return topic_text
     title = str(task.get('title') or '').strip()
     text = title
     for pattern in TITLE_PATTERNS:
@@ -78,8 +98,19 @@ def _extract_focus_text(task: Dict[str, Any]) -> str:
     if text and text != title:
         return text
     question = str(task.get('question') or '').strip()
+    for pattern in [
+        r'state of research (?:in|on)\s+(.+?)(?:\.\s|,?\s+based|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|,?\s+what|$)',
+        r'research (?:in|on)\s+(.+?)(?:\.\s|,?\s+based|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|,?\s+what|$)',
+        r'work on\s+(.+?)(?:\.\s|,?\s+within|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|,?\s+what|$)',
+        r'domain of\s+(.+?)(?:\.\s|,?\s+based|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|,?\s+what|$)',
+    ]:
+        m = re.search(pattern, question, flags=re.IGNORECASE)
+        if m:
+            candidate = m.group(1).strip(' .,:;')
+            if candidate and not _is_degenerate_focus_text(candidate):
+                return candidate
     m = re.search(r'(?:within|for|on)\s+(.+?)(?:\s+over the subsequent|\s+for the next quarter|\s+considering|\.|$)', question, flags=re.IGNORECASE)
-    if m:
+    if m and not _is_degenerate_focus_text(m.group(1)):
         return m.group(1).strip()
     return title or question
 
@@ -97,6 +128,19 @@ class FocusResolver:
         focus_nodes = [row for row in ranked[:5] if top <= 0 or float(row.get('anchor_score') or 0.0) >= max(0.18, top * 0.67)]
         if not focus_nodes and ranked:
             focus_nodes = ranked[:1]
+        covered_terms = set()
+        for row in focus_nodes:
+            covered_terms |= self._node_focus_terms(row)
+        for row in ranked[:8]:
+            if row in focus_nodes or len(focus_nodes) >= 4:
+                continue
+            row_terms = self._node_focus_terms(row)
+            if not (focus_terms & row_terms):
+                continue
+            uncovered = (focus_terms & row_terms) - covered_terms
+            if uncovered and float(row.get('anchor_score') or 0.0) >= max(0.12, top * 0.18):
+                focus_nodes.append(row)
+                covered_terms |= row_terms
         cluster_mode = len(focus_nodes) >= 2 and sum(1 for row in focus_nodes if float(row.get('anchor_score') or 0.0) >= max(0.18, top * 0.82)) >= 2
         return {
             'focus_text': focus_text,
@@ -105,6 +149,15 @@ class FocusResolver:
             'focus_nodes': focus_nodes[:4],
             'cluster_mode': cluster_mode,
         }
+
+    @staticmethod
+    def _node_focus_terms(node: Dict[str, Any]) -> set[str]:
+        values = [
+            node.get('public_topic'),
+            node.get('display_name'),
+            node.get('description'),
+        ]
+        return set(_norm_tokens(' '.join(str(x or '') for x in values)))
 
     def _node_score(self, *, focus_terms: set[str], node: Dict[str, Any], support_rank: int) -> float:
         fields = [

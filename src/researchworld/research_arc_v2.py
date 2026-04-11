@@ -36,20 +36,28 @@ NUMBER_WORDS = {
 }
 
 QUESTION_TOPIC_PATTERNS = [
-    r'state of research (?:in|on)\s+(.+?)(?:\.\s|,?\s+based|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|$)',
-    r'research (?:in|on)\s+(.+?)(?:\.\s|,?\s+based|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|$)',
-    r'work on\s+(.+?)(?:\.\s|,?\s+within|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|$)',
-    r'domain of\s+(.+?)(?:\.\s|,?\s+based|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|$)',
+    r'state of research (?:in|on)\s+(.+?)(?:\.\s|,?\s+based|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|,?\s+what|$)',
+    r'domain of\s+(.+?)(?:\.\s|,?\s+based|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|,?\s+what|$)',
+    r'work on\s+(.+?)(?:\.\s|,?\s+within|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|,?\s+what|$)',
     r'evolution of work on\s+(.+?)(?:\.\s|,?\s+within|,?\s+over|,?\s+from|,?\s+what|$)',
+    r'research (?:in|on)\s+(.+?)(?:\.\s|,?\s+based|,?\s+over|,?\s+from|,?\s+for the|,?\s+which|,?\s+what|$)',
 ]
 
 TITLE_PATTERNS = [
+    r'^Identifying a Key Bottleneck in\s+',
+    r'^Identifying a Key Bottleneck for\s+',
     r'^Identifying Unresolved Bottlenecks in\s+',
     r'^Bottleneck and Opportunity Discovery in\s+',
     r'^Bottleneck and Opportunity Discovery for\s+',
+    r'^Ex Ante Forecast for\s+',
+    r'^Ex Ante Forecast on\s+',
     r'^Forecasting the Trajectory of\s+',
     r'^Forecasting Research Trajectory in\s+',
     r'^Forecasting Research Trajectory for\s+',
+    r'^Prioritization of Research Directions in\s+',
+    r'^Prioritization of Research Directions for\s+',
+    r'^Prioritizing Research Directions in\s+',
+    r'^Prioritizing Research Directions for\s+',
     r'^Strategic Research Planning for\s+',
     r'^Strategic Research Agenda for\s+',
 ]
@@ -57,6 +65,15 @@ TITLE_PATTERNS = [
 
 def _clean_topic_text(text: str) -> str:
     value = re.sub(r'\s+', ' ', str(text or '')).strip(' .,:;')
+    value = re.sub(r'\s+from pre(?:-| )cutoff.*$', '', value, flags=re.I)
+    value = re.sub(r'\s+research trajectory$', '', value, flags=re.I)
+    value = re.sub(
+        r',?\s+(?:what|which)\s+(?:specific\s+)?(?:technical\s+)?(?:direction|directions|research directions?|candidate directions?|subtopics?).*$',
+        '',
+        value,
+        flags=re.I,
+    )
+    value = re.sub(r',?\s+(?:is|are)\s+most likely to emerge.*$', '', value, flags=re.I)
     value = re.sub(r'\b(?:published|available|scholarly|literature|cutoff|date|solely|explicitly|historical|existing|corpus)\b', '', value, flags=re.I)
     value = re.sub(r'\s+', ' ', value).strip(' .,:;')
     return value
@@ -162,11 +179,13 @@ class EvidenceBackbone:
         }
 
     def _retrieve_support_packets(self, *, task: Dict[str, Any], task_contract: Dict[str, Any], top_k_nodes: int) -> List[SupportPacket]:
+        topic_text = str(task_contract.get('topic_text') or '')
         queries = self._dedupe(
             [
                 str(task.get('question') or ''),
                 str(task.get('title') or ''),
-                *expand_topic_queries(str(task_contract.get('topic_text') or '')),
+                *expand_topic_queries(topic_text),
+                *self._domain_query_expansions(topic_text),
             ]
         )
         merged: Dict[str, Tuple[SupportPacket, float]] = {}
@@ -215,7 +234,13 @@ class EvidenceBackbone:
         return rows
 
     def _build_query_bundle(self, *, task: Dict[str, Any], task_contract: Dict[str, Any], candidate_nodes: List[Dict[str, Any]]) -> List[str]:
-        values = [task['question'], task.get('title') or '', *expand_topic_queries(str(task_contract.get('topic_text') or ''))]
+        topic_text = str(task_contract.get('topic_text') or '')
+        values = [
+            task['question'],
+            task.get('title') or '',
+            *expand_topic_queries(topic_text),
+            *self._domain_query_expansions(topic_text),
+        ]
         for node in candidate_nodes[:5]:
             values.extend([
                 node.get('public_topic') or '',
@@ -315,6 +340,54 @@ class EvidenceBackbone:
             seen.add(item)
             out.append(item)
         return out
+
+    def _domain_query_expansions(self, topic_text: str) -> List[str]:
+        topic = str(topic_text or '').lower()
+        out: List[str] = []
+        if self.domain_id == 'llm_finetuning_post_training':
+            if 'parameter efficient fine tuning' in topic or 'peft' in topic:
+                out.extend([
+                    'reinforcement learning based fine tuning',
+                    'preference alignment',
+                    'RLHF',
+                    'DPO',
+                    'LoRA instruction tuning',
+                ])
+            if 'chain of thought' in topic:
+                out.extend([
+                    'multimodal chain of thought evaluation',
+                    'reasoning error analysis',
+                    'small language model chain of thought',
+                ])
+            if 'multimodal fine tuning evaluation' in topic:
+                out.extend([
+                    'vision language alignment evaluation',
+                    'reasoning enhanced multimodal evaluation',
+                    'multimodal reasoning alignment evaluation',
+                ])
+        elif self.domain_id == 'visual_generative_modeling_and_diffusion':
+            if 'video generation' in topic or 'video manipulation' in topic:
+                out.extend([
+                    'video to audio generation',
+                    'audio video generation',
+                    'controllable video generation',
+                    'video editing diffusion',
+                    'multi-view video generation',
+                ])
+        elif self.domain_id == 'llm_agent':
+            if 'tool augmented reasoning' in topic:
+                out.extend([
+                    'reinforcement learning based tool reasoning',
+                    'world model tool reasoning',
+                    'tool grounding',
+                ])
+            if 'embodied agent guidance' in topic or 'embodied agent' in topic:
+                out.extend([
+                    'reinforcement learning agents',
+                    'multi agent reinforcement learning agents',
+                    'autonomous exploration',
+                ])
+        return self._dedupe(out)[:8]
 
     def _multi_query_retrieve_docs(self, retriever: HybridRetriever, queries: Iterable[str], *, top_k_per_query: int, limit: int) -> List[Tuple[RetrievalDoc, Dict[str, float]]]:
         merged: Dict[str, Tuple[RetrievalDoc, Dict[str, float]]] = {}

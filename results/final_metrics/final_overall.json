@@ -37,14 +37,14 @@
   },
   {
     "Method": "research_arc",
-    "Fact": 0.5185,
-    "FutureAlignment": 0.4563,
-    "EvidenceTraceability": 0.6243,
-    "TemporalLeakage": 0.4729,
-    "TaskFulfillment": 0.8047,
-    "OpportunityGrounding": 0.9285,
-    "ForecastGrounding": 0.882,
-    "TechnicalDependencyGrounding": 0.8908,
+    "Fact": 0.5423,
+    "FutureAlignment": 0.4592,
+    "EvidenceTraceability": 0.6275,
+    "TemporalLeakage": 0.4536,
+    "TaskFulfillment": 0.7629,
+    "OpportunityGrounding": 0.8301,
+    "ForecastGrounding": 0.8084,
+    "TechnicalDependencyGrounding": 0.8599,
     "TaskCount": 168
   }
 ]

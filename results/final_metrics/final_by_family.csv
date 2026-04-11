@@ -8,6 +8,6 @@ hybrid,strategic_research_planning,0.4998,0.3725,0.5811,0.8986,0.8205,0.8143,73
 native,bottleneck_opportunity_discovery,0.4399,0.5154,0.0723,0.9857,0.7912,0.6124,46
 native,direction_forecasting,0.5326,0.4254,0.0055,0.9061,0.7229,0.4706,49
 native,strategic_research_planning,0.3227,0.4048,0.0785,0.9112,0.7879,0.7436,73
-research_arc,bottleneck_opportunity_discovery,0.5283,0.371,0.6207,0.7074,0.7476,0.9285,46
-research_arc,direction_forecasting,0.561,0.4287,0.6289,0.1922,0.8352,0.882,49
-research_arc,strategic_research_planning,0.4837,0.5286,0.6235,0.5134,0.8201,0.8908,73
+research_arc,bottleneck_opportunity_discovery,0.5337,0.3335,0.5942,0.7665,0.6131,0.8301,46
+research_arc,direction_forecasting,0.6051,0.4406,0.6361,0.1461,0.8382,0.8084,49
+research_arc,strategic_research_planning,0.5056,0.5508,0.6426,0.4627,0.8067,0.8599,73
