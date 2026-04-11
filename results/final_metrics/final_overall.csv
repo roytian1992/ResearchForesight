@@ -1,5 +1,5 @@
-Method,Fact,FutureAlignment,EvidenceTraceability,TemporalLeakage,TaskFulfillment,OpportunityGrounding,ForecastGrounding,TechnicalDependencyGrounding,TaskCount
-coi,0.5277,0.4567,0.718,0.6687,0.7452,0.7627,0.4647,0.8121,168
-hybrid,0.5209,0.396,0.5191,0.8588,0.7746,0.6919,0.5002,0.8143,168
-native,0.416,0.4411,0.0555,0.9301,0.7699,0.6124,0.4706,0.7436,168
-research_arc,0.5423,0.4592,0.6275,0.4536,0.7629,0.8301,0.8084,0.8599,168
+Method,Fact,FutureAlignment,EvidenceTraceability,OpportunityGrounding,ForecastGrounding,TechnicalDependencyGrounding,TaskCount
+coi,0.5277,0.4567,0.718,0.7627,0.4647,0.8121,168
+hybrid,0.5209,0.396,0.5191,0.6919,0.5002,0.8143,168
+native,0.416,0.4411,0.0555,0.6124,0.4706,0.7436,168
+research_arc,0.5423,0.4592,0.6275,0.8301,0.8084,0.8599,168
