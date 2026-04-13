@@ -1,7 +1,7 @@
 # benchmark_v1_mixed_571
 
 ## Summary
-- tasks: 571
+- tasks: 533
 - families: 4
 - domains: 4
 - per family × domain cap: None
@@ -14,6 +14,7 @@
 1. direction_forecasting
 2. bottleneck_opportunity_discovery
 3. strategic_research_planning
+4. venue_aware_research_positioning
 
 ## Domains
 - LLM agents

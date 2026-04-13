@@ -1,7 +1,7 @@
 # benchmark_v1_quarter_131
 
 ## Summary
-- tasks: 131
+- tasks: 96
 - families: 3
 - domains: 4
 - per family × domain cap: None

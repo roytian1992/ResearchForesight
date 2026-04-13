@@ -1,28 +1,28 @@
 {
   "release_name": "benchmark_v1_mixed_571",
-  "task_count": 571,
+  "task_count": 533,
   "family_counts": {
-    "bottleneck_opportunity_discovery": 145,
-    "direction_forecasting": 80,
-    "strategic_research_planning": 246,
+    "bottleneck_opportunity_discovery": 135,
+    "direction_forecasting": 67,
+    "strategic_research_planning": 231,
     "venue_aware_research_positioning": 100
   },
   "domain_counts": {
-    "LLM agents": 155,
-    "LLM fine-tuning and post-training": 137,
-    "RAG and retrieval structuring": 107,
-    "Visual generative modeling and diffusion": 172
+    "LLM agents": 144,
+    "LLM fine-tuning and post-training": 128,
+    "RAG and retrieval structuring": 103,
+    "Visual generative modeling and diffusion": 158
   },
   "subtype_counts": {
     "pageindex_grounded_bottleneck": 100,
-    "chain_terminal_forecast": 63,
+    "chain_terminal_forecast": 60,
     "agenda_priority_selection": 133,
     "venue_aware_direction_forecast": 40,
     "venue_targeted_planning": 60,
     "comparative_opportunity_prioritization": 44,
-    "q1_pageindex_grounded_bottleneck": 45,
-    "q1_terminal_forecast": 17,
-    "q1_agenda_priority_selection": 69
+    "q1_pageindex_grounded_bottleneck": 35,
+    "q1_terminal_forecast": 7,
+    "q1_agenda_priority_selection": 54
   },
   "files": {
     "tasks_public": "tasks.jsonl",

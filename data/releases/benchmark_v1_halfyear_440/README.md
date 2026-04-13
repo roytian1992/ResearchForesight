@@ -1,7 +1,7 @@
 # benchmark_v1_halfyear_440
 
 ## Summary
-- tasks: 440
+- tasks: 437
 - families: 4
 - domains: 4
 - per family × domain cap: None
@@ -14,6 +14,7 @@
 1. direction_forecasting
 2. bottleneck_opportunity_discovery
 3. strategic_research_planning
+4. venue_aware_research_positioning
 
 ## Domains
 - LLM agents
