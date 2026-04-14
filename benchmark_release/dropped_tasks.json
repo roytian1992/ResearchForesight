@@ -1,0 +1,446 @@
+[
+  {
+    "task_id": "RTLv3-EXP-1013",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-EXP-1025",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-EXP-1026",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-EXP-1027",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-EXP-1028",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-EXP-1040",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-EXP-1041",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-EXP-1042",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-EXP-1043",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-EXP-1056",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0365",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0366",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0367",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0368",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0369",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0370",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0371",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0372",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0373",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0374",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0375",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0377",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0378",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0379",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0380",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0381",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0383",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0385",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0386",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0411",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0412",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0413",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0415",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0416",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0417",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0418",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0419",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0420",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0421",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0422",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0423",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0424",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0425",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0426",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0427",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0428",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0429",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0430",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0431",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0432",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0433",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0434",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0435",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0436",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0438",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0439",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0440",
+    "reason": "agenda_priority_selection_without_public_candidates"
+  },
+  {
+    "task_id": "RTLv3-0462",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0463",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0464",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0465",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0466",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0468",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0469",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0470",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0471",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0472",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0488",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0489",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0492",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0493",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0494",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0495",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0496",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0497",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0498",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0499",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0500",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0501",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0502",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0503",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0520",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0521",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0522",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0524",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0525",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0526",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0527",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0528",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0529",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0530",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0531",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0532",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0533",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0534",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0535",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0536",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0537",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0552",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0560",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0561",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0562",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0563",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0564",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0565",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0566",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0567",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0568",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0569",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0570",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  },
+  {
+    "task_id": "RTLv3-0571",
+    "reason": "q1_agenda_priority_selection_removed_for_structural_inconsistency"
+  }
+]

@@ -1,0 +1,57 @@
+{
+  "release_name": "benchmark_full_curated_polished",
+  "source_release": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated",
+  "task_count": 422,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 135,
+    "direction_forecasting": 67,
+    "strategic_research_planning": 120,
+    "venue_aware_research_positioning": 100
+  },
+  "domain_counts": {
+    "LLM agents": 114,
+    "LLM fine-tuning and post-training": 110,
+    "RAG and retrieval structuring": 82,
+    "Visual generative modeling and diffusion": 116
+  },
+  "subtype_counts": {
+    "bottleneck_opportunity_discovery::pageindex_grounded_bottleneck": 100,
+    "bottleneck_opportunity_discovery::q1_pageindex_grounded_bottleneck": 35,
+    "direction_forecasting::chain_terminal_forecast": 60,
+    "direction_forecasting::q1_terminal_forecast": 7,
+    "strategic_research_planning::agenda_priority_selection": 76,
+    "strategic_research_planning::comparative_opportunity_prioritization": 44,
+    "venue_aware_research_positioning::venue_aware_direction_forecast": 40,
+    "venue_aware_research_positioning::venue_targeted_planning": 60
+  },
+  "dropped_task_count": 111,
+  "venue_repair_count": 46,
+  "files": {
+    "tasks_public": "tasks.jsonl",
+    "tasks_hidden_eval": "tasks_hidden_eval.jsonl",
+    "tasks_build_trace": "tasks_build_trace.jsonl",
+    "tasks_internal_full": "tasks_internal_full.jsonl",
+    "dropped_tasks": "dropped_tasks.json",
+    "venue_repairs": "venue_repairs.json",
+    "language_polish_audit": "language_polish_audit.json"
+  },
+  "curation_policy": {
+    "dropped_tasks": [
+      "strategic_research_planning agenda tasks without explicit candidate directions in trace support"
+    ],
+    "dropped_q1_agenda_tasks": [
+      "remove q1 agenda-priority planning tasks because they do not form a stable candidate-ranking protocol"
+    ],
+    "venue_repair": "canonicalize venue names to be consistent with the selected venue bucket",
+    "title_normalization": "normalize planning and venue titles using trace-backed topic names"
+  },
+  "language_polish": {
+    "families": [
+      "strategic_research_planning",
+      "venue_aware_research_positioning"
+    ],
+    "polished_task_count": 220,
+    "public_fields_only": true,
+    "postprocess_cleanup": "remove redundant contract sentences after LLM rewriting while preserving candidate-list and venue-bucket constraints"
+  }
+}

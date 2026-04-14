@@ -1,0 +1,31 @@
+{
+  "release_name": "benchmark_release",
+  "source_release": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_polished",
+  "task_count": 422,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 135,
+    "direction_forecasting": 67,
+    "strategic_research_planning": 120,
+    "venue_aware_research_positioning": 100
+  },
+  "domain_counts": {
+    "LLM agents": 114,
+    "LLM fine-tuning and post-training": 110,
+    "RAG and retrieval structuring": 82,
+    "Visual generative modeling and diffusion": 116
+  },
+  "release_policy": {
+    "public_shape": "single flattened public release without horizon-specific subdirectories",
+    "mixed_horizon": true,
+    "shared_kb_bundled": false
+  },
+  "files": {
+    "tasks_public": "tasks.jsonl",
+    "tasks_hidden_eval": "tasks_hidden_eval.jsonl",
+    "tasks_build_trace": "tasks_build_trace.jsonl",
+    "tasks_internal_full": "tasks_internal_full.jsonl",
+    "dropped_tasks": "dropped_tasks.json",
+    "venue_repairs": "venue_repairs.json",
+    "language_polish_audit": "language_polish_audit.json"
+  }
+}

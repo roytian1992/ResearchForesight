@@ -11,36 +11,43 @@ This repository contains the current benchmark code, official benchmark releases
 - `scripts/`: release building, evaluation, aggregation, and utility scripts
 - `configs/`: benchmark, domain, and model configuration files
 
-### 2. Named benchmark releases
-We maintain three named releases under `data/releases/`:
-- `benchmark_halfyear`: 437 tasks, cutoff `2025-08-31`
-- `benchmark_quarter`: 96 tasks, cutoff `2025-11-30`
-- `benchmark_full`: 533 tasks combining the half-year and quarter settings
+### 2. Official benchmark release
+The current official public release is the unified 422-task `ResearchForesight` release:
+- `benchmark_release/`: flattened public release directory at the repository root
+- `data/releases/benchmark_full_curated_polished/`: source release bundle used to assemble the public release
 
-These folders store task files, hidden evaluation views, build traces, and release metadata. Experiment outputs are intentionally kept outside the release folders.
+This release does not split public tasks into separate half-year and quarter sub-releases. Instead, it exposes a single mixed-horizon benchmark with per-task temporal cutoffs.
 
-### 3. Official offline benchmark bundle
-The current public offline bundle is `benchmark_release/benchmark_v3_20260407_venue/`.
+Historical intermediate folders and smaller internal subsets under `data/releases/` are retained as
+build artifacts, not as the recommended public entry point.
+
+### 3. Public release contents
+The public release directory is `benchmark_release/`.
 
 It contains:
 - `tasks.jsonl`: public task file
 - `manifest.json`: release metadata
-- `kb/`: the offline historical knowledge base used by offline methods
+- `tasks_hidden_eval.jsonl`: hidden evaluation targets
+- `tasks_build_trace.jsonl`: build traces
+- `tasks_internal_full.jsonl`: internal construction view
 
-Offline runners default to `release_dir / kb`, so the bundle is directly runnable without passing a separate knowledge-base path.
+Because the official 422-task release mixes multiple time cutoffs, we do not bundle a single shared `kb/` directory inside `benchmark_release/`. A single frozen corpus would either leak future information for earlier-cutoff tasks or artificially underpower later-cutoff tasks.
+
+If you want to run offline agents, use a cutoff-aligned task slice and pass the corresponding historical corpus explicitly with `--kb-dir`.
 
 Example:
 
 ```bash
 python ResearchForesight/scripts/run_researchagent_offline.py \
-  --release-dir ResearchForesight/benchmark_release/benchmark_v3_20260407_venue \
+  --release-dir ResearchForesight/benchmark_release \
+  --kb-dir /path/to/cutoff_aligned_kb \
   --output-dir ResearchForesight/results/researchagent_offline_example \
   --reasoning-llm-config ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml \
   --render-llm-config ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml \
   --fallback-llm-config ''
 ```
 
-The same `release_dir / kb` convention is used by `ARIS-Offline`, `ResearchAgent-Offline`, and other offline runners in `scripts/`.
+The same explicit `--kb-dir` pattern can be used with `ARIS-Offline`, `ResearchAgent-Offline`, and other offline runners in `scripts/`.
 
 ### 4. Prompt assets
 We only keep the **latest** prompt inventory in-repo.
