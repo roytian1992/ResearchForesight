@@ -1,7 +1,6 @@
 # benchmark_v3_20260407_venue
 
 ## Summary
-- tasks: 168
 - families: 3
 - domains: 4
 - per family × domain cap: None
@@ -28,6 +27,34 @@ This release is built from:
 - CoI-style support packets
 - selective paper-structure extraction
 - LLM rewrite and LLM-as-judge filtering
+
+## Files
+- `tasks.jsonl`: public benchmark tasks
+- `manifest.json`: release metadata
+- `kb/`: offline historical knowledge base used by offline runners
+
+## How to use
+Offline methods in this repository expect `release_dir / kb` by default.
+
+Examples:
+
+```bash
+python ResearchForesight/scripts/run_researchagent_offline.py \
+  --release-dir ResearchForesight/benchmark_release/benchmark_v3_20260407_venue \
+  --output-dir ResearchForesight/results/researchagent_offline_example \
+  --reasoning-llm-config ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml \
+  --render-llm-config ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml \
+  --fallback-llm-config ''
+```
+
+```bash
+python ResearchForesight/scripts/run_aris_offline.py \
+  --release-dir ResearchForesight/benchmark_release/benchmark_v3_20260407_venue \
+  --output-dir ResearchForesight/results/aris_offline_example \
+  --answer-llm-config ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml \
+  --critic-llm-config ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml \
+  --fallback-llm-config ''
+```
 
 ## Environment caveat
 During construction, direct arXiv source/html fetching was unavailable from the current runtime environment.

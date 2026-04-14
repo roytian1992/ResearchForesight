@@ -189,7 +189,7 @@ def main() -> None:
         hy_trace.append(trace_from_candidate(row, pid))
         hy_internal.append(row)
 
-    hy_readme = """# benchmark_v1_halfyear_440
+    hy_readme = """# benchmark_halfyear
 
 ## Summary
 - tasks: 440
@@ -204,7 +204,7 @@ This release preserves the stable 2025-08-31 cutoff benchmark and appends 84 acc
 The release is intended as the finalized half-year slice before introducing the separate quarterly setting.
 """
     build_release(
-        releases / "benchmark_v1_halfyear_440",
+        releases / "benchmark_halfyear",
         hy_public,
         hy_internal,
         hy_hidden,
@@ -226,7 +226,7 @@ The release is intended as the finalized half-year slice before introducing the 
         q1_trace.append(trace_from_candidate(row, pid))
         q1_internal.append(row)
 
-    q1_readme = """# benchmark_v1_quarter_131
+    q1_readme = """# benchmark_quarter
 
 ## Summary
 - tasks: 131
@@ -240,7 +240,7 @@ The release is intended as the finalized half-year slice before introducing the 
 This release is the new short-horizon benchmark slice. It was built from 2025Q4 taxonomy/support packets and filtered with the same rewrite-and-judge pipeline, keeping accept-only tasks.
 """
     build_release(
-        releases / "benchmark_v1_quarter_131",
+        releases / "benchmark_quarter",
         q1_public,
         q1_internal,
         q1_hidden,
@@ -267,7 +267,7 @@ This release is the new short-horizon benchmark slice. It was built from 2025Q4 
         merged_trace.append(trace_from_candidate(row, pid))
         merged_internal.append(row)
 
-    merged_readme = """# benchmark_v1_mixed_571
+    merged_readme = """# benchmark_full
 
 ## Summary
 - tasks: 571
@@ -282,22 +282,22 @@ This merged release combines the finalized 440-task half-year benchmark with the
 Users can filter by `time_cutoff`, `horizon`, `subtype`, or hidden `time_context.setting_id` for setting-specific evaluation.
 """
     build_release(
-        releases / "benchmark_v1_mixed_571",
+        releases / "benchmark_full",
         merged_public,
         merged_internal,
         merged_hidden,
         merged_trace,
         merged_readme,
         {
-            "hy_6m_release": "data/releases/benchmark_v1_halfyear_440",
-            "q1_3m_release": "data/releases/benchmark_v1_quarter_131",
+            "hy_6m_release": "data/releases/benchmark_halfyear",
+            "q1_3m_release": "data/releases/benchmark_quarter",
         },
     )
 
     print(json.dumps({
         "hy_6m_440": len(hy_public),
         "q1_3m_131": len(q1_public),
-        "mixed_571": len(merged_public),
+        "full": len(merged_public),
     }, ensure_ascii=False, indent=2))
 
 
