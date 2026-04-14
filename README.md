@@ -97,9 +97,10 @@ These prompt files are the canonical latest snapshots we want visible on GitHub 
 - `Evidence Traceability`
 
 ### Family-specific auxiliary metrics
-- `Opportunity Grounding`
-- `Forecast Grounding`
-- `Technical Dependency Grounding`
+- `Opportunity Grounding`: used for `bottleneck_opportunity_discovery`
+- `Forecast Grounding`: used for `direction_forecasting`
+- `Technical Dependency Grounding`: used for `strategic_research_planning`
+- `Venue Positioning Grounding`: used for `venue_aware_research_positioning`
 
 ## Benchmark positioning
 ResearchForesight is designed to study whether a system can exhibit useful forward-looking research judgment under a strict temporal cutoff. The target capability is prospective reasoning from bounded historical evidence: can an agent anticipate bottlenecks, directions, and plans before subsequent developments are known?
