@@ -7,3 +7,6 @@ __pycache__/
 venv/
 *.local.yaml
 .DS_Store
+data/releases/benchmark_core100/
+results/*core100*/
+tmp/run_core100_method_eval.sh
