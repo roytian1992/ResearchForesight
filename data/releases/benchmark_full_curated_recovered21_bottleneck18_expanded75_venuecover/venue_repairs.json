@@ -1,0 +1,278 @@
+[
+  {
+    "task_id": "RTLv3-0154",
+    "bucket": "AAAI",
+    "old": "Conference on Empirical Methods in Natural Language Processing",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-0156",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-0158",
+    "bucket": "ICML",
+    "old": "Computers, Communications and IT Applications Conference",
+    "new": "International Conference on Machine Learning"
+  },
+  {
+    "task_id": "RTLv3-0160",
+    "bucket": "AAAI",
+    "old": "ACM Multimedia",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-0161",
+    "bucket": "AAAI",
+    "old": "Conference on Empirical Methods in Natural Language Processing",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-0163",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-0164",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-0165",
+    "bucket": "EMNLP",
+    "old": "BigData Congress [Services Society]",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-0167",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-0168",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1108",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1111",
+    "bucket": "EMNLP",
+    "old": "2025 40th IEEE/ACM International Conference on Automated Software Engineering Workshops (ASEW)",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1112",
+    "bucket": "EMNLP",
+    "old": "2025 40th IEEE/ACM International Conference on Automated Software Engineering Workshops (ASEW)",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1113",
+    "bucket": "AAAI",
+    "old": "Conference on Empirical Methods in Natural Language Processing",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1115",
+    "bucket": "AAAI",
+    "old": "Conference on Empirical Methods in Natural Language Processing",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1124",
+    "bucket": "WSDM",
+    "old": "2025 IEEE International Conference on Data Mining Workshops (ICDMW)",
+    "new": "Web Search and Data Mining"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1125",
+    "bucket": "EMNLP",
+    "old": "Conference of the Centre for Advanced Studies on Collaborative Research",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1127",
+    "bucket": "EMNLP",
+    "old": "2025 40th IEEE/ACM International Conference on Automated Software Engineering Workshops (ASEW)",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1129",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1135",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1136",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1142",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1144",
+    "bucket": "EMNLP",
+    "old": "AAAI Conference on Artificial Intelligence",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1145",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1146",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1147",
+    "bucket": "EMNLP",
+    "old": "AAAI Conference on Artificial Intelligence",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1148",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1150",
+    "bucket": "EMNLP",
+    "old": "AAAI Conference on Artificial Intelligence",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1152",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1159",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1160",
+    "bucket": "AAAI",
+    "old": "Conference on Empirical Methods in Natural Language Processing",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1162",
+    "bucket": "EMNLP",
+    "old": "BigData Congress [Services Society]",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1163",
+    "bucket": "EMNLP",
+    "old": "BCE Official Conference Proceedings",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1164",
+    "bucket": "AAAI",
+    "old": "Conference on Empirical Methods in Natural Language Processing",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1170",
+    "bucket": "EMNLP",
+    "old": "BCE Official Conference Proceedings",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1181",
+    "bucket": "AAAI",
+    "old": "2025 40th IEEE/ACM International Conference on Automated Software Engineering Workshops (ASEW)",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1182",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1183",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1184",
+    "bucket": "EMNLP",
+    "old": "ACM Multimedia",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1185",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1187",
+    "bucket": "AAAI",
+    "old": "ACM SIGGRAPH Conference and Exhibition on Computer Graphics and Interactive Techniques in Asia",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1188",
+    "bucket": "AAAI",
+    "old": "ACM Multimedia",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1189",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1190",
+    "bucket": "AAAI",
+    "old": "ACM SIGGRAPH Conference and Exhibition on Computer Graphics and Interactive Techniques in Asia",
+    "new": "AAAI Conference on Artificial Intelligence"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1191",
+    "bucket": "EMNLP",
+    "old": "ACM Multimedia",
+    "new": "Conference on Empirical Methods in Natural Language Processing"
+  },
+  {
+    "task_id": "RTLv3-EXP-VENUE-1192",
+    "bucket": "AAAI",
+    "old": "Proceedings of the AAAI Conference on Artificial Intelligence",
+    "new": "AAAI Conference on Artificial Intelligence"
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "release_dir": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover",
+  "input_hidden_v3": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover/tasks_hidden_eval_v3.jsonl",
+  "input_trace": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover/tasks_build_trace.jsonl",
+  "output": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover/tasks_hidden_eval_v3_1.jsonl",
+  "task_count": 528,
+  "notes": [
+    "Rebuilt after targeted venue bucket augmentation."
+  ]
+}

@@ -1,0 +1,212 @@
+[
+  {
+    "task_id": "RTLv3-0468",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "LLM agents",
+    "horizon": "quarter",
+    "title": "Research Direction Prioritization for Multi-Agent Debate Frameworks",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0471",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "LLM agents",
+    "horizon": "quarter",
+    "title": "Research Prioritization for Hierarchical Contextual Memory Layers in LLM Agents",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0472",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "LLM agents",
+    "horizon": "quarter",
+    "title": "Strategic Research Prioritization for Multi-Turn Interaction Management",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0492",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "LLM fine-tuning and post-training",
+    "horizon": "quarter",
+    "title": "Context-Aware Instruction Tuning Research Prioritization",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0493",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "LLM fine-tuning and post-training",
+    "horizon": "quarter",
+    "title": "Data Efficient Instruction Tuning Research Prioritization",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0495",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "LLM fine-tuning and post-training",
+    "horizon": "quarter",
+    "title": "Research Direction Prioritization for Information Extraction Domain Instruction Tuning",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0496",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "LLM fine-tuning and post-training",
+    "horizon": "quarter",
+    "title": "LoRA-Based Instruction Tuning Research Prioritization",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0497",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "LLM fine-tuning and post-training",
+    "horizon": "quarter",
+    "title": "Multimodal Reasoning Augmented Instruction Tuning Research Prioritization",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0499",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "LLM fine-tuning and post-training",
+    "horizon": "quarter",
+    "title": "Audio Domain Fine-Tuning Research Prioritization (Q1 2026)",
+    "candidate_directions_count": 2,
+    "direction_records_count": 2
+  },
+  {
+    "task_id": "RTLv3-0502",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "LLM fine-tuning and post-training",
+    "horizon": "quarter",
+    "title": "Supervised Fine-Tuning Research Prioritization for Q1 2026",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0520",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "RAG and retrieval structuring",
+    "horizon": "quarter",
+    "title": "Research Prioritization for Domain Adaptation via Retrieval Augmentation",
+    "candidate_directions_count": 3,
+    "direction_records_count": 3
+  },
+  {
+    "task_id": "RTLv3-0524",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "RAG and retrieval structuring",
+    "horizon": "quarter",
+    "title": "Black-Box Retrieval Augmentation Research Prioritization",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0526",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "RAG and retrieval structuring",
+    "horizon": "quarter",
+    "title": "Prioritizing Research Directions in Educational Assessment Vector Database Retrieval Augmentation",
+    "candidate_directions_count": 2,
+    "direction_records_count": 2
+  },
+  {
+    "task_id": "RTLv3-0528",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "RAG and retrieval structuring",
+    "horizon": "quarter",
+    "title": "Research Prioritization for Feedback-Driven Retrieval Refinement",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0529",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "RAG and retrieval structuring",
+    "horizon": "quarter",
+    "title": "Prioritizing Research Directions in Multimodal Iterative Retrieval Generation",
+    "candidate_directions_count": 2,
+    "direction_records_count": 2
+  },
+  {
+    "task_id": "RTLv3-0537",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "RAG and retrieval structuring",
+    "horizon": "quarter",
+    "title": "Research Prioritization for Multi-Turn Retrieval-Augmented Conversational Question Answering",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0561",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "Visual generative modeling and diffusion",
+    "horizon": "quarter",
+    "title": "Camera Motion Consistency Assessment: Research Direction Prioritization",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0562",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "Visual generative modeling and diffusion",
+    "horizon": "quarter",
+    "title": "Research Prioritization for Object Dynamics Plausibility in Visual Generative Modeling",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0566",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "Visual generative modeling and diffusion",
+    "horizon": "quarter",
+    "title": "Controllable Image Synthesis Research Prioritization",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0568",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "Visual generative modeling and diffusion",
+    "horizon": "quarter",
+    "title": "Image-to-Video Generation Research Prioritization at Q4 2025 Cutoff",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  },
+  {
+    "task_id": "RTLv3-0569",
+    "family": "strategic_research_planning",
+    "subtype": "q1_agenda_priority_selection",
+    "domain": "Visual generative modeling and diffusion",
+    "horizon": "quarter",
+    "title": "Prioritizing Research Directions in Text-to-Video Generation",
+    "candidate_directions_count": 1,
+    "direction_records_count": 1
+  }
+]

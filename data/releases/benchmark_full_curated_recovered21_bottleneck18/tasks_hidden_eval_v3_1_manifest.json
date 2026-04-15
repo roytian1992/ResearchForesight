@@ -1,0 +1,50 @@
+{
+  "release_dir": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18",
+  "input_hidden_v3": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18/tasks_hidden_eval_v3.jsonl",
+  "input_trace": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18/tasks_build_trace.jsonl",
+  "output": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18/tasks_hidden_eval_v3_1.jsonl",
+  "task_count": 443,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 135,
+    "direction_forecasting": 67,
+    "strategic_research_planning": 141,
+    "venue_aware_research_positioning": 100
+  },
+  "domain_counts": {
+    "llm_agent": 117,
+    "llm_finetuning_post_training": 117,
+    "rag_and_retrieval_structuring": 88,
+    "visual_generative_modeling_and_diffusion": 121
+  },
+  "component_coverage": {
+    "bottleneck_opportunity_discovery": {
+      "bottleneck": 135,
+      "opportunity": 135,
+      "linkage": 135,
+      "mechanism_depth": 135
+    },
+    "direction_forecasting": {
+      "trajectory": 67,
+      "next_directions": 67,
+      "signals": 67,
+      "calibration": 67
+    },
+    "strategic_research_planning": {
+      "ranked_directions": 141,
+      "why_now": 141,
+      "risk_awareness": 141,
+      "venue_strategy": 141
+    }
+  },
+  "future_unit_counts": {
+    "bottleneck_opportunity_discovery": 142,
+    "direction_forecasting": 75,
+    "strategic_research_planning": 182,
+    "venue_aware_research_positioning": 144
+  },
+  "notes": [
+    "v3.1 is additive on top of v3 hidden eval.",
+    "It adds component_targets for component-aware task-fulfillment evaluation.",
+    "It adds future_alignment_targets for realized-future alignment evaluation."
+  ]
+}

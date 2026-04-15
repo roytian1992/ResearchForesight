@@ -1,0 +1,47 @@
+{
+  "release_dir": "ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover",
+  "output": "ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover_future_novelty_v1/tasks_hidden_eval_v3_1.jsonl",
+  "task_count": 528,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 150,
+    "direction_forecasting": 94,
+    "strategic_research_planning": 174,
+    "venue_aware_research_positioning": 110
+  },
+  "domain_counts": {
+    "llm_agent": 145,
+    "llm_finetuning_post_training": 137,
+    "rag_and_retrieval_structuring": 102,
+    "visual_generative_modeling_and_diffusion": 144
+  },
+  "component_coverage": {
+    "bottleneck_opportunity_discovery": {
+      "bottleneck": 150,
+      "opportunity": 150,
+      "linkage": 150,
+      "mechanism_depth": 150
+    },
+    "direction_forecasting": {
+      "trajectory": 94,
+      "next_directions": 94,
+      "signals": 94,
+      "calibration": 94
+    },
+    "strategic_research_planning": {
+      "ranked_directions": 174,
+      "why_now": 174,
+      "risk_awareness": 174,
+      "venue_strategy": 174
+    }
+  },
+  "future_unit_counts": {
+    "bottleneck_opportunity_discovery": 150,
+    "direction_forecasting": 101,
+    "strategic_research_planning": 149,
+    "venue_aware_research_positioning": 130
+  },
+  "notes": [
+    "v3.1 adds component_targets and future_alignment_targets on top of v3 hidden eval.",
+    "This manifest was regenerated after future novelty post-processing."
+  ]
+}

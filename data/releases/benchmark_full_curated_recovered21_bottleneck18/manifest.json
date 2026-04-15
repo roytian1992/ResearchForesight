@@ -1,0 +1,61 @@
+{
+  "release_name": "benchmark_full_curated_recovered21_bottleneck18",
+  "base_release": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21",
+  "recovery_source_release": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full",
+  "task_count": 443,
+  "recovered_task_count": 21,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 135,
+    "direction_forecasting": 67,
+    "strategic_research_planning": 141,
+    "venue_aware_research_positioning": 100
+  },
+  "domain_counts": {
+    "LLM agents": 117,
+    "LLM fine-tuning and post-training": 117,
+    "RAG and retrieval structuring": 88,
+    "Visual generative modeling and diffusion": 121
+  },
+  "subtype_counts": {
+    "bottleneck_opportunity_discovery::pageindex_grounded_bottleneck": 100,
+    "bottleneck_opportunity_discovery::q1_pageindex_grounded_bottleneck": 35,
+    "direction_forecasting::chain_terminal_forecast": 60,
+    "direction_forecasting::q1_terminal_forecast": 7,
+    "strategic_research_planning::agenda_priority_selection": 76,
+    "strategic_research_planning::comparative_opportunity_prioritization": 44,
+    "strategic_research_planning::q1_agenda_priority_selection": 21,
+    "venue_aware_research_positioning::venue_aware_direction_forecast": 40,
+    "venue_aware_research_positioning::venue_targeted_planning": 60
+  },
+  "horizon_counts": {
+    "half_year": 380,
+    "quarter": 63
+  },
+  "remaining_dropped_task_count": 90,
+  "recovery_policy": {
+    "base_release_lineage": "inherit benchmark_full_curated_polished and restore a targeted subset of previously dropped q1 strategic tasks",
+    "selection_requirement": "restore only dropped q1 agenda tasks that still expose candidate_directions or direction_records in source traces",
+    "notes": [
+      "Recovered tasks are quarter-horizon strategic planning items.",
+      "Recovered tasks were not re-polished by the language cleanup pass.",
+      "Backfill bottleneck future_descendants from historical_future_work_cluster when future_descendants were empty."
+    ]
+  },
+  "files": {
+    "tasks_public": "tasks.jsonl",
+    "tasks_hidden_eval": "tasks_hidden_eval.jsonl",
+    "tasks_build_trace": "tasks_build_trace.jsonl",
+    "tasks_internal_full": "tasks_internal_full.jsonl",
+    "task_ids": "task_ids.txt",
+    "dropped_tasks": "dropped_tasks.json",
+    "venue_repairs": "venue_repairs.json",
+    "recovered_tasks": "recovered_tasks.json",
+    "language_polish_audit": "language_polish_audit.json",
+    "tasks_hidden_eval_v3": "tasks_hidden_eval_v3.jsonl",
+    "tasks_hidden_eval_v3_manifest": "tasks_hidden_eval_v3_manifest.json",
+    "tasks_hidden_eval_v3_1": "tasks_hidden_eval_v3_1.jsonl",
+    "tasks_hidden_eval_v3_1_manifest": "tasks_hidden_eval_v3_1_manifest.json",
+    "recovered_bottleneck_future_descendants": "recovered_bottleneck_future_descendants.json"
+  },
+  "bottleneck_future_descendants_recovered_count": 18
+}

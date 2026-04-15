@@ -1,0 +1,168 @@
+[
+  {
+    "task_id": "RTLv3-EXP-1005",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "LLM agents",
+    "title": "Identifying a Key Bottleneck in Web Multimodal Tool-Augmented Reasoning From Pre-2025 Literature",
+    "recovered_future_descendants": [
+      "Address the performance disparity between open and closed-source LLMs"
+    ]
+  },
+  {
+    "task_id": "RTLv3-EXP-1019",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "LLM fine-tuning and post-training",
+    "title": "Medical Conversational Agent Evaluation",
+    "recovered_future_descendants": [
+      "Responsible development of LLMs in the medical domain through bias analysis"
+    ]
+  },
+  {
+    "task_id": "RTLv3-EXP-1023",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "LLM fine-tuning and post-training",
+    "title": "Identifying a Key Bottleneck in Data Selection for Parameter-Efficient Fine-Tuning of Large Language Models",
+    "recovered_future_descendants": [
+      "Provide tools for automatic data selection to facilitate data-efficient alignment"
+    ]
+  },
+  {
+    "task_id": "RTLv3-EXP-1024",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "LLM fine-tuning and post-training",
+    "title": "Identifying a Critical Bottleneck in Supervised Fine-Tuning From Pre-2025 Literature",
+    "recovered_future_descendants": [
+      "Reevaluating design principles for large-scale, high-performance language models in the framework of task-agnostic learning."
+    ]
+  },
+  {
+    "task_id": "RTLv3-EXP-1050",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "Visual generative modeling and diffusion",
+    "title": "Bottleneck and Opportunity in Semantic Segmentation Metrics for Diffusion Models",
+    "recovered_future_descendants": [
+      "Adopting diffusion models for discriminative tasks"
+    ]
+  },
+  {
+    "task_id": "RTLv3-EXP-1052",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "Visual generative modeling and diffusion",
+    "title": "Identifying a Key Bottleneck in Temporal Coherence Metrics for Video Generation",
+    "recovered_future_descendants": [
+      "Benefit from pre-trained image diffusion models and support text-conditioned video creation."
+    ]
+  },
+  {
+    "task_id": "RTLv3-0357",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "LLM agents",
+    "title": "Bottleneck and Opportunity Discovery in Hierarchical Contextual Memory Layers",
+    "recovered_future_descendants": [
+      "Exploration of emerging capabilities and transfer learning potential of the ExpeL agent"
+    ]
+  },
+  {
+    "task_id": "RTLv3-0362",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "LLM agents",
+    "title": "Scientific Research Multi-Agent Debate Frameworks: Bottleneck and Opportunity Discovery",
+    "recovered_future_descendants": [
+      "Development of future systems aimed at supporting researchers in the ideation and operationalization of novel work"
+    ]
+  },
+  {
+    "task_id": "RTLv3-0399",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "Visual generative modeling and diffusion",
+    "title": "Text-Image Alignment Metrics: Bottleneck and Opportunity Discovery",
+    "recovered_future_descendants": [
+      "Benefit from pre-trained image diffusion models and support text-conditioned video creation."
+    ]
+  },
+  {
+    "task_id": "RTLv3-0444",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "LLM agents",
+    "title": "Bottleneck and Opportunity Discovery in Long-Term Memory Effectiveness for LLM Agents",
+    "recovered_future_descendants": [
+      "Exploration of emerging capabilities and transfer learning potential of the ExpeL agent"
+    ]
+  },
+  {
+    "task_id": "RTLv3-0448",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "LLM agents",
+    "title": "Long-Term Memory Architectures for LLM Agents: Bottleneck and Opportunity Discovery",
+    "recovered_future_descendants": [
+      "Exploration of emerging capabilities and transfer learning potential of the ExpeL agent"
+    ]
+  },
+  {
+    "task_id": "RTLv3-0451",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "LLM agents",
+    "title": "Bottleneck and Opportunity Discovery in Multi-Agent Software Engineering",
+    "recovered_future_descendants": [
+      "Analysis of system performance and identification of blind spots (codes that are systematically undercoded)."
+    ]
+  },
+  {
+    "task_id": "RTLv3-0477",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "LLM fine-tuning and post-training",
+    "title": "Bottleneck and Opportunity Discovery in Multimodal Reasoning-Augmented Instruction Tuning",
+    "recovered_future_descendants": [
+      "Leveraging vast quantities of unlabeled images for self-training"
+    ]
+  },
+  {
+    "task_id": "RTLv3-0479",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "LLM fine-tuning and post-training",
+    "title": "Identifying a Key Bottleneck in Learning Dynamics During LLM Fine-Tuning",
+    "recovered_future_descendants": [
+      "Develop techniques beyond naive finetuning to scale alignment methods (e.g., RLHF) to superhuman models.",
+      "Making safety alignment more than just a few tokens deep to mitigate vulnerabilities"
+    ]
+  },
+  {
+    "task_id": "RTLv3-0509",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "RAG and retrieval structuring",
+    "title": "Educational Assessment RAG Bottleneck and Opportunity Discovery",
+    "recovered_future_descendants": [
+      "Extensive pilot testing at more universities",
+      "Exploring better collaborative relationships between students, educators, and AI"
+    ]
+  },
+  {
+    "task_id": "RTLv3-0510",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "RAG and retrieval structuring",
+    "title": "Bottleneck and Opportunity Discovery in Dynamic Retrieval with Pre-Encoded Knowledge Fusion",
+    "recovered_future_descendants": [
+      "Multimodal retrieval",
+      "Cross-lingual structures",
+      "Interactive systems"
+    ]
+  },
+  {
+    "task_id": "RTLv3-0513",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "RAG and retrieval structuring",
+    "title": "Iterative Retrieval-Augmented Fact Verification: Bottleneck and Opportunity Discovery",
+    "recovered_future_descendants": [
+      "Generation-augmented retrieval adaptation to further improve performance"
+    ]
+  },
+  {
+    "task_id": "RTLv3-0514",
+    "family": "bottleneck_opportunity_discovery",
+    "domain": "RAG and retrieval structuring",
+    "title": "Bottleneck and Opportunity Discovery in Multi-Turn Retrieval-Augmented Conversational Question Answering",
+    "recovered_future_descendants": [
+      "Facilitating further researches in RAG enhanced CQA through a released Chinese CQA dataset."
+    ]
+  }
+]

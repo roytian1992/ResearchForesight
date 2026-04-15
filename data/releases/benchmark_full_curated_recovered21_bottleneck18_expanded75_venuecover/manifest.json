@@ -1,0 +1,97 @@
+{
+  "release_name": "benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover",
+  "base_release": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75",
+  "task_count": 528,
+  "strict_task_count": 375,
+  "added_task_count": 10,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 150,
+    "direction_forecasting": 94,
+    "strategic_research_planning": 174,
+    "venue_aware_research_positioning": 110
+  },
+  "strict_family_counts": {
+    "bottleneck_opportunity_discovery": 89,
+    "direction_forecasting": 94,
+    "strategic_research_planning": 130,
+    "venue_aware_research_positioning": 62
+  },
+  "added_horizon_counts": {
+    "half_year": 7,
+    "quarter": 3
+  },
+  "added_source_counts": {
+    "benchmark_full_curated_recovered21_bottleneck18_expanded75": 10
+  },
+  "selection_policy": {
+    "goal": "fill missing venue strict buckets first, then add quarter venue coverage when possible",
+    "target_buckets": {
+      "llm_agent": [
+        "AAAI",
+        "ACL",
+        "EMNLP",
+        "ICML",
+        "ICLR",
+        "NeurIPS",
+        "IJCAI",
+        "WSDM"
+      ],
+      "llm_finetuning_post_training": [
+        "AAAI",
+        "ACL",
+        "EMNLP",
+        "ICML",
+        "ICLR",
+        "NeurIPS"
+      ],
+      "rag_and_retrieval_structuring": [
+        "SIGIR",
+        "WWW",
+        "KDD",
+        "WSDM",
+        "EMNLP",
+        "ACL",
+        "ICML",
+        "AAAI",
+        "IJCAI"
+      ],
+      "visual_generative_modeling_and_diffusion": [
+        "CVPR",
+        "ICCV",
+        "ECCV",
+        "NeurIPS",
+        "ICLR",
+        "AAAI",
+        "ICML"
+      ]
+    },
+    "pool_min_score": 0.55,
+    "pool_suspicious_zero_judge_mean_threshold": 0.85,
+    "max_missing_per_bucket": 1,
+    "quarter_target_per_domain": 1,
+    "bucket_support_definition": "any positive entry in ground_truth.target_window_stats.top_venue_buckets"
+  },
+  "added_bucket_counts": {
+    "llm_agent::AAAI": 1,
+    "llm_agent::ACL": 1,
+    "llm_agent::ICLR": 1,
+    "llm_agent::ICML": 1,
+    "llm_agent::NeurIPS": 1,
+    "llm_finetuning_post_training::AAAI": 1,
+    "llm_finetuning_post_training::ACL": 1,
+    "rag_and_retrieval_structuring::ICML": 1,
+    "rag_and_retrieval_structuring::KDD": 1,
+    "visual_generative_modeling_and_diffusion::ICML": 1
+  },
+  "files": {
+    "tasks_public": "tasks.jsonl",
+    "tasks_hidden_eval": "tasks_hidden_eval.jsonl",
+    "tasks_build_trace": "tasks_build_trace.jsonl",
+    "tasks_internal_full": "tasks_internal_full.jsonl",
+    "task_ids": "task_ids.txt",
+    "strict_task_ids": "strict_task_ids.txt",
+    "tasks_hidden_eval_v3": "tasks_hidden_eval_v3.jsonl",
+    "tasks_hidden_eval_v3_1": "tasks_hidden_eval_v3_1.jsonl",
+    "venue_coverage_selection_report": "venue_coverage_selection_report.json"
+  }
+}

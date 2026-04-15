@@ -1,0 +1,75 @@
+{
+  "release_name": "benchmark_full_curated_recovered21_bottleneck18_expanded75",
+  "base_release": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18",
+  "task_count": 518,
+  "strict_task_count": 365,
+  "strict_quarter_task_count": 105,
+  "added_task_count": 75,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 150,
+    "direction_forecasting": 94,
+    "strategic_research_planning": 174,
+    "venue_aware_research_positioning": 100
+  },
+  "horizon_counts": {
+    "half_year": 392,
+    "quarter": 126
+  },
+  "strict_family_counts": {
+    "bottleneck_opportunity_discovery": 89,
+    "direction_forecasting": 94,
+    "strategic_research_planning": 130,
+    "venue_aware_research_positioning": 52
+  },
+  "strict_horizon_counts": {
+    "half_year": 260,
+    "quarter": 105
+  },
+  "added_family_counts": {
+    "direction_forecasting": 27,
+    "bottleneck_opportunity_discovery": 15,
+    "strategic_research_planning": 33
+  },
+  "added_horizon_counts": {
+    "quarter": 63,
+    "half_year": 12
+  },
+  "added_source_counts": {
+    "q1": 63,
+    "cluster": 12
+  },
+  "selection_policy": {
+    "dedupe_key": "normalized title against base release plus already selected additions",
+    "strict_requirement": {
+      "bottleneck_opportunity_discovery": "future_descendants",
+      "direction_forecasting": "emergent_descendants",
+      "strategic_research_planning": "direction_records",
+      "venue_aware_research_positioning": "direction_records"
+    },
+    "min_score": 0.55,
+    "suspicious_zero_judge_recovery": {
+      "enabled": true,
+      "mean_subscore_threshold": 0.85,
+      "minimum_numeric_subscores": 4,
+      "purpose": "recover likely judge-parser failures where overall_score is zero but subscores remain high"
+    },
+    "field_requirements": [
+      "non-empty repaired title",
+      "non-empty question or draft_question",
+      "non-empty gold_answer or draft_reference_answer"
+    ]
+  },
+  "files": {
+    "tasks_public": "tasks.jsonl",
+    "tasks_hidden_eval": "tasks_hidden_eval.jsonl",
+    "tasks_build_trace": "tasks_build_trace.jsonl",
+    "tasks_internal_full": "tasks_internal_full.jsonl",
+    "task_ids": "task_ids.txt",
+    "strict_task_ids": "strict_task_ids.txt",
+    "expanded_candidates_report": "expanded_candidates_report.json",
+    "tasks_hidden_eval_v3": "tasks_hidden_eval_v3.jsonl",
+    "tasks_hidden_eval_v3_manifest": "tasks_hidden_eval_v3_manifest.json",
+    "tasks_hidden_eval_v3_1": "tasks_hidden_eval_v3_1.jsonl",
+    "tasks_hidden_eval_v3_1_manifest": "tasks_hidden_eval_v3_1_manifest.json"
+  }
+}

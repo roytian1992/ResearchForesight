@@ -1,0 +1,458 @@
+{
+  "release_dir": "ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover",
+  "output_dir": "ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover_future_novelty_v1",
+  "task_count": 528,
+  "kept_future_labels": 561,
+  "removed_future_labels": 392,
+  "tasks_with_future_paper_prune": 146,
+  "tasks_touched": 237,
+  "fallback_tasks": 187,
+  "examples": [
+    {
+      "task_id": "RTLv3-0001",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "long term memory evaluation frameworks",
+      "history_label_count": 5,
+      "original_future_labels": [
+        "long term memory utilization effectiveness metrics",
+        "long term memory retrieval accuracy metrics",
+        "long term memory retrieval precision at k",
+        "multi turn interaction evaluation metrics",
+        "long term memory retrieval recall metrics"
+      ],
+      "kept_future_labels": [
+        "long term memory utilization effectiveness metrics",
+        "long term memory retrieval accuracy metrics",
+        "long term memory retrieval precision at k",
+        "multi turn interaction evaluation metrics",
+        "long term memory retrieval recall metrics"
+      ],
+      "removed_future_labels": [],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 3,
+        "removed_examples": [
+          {
+            "title": "CATCH: A Novel Data Synthesis Framework for High Therapy Fidelity and Memory Driven Planning Chain of Thought in AI Counseling",
+            "future_score": 0.1667,
+            "history_score": 0.36
+          },
+          {
+            "title": "From Personalization to Prejudice: Bias and Discrimination in Memory Enhanced AI Agents for Recruitment",
+            "future_score": 0.1667,
+            "history_score": 0.3333
+          },
+          {
+            "title": "Memory in the Age of AI Agents",
+            "future_score": 0.25,
+            "history_score": 0.3333
+          }
+        ],
+        "fallback_kept": true
+      }
+    },
+    {
+      "task_id": "RTLv3-0002",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "multi turn reinforcement learning frameworks",
+      "history_label_count": 7,
+      "original_future_labels": [
+        "multi agent collaborative reinforcement learning",
+        "uncertainty aware multi turn reinforcement learning",
+        "human in the loop multi turn reinforcement learning",
+        "multi agent reinforcement learning for retrieval augmented generation"
+      ],
+      "kept_future_labels": [
+        "multi agent collaborative reinforcement learning",
+        "uncertainty aware multi turn reinforcement learning",
+        "human in the loop multi turn reinforcement learning",
+        "multi agent reinforcement learning for retrieval augmented generation"
+      ],
+      "removed_future_labels": [],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 1,
+        "removed_examples": [
+          {
+            "title": "When Top ranked Recommendations Fail: Modeling Multi Granular Negative Feedback for Explainable and Robust Video Recommendation",
+            "future_score": 0.2,
+            "history_score": 0.25
+          }
+        ],
+        "fallback_kept": false
+      }
+    },
+    {
+      "task_id": "RTLv3-0003",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "reasoning aware multi turn reinforcement learning",
+      "history_label_count": 3,
+      "original_future_labels": [
+        "reasoning aware multi turn reinforcement learning with dynamic planning",
+        "reasoning aware multi turn reinforcement learning with synthetic data generation"
+      ],
+      "kept_future_labels": [
+        "reasoning aware multi turn reinforcement learning with dynamic planning",
+        "reasoning aware multi turn reinforcement learning with synthetic data generation"
+      ],
+      "removed_future_labels": [],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 3,
+        "removed_examples": [
+          {
+            "title": "DecEx RAG: Boosting Agentic Retrieval Augmented Generation with Decision and Execution Optimization via Process Supervision",
+            "future_score": 0.1111,
+            "history_score": 0.0
+          },
+          {
+            "title": "NL2CA: Auto formalizing Cognitive Decision Making from Natural Language Using an Unsupervised CriticNL2LTL Framework",
+            "future_score": 0.0,
+            "history_score": 0.0
+          },
+          {
+            "title": "DeepSeek V3.2: Pushing the Frontier of Open Large Language Models",
+            "future_score": 0.0,
+            "history_score": 0.18
+          }
+        ],
+        "fallback_kept": true
+      }
+    },
+    {
+      "task_id": "RTLv3-0004",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "tool-augmented reasoning protocols",
+      "history_label_count": 4,
+      "original_future_labels": [
+        "reinforcement learning for tool augmented reasoning",
+        "reinforcement learning for multimodal tool augmented reasoning"
+      ],
+      "kept_future_labels": [
+        "reinforcement learning for tool augmented reasoning",
+        "reinforcement learning for multimodal tool augmented reasoning"
+      ],
+      "removed_future_labels": [],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 3,
+        "removed_examples": [
+          {
+            "title": "TableMind: An Autonomous Programmatic Agent for Tool Augmented Table Reasoning",
+            "future_score": 0.6,
+            "history_score": 1.0
+          },
+          {
+            "title": "TEXT2DB: Integration Aware Information Extraction with Large Language Model Agents",
+            "future_score": 0.0,
+            "history_score": 0.225
+          },
+          {
+            "title": "SoMe: A Realistic Benchmark for LLM based Social Media Agents",
+            "future_score": 0.0,
+            "history_score": 0.225
+          }
+        ],
+        "fallback_kept": true
+      }
+    },
+    {
+      "task_id": "RTLv3-0005",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "embodied agent guidance strategies",
+      "history_label_count": 6,
+      "original_future_labels": [
+        "multi agent reinforcement learning agents",
+        "traffic signal control agents"
+      ],
+      "kept_future_labels": [
+        "multi agent reinforcement learning agents",
+        "traffic signal control agents"
+      ],
+      "removed_future_labels": [],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 3,
+        "removed_examples": [
+          {
+            "title": "Video2Roleplay: A Multimodal Dataset and Framework for Video Guided Role playing Agents",
+            "future_score": 0.25,
+            "history_score": 0.2857
+          },
+          {
+            "title": "VIVA+: Human Centered Situational Decision Making",
+            "future_score": 0.0,
+            "history_score": 0.3333
+          },
+          {
+            "title": "ShopSimulator: Evaluating and Exploring RL Driven LLM Agent for Shopping Assistants",
+            "future_score": 0.25,
+            "history_score": 0.25
+          }
+        ],
+        "fallback_kept": true
+      }
+    },
+    {
+      "task_id": "RTLv3-0006",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "long term memory architectures",
+      "history_label_count": 5,
+      "original_future_labels": [
+        "modular memory architectures",
+        "hierarchical modular memory architectures",
+        "retrieval augmented modular memory architectures",
+        "generative agent memory architectures"
+      ],
+      "kept_future_labels": [
+        "modular memory architectures",
+        "retrieval augmented modular memory architectures",
+        "generative agent memory architectures"
+      ],
+      "removed_future_labels": [
+        {
+          "label": "hierarchical modular memory architectures",
+          "reason": "duplicate_like_future_peer",
+          "matched_future_label": "modular memory architectures",
+          "match_score": 1.0,
+          "match_rule": "near_subset_reduced"
+        }
+      ],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 0,
+        "removed_examples": [],
+        "fallback_kept": false
+      }
+    },
+    {
+      "task_id": "RTLv3-0007",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "multi agent debate frameworks",
+      "history_label_count": 3,
+      "original_future_labels": [
+        "information retrieval multi agent debate frameworks",
+        "software engineering multi agent debate frameworks",
+        "game theoretic multi agent debate frameworks",
+        "personalized recommendation multi agent debate frameworks"
+      ],
+      "kept_future_labels": [
+        "information retrieval multi agent debate frameworks",
+        "software engineering multi agent debate frameworks",
+        "game theoretic multi agent debate frameworks",
+        "personalized recommendation multi agent debate frameworks"
+      ],
+      "removed_future_labels": [],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 3,
+        "removed_examples": [
+          {
+            "title": "Learning to Deliberate: Meta policy Collaboration for Agentic LLMs with Multi agent Reinforcement Learning",
+            "future_score": 0.4,
+            "history_score": 0.6667
+          },
+          {
+            "title": "Can an Individual Manipulate the Collective Decisions of Multi Agents?",
+            "future_score": 0.4,
+            "history_score": 0.6667
+          },
+          {
+            "title": "Agentic Reasoning for Large Language Models",
+            "future_score": 0.0,
+            "history_score": 0.225
+          }
+        ],
+        "fallback_kept": true
+      }
+    },
+    {
+      "task_id": "RTLv3-0008",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "multi agent systems for software engineering",
+      "history_label_count": 3,
+      "original_future_labels": [
+        "multi agent systems for repository level issue resolution",
+        "multi agent systems for test case generation"
+      ],
+      "kept_future_labels": [
+        "multi agent systems for repository level issue resolution",
+        "multi agent systems for test case generation"
+      ],
+      "removed_future_labels": [],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 3,
+        "removed_examples": [
+          {
+            "title": "Shadows in the Code: Exploring the Risks and Defenses of LLM based Multi Agent Software Development Systems",
+            "future_score": 0.45,
+            "history_score": 0.75
+          },
+          {
+            "title": "Astra: A Multi Agent System for GPU Kernel Performance Optimization",
+            "future_score": 0.45,
+            "history_score": 0.54
+          },
+          {
+            "title": "LLM Agents Implement an NLG System from Scratch: Building Interpretable Rule Based RDF to Text Generators",
+            "future_score": 0.3,
+            "history_score": 0.5
+          }
+        ],
+        "fallback_kept": true
+      }
+    },
+    {
+      "task_id": "RTLv3-0009",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "embodied agent navigation and interaction",
+      "history_label_count": 3,
+      "original_future_labels": [
+        "multi agent embodied collaboration",
+        "multi agent physical task coordination"
+      ],
+      "kept_future_labels": [
+        "multi agent embodied collaboration",
+        "multi agent physical task coordination"
+      ],
+      "removed_future_labels": [],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 3,
+        "removed_examples": [
+          {
+            "title": "A Visualized Framework for Event Cooperation with Generative Agents",
+            "future_score": 0.25,
+            "history_score": 0.25
+          },
+          {
+            "title": "VirtualEnv: A Platform for Embodied AI Research",
+            "future_score": 0.25,
+            "history_score": 0.25
+          },
+          {
+            "title": "From Word to World: Can Large Language Models be Implicit Text based World Models?",
+            "future_score": 0.0,
+            "history_score": 0.36
+          }
+        ],
+        "fallback_kept": true
+      }
+    },
+    {
+      "task_id": "RTLv3-0010",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "long term memory management",
+      "history_label_count": 3,
+      "original_future_labels": [
+        "multi turn interaction management",
+        "contextual state tracking in multi turn dialogues"
+      ],
+      "kept_future_labels": [
+        "multi turn interaction management",
+        "contextual state tracking in multi turn dialogues"
+      ],
+      "removed_future_labels": [],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 3,
+        "removed_examples": [
+          {
+            "title": "PRINCIPLES: Synthetic Strategy Memory for Proactive Dialogue Agents",
+            "future_score": 0.0,
+            "history_score": 0.25
+          },
+          {
+            "title": "From Personalization to Prejudice: Bias and Discrimination in Memory Enhanced AI Agents for Recruitment",
+            "future_score": 0.0,
+            "history_score": 0.25
+          },
+          {
+            "title": "PersonaMem v2: Towards Personalized Intelligence via Learning Implicit User Personas and Agentic Memory",
+            "future_score": 0.0,
+            "history_score": 0.25
+          }
+        ],
+        "fallback_kept": true
+      }
+    },
+    {
+      "task_id": "RTLv3-0011",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "multi agent software engineering",
+      "history_label_count": 2,
+      "original_future_labels": [
+        "multi agent code debugging",
+        "multi agent fault localization",
+        "multi agent requirements engineering",
+        "multi agent api testing"
+      ],
+      "kept_future_labels": [
+        "multi agent code debugging",
+        "multi agent fault localization",
+        "multi agent requirements engineering",
+        "multi agent api testing"
+      ],
+      "removed_future_labels": [],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 3,
+        "removed_examples": [
+          {
+            "title": "CudaForge: An Agent Framework with Hardware Feedback for CUDA Kernel Optimization",
+            "future_score": 0.25,
+            "history_score": 0.25
+          },
+          {
+            "title": "From Text to Simulation: A Multi Agent LLM Workflow for Automated Chemical Process Design",
+            "future_score": 0.5,
+            "history_score": 0.5
+          },
+          {
+            "title": "BOAD: Discovering Hierarchical Software Engineering Agents via Bandit Optimization",
+            "future_score": 0.5,
+            "history_score": 0.75
+          }
+        ],
+        "fallback_kept": false
+      }
+    },
+    {
+      "task_id": "RTLv3-0012",
+      "family": "bottleneck_opportunity_discovery",
+      "topic": "ablation studies on training stages in reinforcement learning fine tuning",
+      "history_label_count": 7,
+      "original_future_labels": [
+        "ablation studies on two stage training in rl fine tuning",
+        "ablation studies on curriculum stages in rl fine tuning",
+        "ablation studies on two stage training in reinforcement learning fine tuning",
+        "ablation studies on curriculum stages in reinforcement learning fine tuning"
+      ],
+      "kept_future_labels": [
+        "ablation studies on two stage training in rl fine tuning",
+        "ablation studies on curriculum stages in rl fine tuning",
+        "ablation studies on two stage training in reinforcement learning fine tuning",
+        "ablation studies on curriculum stages in reinforcement learning fine tuning"
+      ],
+      "removed_future_labels": [],
+      "fallback_kept_future_label": false,
+      "support_future_validation_update": {
+        "removed_count": 2,
+        "removed_examples": [
+          {
+            "title": "RAVEN: Robust Advertisement Video Violation Temporal Grounding via Reinforcement Reasoning",
+            "future_score": 0.1429,
+            "history_score": 0.2
+          },
+          {
+            "title": "GTA: Supervised Guided Reinforcement Learning for Text Classification with Large Language Models",
+            "future_score": 0.2857,
+            "history_score": 0.2857
+          }
+        ],
+        "fallback_kept": false
+      }
+    }
+  ]
+}

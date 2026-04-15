@@ -1,0 +1,15 @@
+{
+  "release_name": "benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover_future_novelty_v1",
+  "task_count": 528,
+  "strict_task_count": 373,
+  "strict_family_counts": {
+    "bottleneck_opportunity_discovery": 89,
+    "direction_forecasting": 94,
+    "strategic_research_planning": 129,
+    "venue_aware_research_positioning": 61
+  },
+  "strict_horizon_counts": {
+    "half_year": 265,
+    "quarter": 108
+  }
+}

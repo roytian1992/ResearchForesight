@@ -1,0 +1,8 @@
+{
+  "release_dir": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover",
+  "output": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover/tasks_hidden_eval_v3.jsonl",
+  "task_count": 528,
+  "notes": [
+    "Rebuilt after targeted venue bucket augmentation."
+  ]
+}

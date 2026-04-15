@@ -1,0 +1,75 @@
+{
+  "release_dir": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75",
+  "output": "/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_full_curated_recovered21_bottleneck18_expanded75/tasks_hidden_eval_v3.jsonl",
+  "task_count": 518,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 150,
+    "direction_forecasting": 94,
+    "strategic_research_planning": 174,
+    "venue_aware_research_positioning": 100
+  },
+  "domain_counts": {
+    "llm_agent": 140,
+    "llm_finetuning_post_training": 135,
+    "rag_and_retrieval_structuring": 100,
+    "visual_generative_modeling_and_diffusion": 143
+  },
+  "claim_type_counts": {
+    "historical_fact": 127,
+    "future_realization_fact": 219,
+    "statistical_fact": 374,
+    "taxonomy_fact": 188,
+    "venue_fact": 130
+  },
+  "slot_field_coverage": {
+    "bottleneck_opportunity_discovery": {
+      "family": 150,
+      "topic": 150,
+      "topic_title": 150,
+      "future_themes": 150,
+      "history_cutoff": 150,
+      "historical_stats": 150,
+      "core_bottleneck_labels": 150,
+      "core_opportunity_labels": 150,
+      "future_realization_paper_count": 150,
+      "future_realization_examples": 150
+    },
+    "direction_forecasting": {
+      "family": 94,
+      "topic": 94,
+      "topic_title": 94,
+      "future_themes": 94,
+      "history_cutoff": 94,
+      "historical_stats": 94,
+      "trajectory_label": 94,
+      "future_half_stats": 94,
+      "emergent_direction_labels": 94,
+      "trajectory_support": 94
+    },
+    "strategic_research_planning": {
+      "family": 174,
+      "topic": 174,
+      "topic_title": 174,
+      "future_themes": 174,
+      "history_cutoff": 174,
+      "historical_stats": 174,
+      "priority_direction_labels": 174,
+      "target_window_stats": 174,
+      "venue_gap_signal": 174,
+      "priority_score": 174
+    },
+    "venue_aware_research_positioning": {
+      "family": 100,
+      "topic": 100,
+      "topic_title": 100,
+      "future_themes": 100,
+      "history_cutoff": 100,
+      "historical_stats": 100
+    }
+  },
+  "notes": [
+    "v3 hidden eval adds slot_targets, claim_bank, and judge_profile on top of the existing hidden eval.",
+    "Current claim_bank is rule-bootstrapped from benchmark construction traces and should be refined in the next pass with evidence-linked canonical claims.",
+    "This artifact is intended to support benchmark-aware FactScore and benchmark-aware LLM-as-judge."
+  ]
+}
