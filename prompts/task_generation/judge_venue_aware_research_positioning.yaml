@@ -5,6 +5,11 @@ task_variables:
 template: |
   You are judging whether a "venue_aware_research_positioning" benchmark item is high-quality enough for release.
 
+  Guidance:
+  - Strong items explicitly ask for one concrete direction and one likely venue bucket.
+  - The public wording should make the venue-fit requirement operational rather than relying on vague "traction" language.
+  - Strong venue rationales should be grounded in historically visible contribution style, evaluation emphasis, or methodological fit.
+
   Evaluate:
   - family_fit
   - temporal_discipline

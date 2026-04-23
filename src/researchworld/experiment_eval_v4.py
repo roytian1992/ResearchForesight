@@ -9,21 +9,24 @@ from typing import Any, Dict, List
 from researchworld.experiment_eval_v3 import infer_domain_id
 from researchworld.llm import OpenAICompatChatClient, complete_json_object
 
-
-RESEARCH_VALUE_DIMENSIONS_V4: List[Dict[str, Any]] = [
-    {"name": "analytical_payoff", "weight": 0.55},
-    {"name": "strategic_specificity", "weight": 0.45},
-]
-
 EVIDENCE_TRACEABILITY_DIMENSIONS_V4: List[Dict[str, Any]] = [
     {"name": "evidence_linkage", "weight": 0.55},
     {"name": "support_specificity", "weight": 0.45},
 ]
 
-UNCERTAINTY_CALIBRATION_DIMENSIONS_V4: List[Dict[str, Any]] = [
-    {"name": "confidence_calibration", "weight": 0.60},
-    {"name": "boundary_awareness", "weight": 0.40},
-]
+
+def _mean(values: List[float]) -> float:
+    return round(sum(values) / len(values), 4) if values else 0.0
+
+
+def _rubric_dimension_summary(group: List[Dict[str, Any]]) -> Dict[str, float]:
+    if not group:
+        return {}
+    dim_names = [str(item['name']) for item in EVIDENCE_TRACEABILITY_DIMENSIONS_V4]
+    return {
+        name: _mean([float((((row.get('evidence_traceability_eval') or {}).get('rubric_scores') or {}).get(name) or 0.0)) for row in group])
+        for name in dim_names
+    }
 
 
 def _weighted(dimensions: List[Dict[str, Any]], raw_scores: Dict[str, Any], fallback_key: str, obj: Dict[str, Any]) -> tuple[float, Dict[str, float]]:
@@ -202,67 +205,6 @@ def _blank_metric(score_key: str, dimensions: List[Dict[str, Any]], weakness: st
     }
 
 
-def evaluate_research_value_v4(
-    client: OpenAICompatChatClient,
-    *,
-    public_task: Dict[str, Any],
-    family: str,
-    candidate_answer: str,
-) -> Dict[str, Any]:
-    if not str(candidate_answer or '').strip():
-        return _blank_metric('research_value_score', RESEARCH_VALUE_DIMENSIONS_V4, 'Empty answer.')
-    dimensions = RESEARCH_VALUE_DIMENSIONS_V4
-    prompt = f"""# Role
-You are a Senior Research Evaluator. Judge the research value of a candidate answer for a forward-looking research benchmark.
-
-# Evaluation Philosophy
-- Do NOT check factual correctness against any reference answer.
-- Judge whether the answer would be genuinely useful to a research lead who must make decisions.
-- Reward analytical compression, non-obvious synthesis, concrete trade-offs, and clear research payoff.
-- Penalize generic survey writing, shallow listing, and safe but low-signal commentary.
-
-# Input Data
-- Public Task Definition: {json.dumps(_compact_public_task(public_task), ensure_ascii=False, indent=2)}
-- Task Family: {family}
-- Rubric Dimensions: {json.dumps(dimensions, ensure_ascii=False)}
-
-# Candidate Answer
-{candidate_answer}
-
-# Rubric
-1. analytical_payoff: Does the answer surface mechanisms, bottlenecks, trade-offs, or decision-relevant causal structure rather than only describing topics?
-2. strategic_specificity: Does it make concrete, domain-specific calls that would help prioritize research effort, instead of generic advice?
-
-# Output (Strict JSON)
-{{
-  "dimension_scores": {{"dimension_name": 0.0}},
-  "research_value_score": 0.0,
-  "strengths": ["..."],
-  "weaknesses": ["..."]
-}}
-"""
-    obj = complete_json_object(
-        client,
-        [
-            {"role": "system", "content": "You are a strict research-value judge. Return JSON only."},
-            {"role": "user", "content": prompt},
-        ],
-        response_format={"type": "json_object"},
-        max_tokens=900,
-        timeout=120,
-        transport_retries=2,
-        max_parse_attempts=3,
-        repair_instruction="Your previous response was malformed JSON. Return exactly one valid JSON object with keys dimension_scores, research_value_score, strengths, weaknesses.",
-    )
-    overall, rubric_scores = _weighted(dimensions, obj.get('dimension_scores') or {}, 'research_value_score', obj)
-    return {
-        'research_value_score': overall,
-        'rubric_scores': rubric_scores,
-        'strengths': [str(x) for x in (obj.get('strengths') or []) if str(x).strip()],
-        'weaknesses': [str(x) for x in (obj.get('weaknesses') or []) if str(x).strip()],
-    }
-
-
 def evaluate_evidence_traceability_v4(
     client: OpenAICompatChatClient,
     *,
@@ -332,85 +274,12 @@ Judge whether the answer's important conclusions can be traced to explicit suppo
         'weaknesses': [str(x) for x in (obj.get('weaknesses') or []) if str(x).strip()],
         'support_snapshot': support_snapshot,
     }
-
-
-def evaluate_uncertainty_calibration_v4(
-    client: OpenAICompatChatClient,
-    *,
-    public_task: Dict[str, Any],
-    family: str,
-    candidate_answer: str,
-    result_row: Dict[str, Any],
-) -> Dict[str, Any]:
-    if not str(candidate_answer or '').strip():
-        return _blank_metric('uncertainty_calibration_score', UNCERTAINTY_CALIBRATION_DIMENSIONS_V4, 'Empty answer.')
-    dimensions = UNCERTAINTY_CALIBRATION_DIMENSIONS_V4
-    support_snapshot = _render_support_snapshot(result_row)
-    prompt = f"""# Role
-You are an Uncertainty Calibration Auditor for a research benchmark.
-
-# Objective
-Judge whether the answer expresses confidence in proportion to the support it appears to have.
-
-# Core Principles
-- Do NOT fact-check against outside knowledge.
-- Judge whether the answer separates well-supported conclusions from hypotheses, forecasts, and open questions.
-- Reward disciplined uncertainty, scope control, and acknowledgement of missing evidence or alternative explanations.
-- Penalize false precision, over-claiming, and confident language that exceeds the visible support.
-
-# Input Data
-- Public Task Definition: {json.dumps(_compact_public_task(public_task), ensure_ascii=False, indent=2)}
-- Task Family: {family}
-- Rubric Dimensions: {json.dumps(dimensions, ensure_ascii=False)}
-
-# Candidate Answer
-{candidate_answer}
-
-# Attached Support Snapshot
-{support_snapshot}
-
-# Rubric
-1. confidence_calibration: Does the certainty level of the answer match the apparent strength and granularity of the support?
-2. boundary_awareness: Does the answer mark assumptions, uncertainty, unresolved questions, or places where evidence is incomplete?
-
-# Output (Strict JSON)
-{{
-  "dimension_scores": {{"dimension_name": 0.0}},
-  "uncertainty_calibration_score": 0.0,
-  "strengths": ["..."],
-  "weaknesses": ["..."]
-}}
-"""
-    obj = complete_json_object(
-        client,
-        [
-            {"role": "system", "content": "You are a strict uncertainty-calibration judge. Return JSON only."},
-            {"role": "user", "content": prompt},
-        ],
-        response_format={"type": "json_object"},
-        max_tokens=900,
-        timeout=120,
-        transport_retries=2,
-        max_parse_attempts=3,
-        repair_instruction="Your previous response was malformed JSON. Return exactly one valid JSON object with keys dimension_scores, uncertainty_calibration_score, strengths, weaknesses.",
-    )
-    overall, rubric_scores = _weighted(dimensions, obj.get('dimension_scores') or {}, 'uncertainty_calibration_score', obj)
-    return {
-        'uncertainty_calibration_score': overall,
-        'rubric_scores': rubric_scores,
-        'strengths': [str(x) for x in (obj.get('strengths') or []) if str(x).strip()],
-        'weaknesses': [str(x) for x in (obj.get('weaknesses') or []) if str(x).strip()],
-    }
-
-
 def build_experiment_result_row_v4(
     *,
     run_id: str,
     public_task: Dict[str, Any],
     result_row: Dict[str, Any],
-    research_value_eval: Dict[str, Any],
     evidence_traceability_eval: Dict[str, Any],
-    uncertainty_calibration_eval: Dict[str, Any],
 ) -> Dict[str, Any]:
     support = _collect_support_items(result_row)
     return {
@@ -433,23 +302,14 @@ def build_experiment_result_row_v4(
             'trace_highlight_count': len(support.get('trace_highlights') or []),
         },
         'scores': {
-            'research_value_score': round(float(research_value_eval.get('research_value_score') or 0.0), 4),
             'evidence_traceability_score': round(float(evidence_traceability_eval.get('evidence_traceability_score') or 0.0), 4),
-            'uncertainty_calibration_score': round(float(uncertainty_calibration_eval.get('uncertainty_calibration_score') or 0.0), 4),
         },
-        'research_value_eval': research_value_eval,
         'evidence_traceability_eval': evidence_traceability_eval,
-        'uncertainty_calibration_eval': uncertainty_calibration_eval,
     }
 
 
 def summarize_results_v4(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
-    def _mean(values: List[float]) -> float:
-        return round(sum(values) / len(values), 4) if values else 0.0
-
-    rv_scores = [float((row.get('scores') or {}).get('research_value_score') or 0.0) for row in rows]
     et_scores = [float((row.get('scores') or {}).get('evidence_traceability_score') or 0.0) for row in rows]
-    uc_scores = [float((row.get('scores') or {}).get('uncertainty_calibration_score') or 0.0) for row in rows]
     by_family: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     by_domain: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -459,16 +319,14 @@ def summarize_results_v4(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
     def _group_summary(group: List[Dict[str, Any]]) -> Dict[str, Any]:
         return {
             'count': len(group),
-            'mean_research_value_score': _mean([float((row.get('scores') or {}).get('research_value_score') or 0.0) for row in group]),
             'mean_evidence_traceability_score': _mean([float((row.get('scores') or {}).get('evidence_traceability_score') or 0.0) for row in group]),
-            'mean_uncertainty_calibration_score': _mean([float((row.get('scores') or {}).get('uncertainty_calibration_score') or 0.0) for row in group]),
+            'rubric_dimension_summary': _rubric_dimension_summary(group),
         }
 
     return {
         'task_count': len(rows),
-        'mean_research_value_score': _mean(rv_scores),
         'mean_evidence_traceability_score': _mean(et_scores),
-        'mean_uncertainty_calibration_score': _mean(uc_scores),
+        'rubric_dimension_summary': _rubric_dimension_summary(rows),
         'family_summary': {key: _group_summary(group) for key, group in sorted(by_family.items())},
         'domain_summary': {key: _group_summary(group) for key, group in sorted(by_domain.items())},
     }
@@ -480,15 +338,40 @@ def write_main_table_csv_v4(rows: List[Dict[str, Any]], path: Path) -> None:
     for row in rows:
         by_method[str(row.get('method') or '')].append(row)
     with path.open('w', encoding='utf-8', newline='') as handle:
-        writer = csv.DictWriter(handle, fieldnames=['Method', 'ResearchValue', 'EvidenceTraceability', 'UncertaintyCalibration'])
+        writer = csv.DictWriter(handle, fieldnames=['Method', 'EvidenceTraceability'])
         writer.writeheader()
         for method, group in sorted(by_method.items()):
             summary = summarize_results_v4(group)
             writer.writerow(
                 {
                     'Method': method,
-                    'ResearchValue': summary['mean_research_value_score'],
                     'EvidenceTraceability': summary['mean_evidence_traceability_score'],
-                    'UncertaintyCalibration': summary['mean_uncertainty_calibration_score'],
                 }
             )
+
+
+def write_dimension_csv_v4(rows: List[Dict[str, Any]], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    summary = summarize_results_v4(rows)
+    with path.open('w', encoding='utf-8', newline='') as handle:
+        writer = csv.DictWriter(handle, fieldnames=['scope_type', 'scope_value', 'metric', 'dimension', 'mean_score', 'count'])
+        writer.writeheader()
+
+        def _emit(scope_type: str, scope_value: str, count: int, dimensions: Dict[str, float]) -> None:
+            for dimension, score in dimensions.items():
+                writer.writerow(
+                    {
+                        'scope_type': scope_type,
+                        'scope_value': scope_value,
+                        'metric': 'Evidence Traceability',
+                        'dimension': dimension,
+                        'mean_score': score,
+                        'count': count,
+                    }
+                )
+
+        _emit('overall', 'all', int(summary.get('task_count') or 0), summary.get('rubric_dimension_summary') or {})
+        for family, group in sorted((summary.get('family_summary') or {}).items()):
+            _emit('family', family, int(group.get('count') or 0), group.get('rubric_dimension_summary') or {})
+        for domain, group in sorted((summary.get('domain_summary') or {}).items()):
+            _emit('domain', domain, int(group.get('count') or 0), group.get('rubric_dimension_summary') or {})

@@ -15,9 +15,9 @@ from researchworld.corpus import iter_jsonl
 from researchworld.experiment_eval_aux import (
     build_aux_result_row,
     evaluate_family_auxiliary,
-    evaluate_temporal_leakage,
     summarize_aux_results,
     write_aux_csv,
+    write_rubric_breakdown_csv_aux,
 )
 from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
 
@@ -77,12 +77,6 @@ def main() -> None:
             if not public_task or not hidden_row:
                 continue
             print(f"[eval_aux] {idx}/{len(result_rows)} {task_id} family={public_task.get('family')} method={row.get('agent') or row.get('baseline')}", flush=True)
-            temporal_eval = evaluate_temporal_leakage(
-                judge_client,
-                public_task=public_task,
-                hidden_row=hidden_row,
-                candidate_answer=str(row.get('answer') or ''),
-            )
             family_aux_eval = evaluate_family_auxiliary(
                 judge_client,
                 public_task=public_task,
@@ -92,8 +86,8 @@ def main() -> None:
             out_row = build_aux_result_row(
                 run_id=run_id,
                 public_task=public_task,
+                hidden_row=hidden_row,
                 result_row=row,
-                temporal_eval=temporal_eval,
                 family_aux_eval=family_aux_eval,
             )
             outputs.append(out_row)
@@ -108,6 +102,7 @@ def main() -> None:
     })
     (output_dir / 'summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
     write_aux_csv(outputs, output_dir / 'aux_results.csv')
+    write_rubric_breakdown_csv_aux(outputs, output_dir / 'dimension_breakdown.csv')
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 

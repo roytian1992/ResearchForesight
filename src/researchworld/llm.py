@@ -28,14 +28,28 @@ class OpenAICompatConfig:
     timeout: int = 120
 
 
-def load_openai_compat_config(path: str | Path) -> OpenAICompatConfig:
+@dataclass
+class OpenAICompatEmbeddingConfig:
+    model_name: str
+    api_key: str
+    base_url: str
+    timeout: int = 120
+    dimensions: Optional[int] = None
+
+
+def _load_openai_compat_section(path: str | Path, section_name: str) -> Dict[str, Any]:
     with open(path, "r", encoding="utf-8") as handle:
         obj = yaml.safe_load(handle) or {}
-    llm = obj.get("llm") or {}
-    if not isinstance(llm, dict):
-        raise ValueError(f"Invalid llm section in {path}")
+    section = obj.get(section_name) or {}
+    if not isinstance(section, dict):
+        raise ValueError(f"Invalid {section_name} section in {path}")
+    return section
+
+
+def load_openai_compat_config(path: str | Path) -> OpenAICompatConfig:
     def expand(value: Any) -> str:
         return os.path.expandvars(str(value or ""))
+    llm = _load_openai_compat_section(path, "llm")
     return OpenAICompatConfig(
         model_name=expand(llm.get("model_name")),
         api_key=expand(llm.get("api_key")),
@@ -43,6 +57,20 @@ def load_openai_compat_config(path: str | Path) -> OpenAICompatConfig:
         temperature=float(llm.get("temperature", 0.0)),
         max_tokens=int(llm.get("max_tokens", 4096)),
         timeout=int(llm.get("timeout", 120)),
+    )
+
+
+def load_openai_compat_embedding_config(path: str | Path) -> OpenAICompatEmbeddingConfig:
+    def expand(value: Any) -> str:
+        return os.path.expandvars(str(value or ""))
+    embedding = _load_openai_compat_section(path, "embedding")
+    dimensions_raw = embedding.get("dimensions")
+    return OpenAICompatEmbeddingConfig(
+        model_name=expand(embedding.get("model_name")),
+        api_key=expand(embedding.get("api_key")),
+        base_url=expand(embedding.get("base_url")).rstrip("/"),
+        timeout=int(embedding.get("timeout", 120)),
+        dimensions=(int(dimensions_raw) if dimensions_raw not in (None, "") else None),
     )
 
 
@@ -106,6 +134,69 @@ class OpenAICompatChatClient:
             return str(content or "")
         except (KeyError, IndexError, TypeError) as exc:
             raise RuntimeError(f"Unexpected LLM response shape: {response}") from exc
+
+
+class OpenAICompatEmbeddingClient:
+    def __init__(self, config: OpenAICompatEmbeddingConfig):
+        self.config = config
+
+    def embed(self, inputs: List[str], **overrides: Any) -> List[List[float]]:
+        max_attempts = int(overrides.pop("transport_retries", 1))
+        retry_delay = float(overrides.pop("retry_delay", 1.5))
+        model_name = overrides.get("model", self.config.model_name)
+        dimensions = overrides.get("dimensions", self.config.dimensions)
+        last_error: Exception | None = None
+        for attempt in range(max_attempts):
+            dimension_candidates = [dimensions]
+            if dimensions is not None:
+                dimension_candidates.append(None)
+            for dim in dimension_candidates:
+                try:
+                    payload: Dict[str, Any] = {
+                        "model": model_name,
+                        "input": inputs,
+                    }
+                    if dim is not None:
+                        payload["dimensions"] = int(dim)
+                    request = urllib.request.Request(
+                        url=f"{self.config.base_url}/embeddings",
+                        data=json.dumps(payload).encode("utf-8"),
+                        headers={
+                            "Content-Type": "application/json",
+                            "Authorization": f"Bearer {self.config.api_key}",
+                        },
+                        method="POST",
+                    )
+                    with urllib.request.urlopen(request, timeout=overrides.get("timeout", self.config.timeout)) as response:
+                        obj = json.loads(response.read().decode("utf-8"))
+                    data = obj.get("data")
+                    if not isinstance(data, list):
+                        raise RuntimeError(f"Unexpected embedding response shape: {obj}")
+                    vectors: List[List[float]] = []
+                    for row in data:
+                        if not isinstance(row, dict) or not isinstance(row.get("embedding"), list):
+                            raise RuntimeError(f"Unexpected embedding item shape: {row}")
+                        vectors.append([float(x) for x in row["embedding"]])
+                    if len(vectors) != len(inputs):
+                        raise RuntimeError(f"Embedding result count mismatch: expected {len(inputs)} got {len(vectors)}")
+                    return vectors
+                except urllib.error.HTTPError as exc:
+                    body = exc.read().decode("utf-8", errors="replace")
+                    if dim is not None and "does not support matryoshka representation" in body.lower():
+                        last_error = RuntimeError("Embedding endpoint rejected dimensions; retrying without dimensions.")
+                        continue
+                    last_error = RuntimeError(f"Embedding HTTPError {exc.code}: {body}")
+                    break
+                except urllib.error.URLError as exc:
+                    last_error = RuntimeError(f"Embedding URLError: {exc}")
+                    break
+                except Exception as exc:
+                    last_error = exc
+                    break
+            if attempt + 1 < max_attempts:
+                time.sleep(retry_delay * (attempt + 1))
+        assert last_error is not None
+        raise last_error
 
 
 class FallbackOpenAICompatChatClient:

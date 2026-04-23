@@ -16,6 +16,15 @@ def _mean(vals: List[float]) -> float:
     return round(sum(vals) / len(vals), 4) if vals else 0.0
 
 
+def _strategic_aux_score(scores: Dict[str, Any]) -> float:
+    return float(
+        scores.get('strategic_execution_grounding_score')
+        or scores.get('strategic_priority_grounding_score')
+        or scores.get('technical_dependency_grounding_score')
+        or 0.0
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument('--v31-dir', action='append', required=True, help='method=path')
@@ -60,12 +69,11 @@ def main() -> None:
                     'domain': pack['v31']['domain'],
                     'fact': float(pack['v31']['scores']['fact_precision_score']),
                     'future_alignment': float(pack['v31']['scores']['future_alignment_score']),
-                    'task_fulfillment': float(pack['v31']['scores']['task_fulfillment_score']),
                     'evidence_traceability': float(pack['v4']['scores']['evidence_traceability_score']),
-                    'temporal_leakage': float(pack['aux']['scores']['temporal_leakage_score']),
                     'opportunity_grounding': float(pack['aux']['scores'].get('opportunity_grounding_score') or 0.0),
                     'forecast_grounding': float(pack['aux']['scores'].get('forecast_grounding_score') or 0.0),
-                    'technical_dependency_grounding': float(pack['aux']['scores'].get('technical_dependency_grounding_score') or 0.0),
+                    'strategic_execution_grounding': _strategic_aux_score(pack['aux']['scores']),
+                    'venue_positioning_grounding': float(pack['aux']['scores'].get('venue_positioning_grounding_score') or 0.0),
                 })
         if not merged:
             continue
@@ -74,11 +82,10 @@ def main() -> None:
             'Fact': _mean([r['fact'] for r in merged]),
             'FutureAlignment': _mean([r['future_alignment'] for r in merged]),
             'EvidenceTraceability': _mean([r['evidence_traceability'] for r in merged]),
-            'TemporalLeakage': _mean([r['temporal_leakage'] for r in merged]),
-            'TaskFulfillment': _mean([r['task_fulfillment'] for r in merged]),
             'OpportunityGrounding': _mean([r['opportunity_grounding'] for r in merged if r['family']=='bottleneck_opportunity_discovery']),
             'ForecastGrounding': _mean([r['forecast_grounding'] for r in merged if r['family']=='direction_forecasting']),
-            'TechnicalDependencyGrounding': _mean([r['technical_dependency_grounding'] for r in merged if r['family']=='strategic_research_planning']),
+            'StrategicExecutionGrounding': _mean([r['strategic_execution_grounding'] for r in merged if r['family']=='strategic_research_planning']),
+            'VenuePositioningGrounding': _mean([r['venue_positioning_grounding'] for r in merged if r['family']=='venue_aware_research_positioning']),
             'TaskCount': len(merged),
         })
         fam_groups: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
@@ -91,12 +98,11 @@ def main() -> None:
                 'Fact': _mean([r['fact'] for r in grp]),
                 'FutureAlignment': _mean([r['future_alignment'] for r in grp]),
                 'EvidenceTraceability': _mean([r['evidence_traceability'] for r in grp]),
-                'TemporalLeakage': _mean([r['temporal_leakage'] for r in grp]),
-                'TaskFulfillment': _mean([r['task_fulfillment'] for r in grp]),
                 'FamilyAux': _mean([
                     r['opportunity_grounding'] if fam=='bottleneck_opportunity_discovery' else
                     r['forecast_grounding'] if fam=='direction_forecasting' else
-                    r['technical_dependency_grounding']
+                    r['strategic_execution_grounding'] if fam=='strategic_research_planning' else
+                    r['venue_positioning_grounding']
                     for r in grp
                 ]),
                 'TaskCount': len(grp),
@@ -112,7 +118,21 @@ def main() -> None:
         writer.writerows(family_rows)
     (out_dir / 'final_overall.json').write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding='utf-8')
     (out_dir / 'final_by_family.json').write_text(json.dumps(family_rows, ensure_ascii=False, indent=2), encoding='utf-8')
-    print(json.dumps({'overall': rows, 'by_family_count': len(family_rows)}, ensure_ascii=False, indent=2))
+    metric_schema = {
+        'primary_metrics': [
+            'Fact',
+            'FutureAlignment',
+            'EvidenceTraceability',
+        ],
+        'family_metrics': [
+            'OpportunityGrounding',
+            'ForecastGrounding',
+            'StrategicExecutionGrounding',
+            'VenuePositioningGrounding',
+        ],
+    }
+    (out_dir / 'metric_schema.json').write_text(json.dumps(metric_schema, ensure_ascii=False, indent=2), encoding='utf-8')
+    print(json.dumps({'overall': rows, 'by_family_count': len(family_rows), 'metric_schema': metric_schema}, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

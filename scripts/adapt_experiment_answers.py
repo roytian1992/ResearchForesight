@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 from pathlib import Path
 
@@ -16,6 +17,37 @@ from researchworld.corpus import iter_jsonl
 from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
 
 
+def build_client(primary_config: Path, fallback_config: str) -> FallbackOpenAICompatChatClient:
+    primary = OpenAICompatChatClient(load_openai_compat_config(primary_config))
+    fallback = None
+    if str(fallback_config or "").strip():
+        fallback_path = Path(fallback_config)
+        if fallback_path.exists():
+            fallback = OpenAICompatChatClient(load_openai_compat_config(fallback_path))
+    return FallbackOpenAICompatChatClient(primary, fallback)
+
+
+def method_label(row: dict) -> str:
+    return str(
+        row.get("method_key")
+        or row.get("method_name")
+        or row.get("agent")
+        or row.get("baseline")
+        or "unknown"
+    )
+
+
+def adapt_one(
+    row: dict,
+    *,
+    public_task: dict,
+    primary_config: Path,
+    fallback_config: str,
+) -> dict:
+    client = build_client(primary_config, fallback_config)
+    return apply_shared_final_adapter(client, public_task=public_task, result_row=row)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Apply shared final adapter to an experiment result file.")
     parser.add_argument("--results-jsonl", required=True)
@@ -24,6 +56,7 @@ def main() -> None:
     parser.add_argument("--adapter-llm-config", default="configs/llm/mimo_pro.local.yaml")
     parser.add_argument("--adapter-fallback-llm-config", default="configs/llm/qwen_235b.local.yaml")
     parser.add_argument("--task-limit", type=int, default=None)
+    parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--resume", action="store_true")
     args = parser.parse_args()
 
@@ -34,11 +67,8 @@ def main() -> None:
 
     public_by_id = {row["task_id"]: row for row in iter_jsonl(release_dir / "tasks.jsonl")}
 
-    primary = OpenAICompatChatClient(load_openai_compat_config(Path(args.adapter_llm_config)))
-    fallback = None
-    if str(args.adapter_fallback_llm_config or "").strip():
-        fallback = OpenAICompatChatClient(load_openai_compat_config(Path(args.adapter_fallback_llm_config)))
-    client = FallbackOpenAICompatChatClient(primary, fallback)
+    primary_config = Path(args.adapter_llm_config)
+    fallback_config = str(args.adapter_fallback_llm_config or "")
 
     rows = list(iter_jsonl(results_path))
     if args.task_limit is not None:
@@ -55,21 +85,52 @@ def main() -> None:
     write_mode = "a" if args.resume and output_path.exists() else "w"
 
     with output_path.open(write_mode, encoding="utf-8") as handle:
-        for idx, row in enumerate(remaining, start=1):
-            task_id = str(row.get("task_id") or "")
-            public_task = public_by_id.get(task_id)
-            if public_task is None:
-                continue
-            print(f"[adapter] {idx}/{len(remaining)} {task_id} family={row.get('family')} method={row.get('agent') or row.get('baseline')}", flush=True)
-            out_row = apply_shared_final_adapter(client, public_task=public_task, result_row=row)
-            handle.write(json.dumps(out_row, ensure_ascii=False) + "\n")
-            handle.flush()
+        if args.workers <= 1:
+            client = build_client(primary_config, fallback_config)
+            for idx, row in enumerate(remaining, start=1):
+                task_id = str(row.get("task_id") or "")
+                public_task = public_by_id.get(task_id)
+                if public_task is None:
+                    continue
+                print(f"[adapter] {idx}/{len(remaining)} {task_id} family={row.get('family')} method={method_label(row)}", flush=True)
+                out_row = apply_shared_final_adapter(client, public_task=public_task, result_row=row)
+                handle.write(json.dumps(out_row, ensure_ascii=False) + "\n")
+                handle.flush()
+        else:
+            jobs = []
+            for idx, row in enumerate(remaining, start=1):
+                task_id = str(row.get("task_id") or "")
+                public_task = public_by_id.get(task_id)
+                if public_task is None:
+                    continue
+                jobs.append((idx, row, public_task))
+                print(f"[adapter-queue] {idx}/{len(remaining)} {task_id} family={row.get('family')} method={method_label(row)}", flush=True)
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as executor:
+                future_map = {
+                    executor.submit(
+                        adapt_one,
+                        row,
+                        public_task=public_task,
+                        primary_config=primary_config,
+                        fallback_config=fallback_config,
+                    ): (idx, row)
+                    for idx, row, public_task in jobs
+                }
+                for future in concurrent.futures.as_completed(future_map):
+                    idx, row = future_map[future]
+                    task_id = str(row.get("task_id") or "")
+                    out_row = future.result()
+                    print(f"[adapter-done] {idx}/{len(remaining)} {task_id} family={row.get('family')} method={method_label(row)}", flush=True)
+                    handle.write(json.dumps(out_row, ensure_ascii=False) + "\n")
+                    handle.flush()
 
     summary = {
         "input_results_jsonl": str(results_path),
         "output_results_jsonl": str(output_path),
         "task_count": len(list(iter_jsonl(output_path))),
         "adapter": shared_adapter_name(),
+        "workers": args.workers,
     }
     (output_path.parent / "adapter_summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False, indent=2))

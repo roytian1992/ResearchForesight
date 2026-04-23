@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 from researchworld.llm import OpenAICompatChatClient, complete_json_object
 from researchworld.offline_kb import HybridRetriever, OfflineKnowledgeBase, RetrievalDoc, clip_text, dedupe, merge_multi_query_results, normalize_ws
 from researchworld.research_arc_kb import extract_focus_text
+from researchworld.retrieval_fusion import build_hybrid_task_queries, merge_retrieval_runs
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -452,7 +453,9 @@ Return JSON only:
         domain = self.kb.domain(domain_id)
         packet_selection = self.select_packets(task=task, domain_id=domain_id)
         packets = packet_selection.packets
-        queries = self._expand_queries_from_packets(packets, self.task_queries(task))
+        agent_queries = self._expand_queries_from_packets(packets, self.task_queries(task))
+        hybrid_queries = build_hybrid_task_queries(task)
+        queries = dedupe([*agent_queries, *hybrid_queries])
         focus_terms = _focus_terms(task, packets)
 
         seeded_ids = []
@@ -465,7 +468,29 @@ Return JSON only:
                     seeded_ids.append(paper_id)
                     packet_match_by_paper.setdefault(paper_id, []).append(packet_name)
 
-        paper_rows = merge_multi_query_results(domain.paper_retriever(cutoff_date=str(task.get("time_cutoff") or "")), queries, top_k_per_query=12, limit=40)
+        paper_rows = merge_retrieval_runs(
+            [
+                (
+                    "agent",
+                    merge_multi_query_results(
+                        domain.paper_retriever(cutoff_date=str(task.get("time_cutoff") or "")),
+                        agent_queries,
+                        top_k_per_query=12,
+                        limit=40,
+                    ),
+                ),
+                (
+                    "hybrid_rag",
+                    merge_multi_query_results(
+                        domain.paper_retriever(cutoff_date=str(task.get("time_cutoff") or "")),
+                        hybrid_queries,
+                        top_k_per_query=8,
+                        limit=20,
+                    ),
+                ),
+            ],
+            limit=40,
+        )
         candidate_map: Dict[str, Dict[str, Any]] = {}
         for paper_id in seeded_ids:
             paper = domain.get_paper(paper_id) or {}

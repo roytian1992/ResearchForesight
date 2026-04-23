@@ -21,6 +21,7 @@ from researchworld.research_arc import (
     SupportPacket,
     SupportPacketRetriever,
 )
+from researchworld.retrieval_fusion import build_hybrid_task_queries, merge_retrieval_runs
 from researchworld.verbalization import normalize_display_name, public_topic_from_packet
 
 
@@ -62,6 +63,10 @@ TITLE_PATTERNS = [
     r'^Strategic Research Agenda for\s+',
 ]
 
+COMPARATIVE_TITLE_PATTERNS = [
+    r'^Comparative Prioritization:\s*(.+?)\s+vs\.?\s+(.+?)\s*$',
+]
+
 
 def _clean_topic_text(text: str) -> str:
     value = re.sub(r'\s+', ' ', str(text or '')).strip(' .,:;')
@@ -80,6 +85,7 @@ def _clean_topic_text(text: str) -> str:
 
 
 def extract_task_contract(task: Dict[str, Any]) -> Dict[str, Any]:
+    answer_contract = task.get('answer_contract') or {}
     title = str(task.get('title') or '').strip()
     title_topic = title
     for pattern in TITLE_PATTERNS:
@@ -118,10 +124,44 @@ def extract_task_contract(task: Dict[str, Any]) -> Dict[str, Any]:
             max_items = int(raw) if raw.isdigit() else NUMBER_WORDS.get(raw)
     if max_items is None:
         max_items = 3 if ranking_required else 1
+    candidate_directions: List[str] = []
+    for pattern in COMPARATIVE_TITLE_PATTERNS:
+        m = re.match(pattern, title, flags=re.I)
+        if not m:
+            continue
+        candidate_directions = [
+            _clean_topic_text(m.group(1)),
+            _clean_topic_text(m.group(2)),
+        ]
+        candidate_directions = [x for x in candidate_directions if x]
+        break
+    if candidate_directions:
+        ranking_required = True
+        max_items = len(candidate_directions)
+    answer_contract_candidates = [
+        _clean_topic_text(str(x))
+        for x in (answer_contract.get('candidate_directions') or [])
+        if _clean_topic_text(str(x))
+    ]
+    if answer_contract_candidates:
+        candidate_directions = answer_contract_candidates
+        ranking_required = True
+    shape = str(answer_contract.get('shape') or '').strip().lower()
+    if shape in {'ranked_list', 'compare_ranked_list', 'venue_ranked_list', 'venue_positioning'}:
+        ranking_required = True
+    if answer_contract.get('max_items') is not None:
+        try:
+            max_items = max(1, int(answer_contract.get('max_items')))
+        except Exception:
+            pass
+    if candidate_directions:
+        max_items = min(max_items, len(candidate_directions)) if max_items else len(candidate_directions)
+    topic = _clean_topic_text(str(answer_contract.get('topic_text') or topic))
     return {
         'topic_text': topic,
         'ranking_required': ranking_required,
         'max_items': max_items,
+        'candidate_directions': candidate_directions,
     }
 
 
@@ -255,7 +295,13 @@ class EvidenceBackbone:
 
     def _retrieve_papers(self, *, task: Dict[str, Any], query_bundle: List[str], candidate_nodes: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         retriever = self.corpus.paper_retriever(task['time_cutoff'])
-        rows = self._multi_query_retrieve_docs(retriever, query_bundle, top_k_per_query=8, limit=18)
+        rows = merge_retrieval_runs(
+            [
+                ("agent", self._multi_query_retrieve_docs(retriever, query_bundle, top_k_per_query=8, limit=18)),
+                ("hybrid_rag", self._multi_query_retrieve_docs(retriever, build_hybrid_task_queries(task), top_k_per_query=8, limit=18)),
+            ],
+            limit=18,
+        )
         merged: Dict[str, Dict[str, Any]] = {}
         for doc, scores in rows:
             merged[doc.paper_id] = {

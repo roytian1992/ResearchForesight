@@ -58,7 +58,7 @@ def likely_bucket_and_venue(stats: Dict[str, Any]) -> Tuple[str, str, Dict[str, 
     return likely_bucket, likely_venue, conf_buckets
 
 
-def public_deliverable_spec(family: str) -> Dict[str, Any]:
+def public_deliverable_spec(family: str, subtype: str | None = None) -> Dict[str, Any]:
     base = {
         "format": "free_form_research_analysis",
         "requirements": [
@@ -77,19 +77,30 @@ def public_deliverable_spec(family: str) -> Dict[str, Any]:
             "Select and justify a small ranked set of priority directions.",
             "Make the ranking explicit for the target venue bucket named in the question.",
         ]
+    elif family == "venue_aware_research_positioning":
+        if subtype == "venue_targeted_planning":
+            base["requirements"] += [
+                "Return a small ranked set of venue-positioned directions rather than an unstructured list.",
+                "Explain why the ordering fits the named venue bucket.",
+            ]
+        else:
+            base["requirements"] += [
+                "Name one specific next-step direction and one likely top-tier venue bucket.",
+                "Explain why the contribution framing fits that venue style.",
+            ]
     return base
 
 
 def direction_title(topic_title: str) -> str:
-    return f"Forecasting Top-Venue Traction in {topic_title}"
+    return f"Forecasting the Next Research Direction in {topic_title} and Its Likely Venue Fit"
 
 
 def direction_question(topic_title: str, history_end: str) -> str:
     return (
-        f"Based on scholarly literature available before September 1, 2025, identify one concrete next-step direction within {topic_title} "
-        f"that is most likely to gain traction in top-tier AI venues during the subsequent six-month period. Also identify the most likely venue bucket "
-        f"(for example AAAI-like, EMNLP-like, ICLR-like, or similar top-tier venues) where that traction would appear. "
-        f"Your answer must be justified only with pre-cutoff evidence and should not rely on post-{history_end} developments."
+        f"Using only scholarly literature available before September 1, 2025, identify the single concrete next-step research direction within {topic_title} "
+        f"that is most likely to gain top-tier traction during the subsequent six-month period. Also identify the single most likely venue bucket "
+        f"(for example AAAI-like, EMNLP-like, or ICLR-like) for that direction, and explain what technical framing or contribution profile makes that venue fit plausible. "
+        f"Your answer must be justified only with historical evidence available before {history_end} and should not rely on later developments."
     )
 
 
@@ -150,7 +161,7 @@ def build_direction_variant(
     hidden = {
         "task_id": public_task_id,
         "internal_task_id": internal_task_id,
-        "family": "direction_forecasting",
+        "family": "venue_aware_research_positioning",
         "domain": source_hidden.get("domain"),
         "title": direction_title(topic_title),
         "gold_answer": gold_answer,
@@ -166,7 +177,7 @@ def build_direction_variant(
     trace = {
         "task_id": public_task_id,
         "internal_task_id": internal_task_id,
-        "family": "direction_forecasting",
+        "family": "venue_aware_research_positioning",
         "domain": source_trace.get("domain"),
         "seed": source_trace.get("seed"),
         "time_context": source_trace.get("time_context"),
@@ -187,18 +198,19 @@ def build_direction_variant(
     }
     public = {
         "task_id": public_task_id,
-        "family": "direction_forecasting",
+        "family": "venue_aware_research_positioning",
         "subtype": "venue_aware_direction_forecast",
         "domain": source_public.get("domain"),
         "horizon": source_public.get("horizon"),
         "title": hidden["title"],
         "question": question,
         "time_cutoff": source_public.get("time_cutoff"),
-        "deliverable_spec": public_deliverable_spec("direction_forecasting"),
+        "deliverable_spec": public_deliverable_spec("venue_aware_research_positioning", "venue_aware_direction_forecast"),
     }
     internal = {
         **source_internal,
         "task_id": internal_task_id,
+        "family": "venue_aware_research_positioning",
         "subtype": "venue_aware_direction_forecast",
         "title": hidden["title"],
         "question": question,
@@ -264,7 +276,7 @@ def build_planning_variant(
     hidden = {
         "task_id": public_task_id,
         "internal_task_id": internal_task_id,
-        "family": "strategic_research_planning",
+        "family": "venue_aware_research_positioning",
         "domain": source_hidden.get("domain"),
         "title": planning_title(topic_title),
         "gold_answer": gold_answer,
@@ -280,7 +292,7 @@ def build_planning_variant(
     trace = {
         "task_id": public_task_id,
         "internal_task_id": internal_task_id,
-        "family": "strategic_research_planning",
+        "family": "venue_aware_research_positioning",
         "domain": source_trace.get("domain"),
         "seed": source_trace.get("seed"),
         "time_context": source_trace.get("time_context"),
@@ -302,18 +314,19 @@ def build_planning_variant(
     }
     public = {
         "task_id": public_task_id,
-        "family": "strategic_research_planning",
+        "family": "venue_aware_research_positioning",
         "subtype": "venue_targeted_planning",
         "domain": source_public.get("domain"),
         "horizon": source_public.get("horizon"),
         "title": hidden["title"],
         "question": question,
         "time_cutoff": source_public.get("time_cutoff"),
-        "deliverable_spec": public_deliverable_spec("strategic_research_planning"),
+        "deliverable_spec": public_deliverable_spec("venue_aware_research_positioning", "venue_targeted_planning"),
     }
     internal = {
         **source_internal,
         "task_id": internal_task_id,
+        "family": "venue_aware_research_positioning",
         "subtype": "venue_targeted_planning",
         "title": hidden["title"],
         "question": question,
@@ -516,8 +529,8 @@ def main() -> None:
         },
         "augmentation": {
             "source_release": str(src),
-            "added_direction_tasks": len([row for row in added_public if row["family"] == "direction_forecasting"]),
-            "added_planning_tasks": len([row for row in added_public if row["family"] == "strategic_research_planning"]),
+            "added_venue_direction_tasks": len([row for row in added_public if row["subtype"] == "venue_aware_direction_forecast"]),
+            "added_venue_planning_tasks": len([row for row in added_public if row["subtype"] == "venue_targeted_planning"]),
         },
     }
     dump_json(out / "manifest.json", manifest)

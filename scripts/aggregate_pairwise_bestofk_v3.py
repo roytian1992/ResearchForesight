@@ -23,6 +23,29 @@ def iter_jsonl(path: Path) -> Iterable[Dict[str, Any]]:
                 yield json.loads(line)
 
 
+def normalize_round_rows(rows: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    normalized: List[Dict[str, Any]] = []
+    for row in rows:
+        if "rounds" in row and isinstance(row.get("rounds"), list):
+            methods = list(row.get("methods") or [])
+            judge_profile = str(row.get("judge_profile") or "legacy")
+            for round_row in row["rounds"]:
+                normalized.append(
+                    {
+                        "comparison_key": row["comparison_key"],
+                        "task_id": row["task_id"],
+                        "family": row["family"],
+                        "domain": row["domain"],
+                        "methods": methods,
+                        "judge_profile": judge_profile,
+                        **round_row,
+                    }
+                )
+        else:
+            normalized.append(row)
+    return normalized
+
+
 def sort_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     def key(row: Dict[str, Any]) -> Tuple[int, str]:
         if str(row.get("round_source") or "") == "rerun":
@@ -104,6 +127,26 @@ def bt_scores(methods: List[str], rows: List[Dict[str, Any]], iters: int = 200, 
     return {methods[i]: round(math.log(pi[i]) - mean_log, 4) for i in range(n)}
 
 
+def elo_scores(methods: List[str], rows: List[Dict[str, Any]], *, k: float = 32.0, base: float = 1500.0) -> Dict[str, float]:
+    ratings = {method: base for method in methods}
+    for row in sorted(rows, key=lambda item: str(item["comparison_key"])):
+        a, b = row["methods"]
+        ra = ratings[a]
+        rb = ratings[b]
+        ea = 1.0 / (1.0 + 10.0 ** ((rb - ra) / 400.0))
+        eb = 1.0 - ea
+        winner = str(row.get("winner_method") or "tie")
+        if winner == a:
+            sa, sb = 1.0, 0.0
+        elif winner == b:
+            sa, sb = 0.0, 1.0
+        else:
+            sa, sb = 0.5, 0.5
+        ratings[a] = ra + k * (sa - ea)
+        ratings[b] = rb + k * (sb - eb)
+    return {method: round(ratings[method], 2) for method in methods}
+
+
 def pair_matrix(rows: List[Dict[str, Any]]) -> Dict[str, Dict[str, Dict[str, float]]]:
     stats: Dict[Tuple[str, str], Dict[str, float]] = defaultdict(lambda: {"a_win": 0.0, "b_win": 0.0, "tie": 0.0, "count": 0.0})
     for row in rows:
@@ -142,6 +185,7 @@ def summarize(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         "method_count": len(methods),
         "methods": methods,
         "bt_scores": bt_scores(methods, rows),
+        "elo_scores": elo_scores(methods, rows),
         "pair_matrix": pair_matrix(rows),
         "unstable_count": sum(1 for row in rows if bool(row.get("unstable"))),
         "mean_confidence": round(sum(float(row.get("mean_confidence") or 0.0) for row in rows) / max(len(rows), 1), 4),
@@ -153,9 +197,9 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    rows = list(iter_jsonl(Path(args.base_jsonl)))
+    rows = normalize_round_rows(iter_jsonl(Path(args.base_jsonl)))
     for extra in args.extra_jsonl or []:
-        rows.extend(list(iter_jsonl(Path(extra))))
+        rows.extend(normalize_round_rows(iter_jsonl(Path(extra))))
 
     grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -185,6 +229,7 @@ def main() -> None:
         "extra_jsonl": args.extra_jsonl or [],
         "raw_instance_count": len(rows),
         "collapsed_comparison_count": len(collapsed),
+        "judge_profiles": sorted({str(row.get("judge_profile") or "legacy") for row in rows}),
         "overall": overall,
         "family_summary": by_family,
         "domain_summary": by_domain,

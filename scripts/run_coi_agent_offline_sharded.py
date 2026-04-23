@@ -27,6 +27,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--main-llm-config", default="configs/llm/mimo_pro.local.yaml")
     parser.add_argument("--cheap-llm-config", default="configs/llm/mimo_pro.local.yaml")
     parser.add_argument("--fallback-llm-config", default="configs/llm/qwen_235b.local.yaml")
+    parser.add_argument("--embedding-config", default="configs/embedding/bge_m3.local.yaml")
     parser.add_argument("--fulltext-cache-root", default="tmp/coi_fulltext_seed")
     parser.add_argument("--allow-fulltext-fetch", action="store_true")
     parser.add_argument("--num-shards", type=int, default=4)
@@ -71,6 +72,7 @@ def launch_shard(
     main_llm_config: str,
     cheap_llm_config: str,
     fallback_llm_config: str,
+    embedding_config: str,
     fulltext_cache_root: str,
     allow_fulltext_fetch: bool,
 ) -> subprocess.Popen:
@@ -90,6 +92,8 @@ def launch_shard(
         cheap_llm_config,
         "--fallback-llm-config",
         fallback_llm_config,
+        "--embedding-config",
+        embedding_config,
         "--task-ids-file",
         str(task_ids_file),
         "--fulltext-cache-root",
@@ -231,6 +235,7 @@ def main() -> None:
             main_llm_config=args.main_llm_config,
             cheap_llm_config=args.cheap_llm_config,
             fallback_llm_config=args.fallback_llm_config,
+            embedding_config=args.embedding_config,
             fulltext_cache_root=args.fulltext_cache_root,
             allow_fulltext_fetch=bool(args.allow_fulltext_fetch),
         )
@@ -280,6 +285,7 @@ def main() -> None:
                         main_llm_config=args.main_llm_config,
                         cheap_llm_config=args.cheap_llm_config,
                         fallback_llm_config=args.fallback_llm_config,
+                        embedding_config=args.embedding_config,
                         fulltext_cache_root=args.fulltext_cache_root,
                         allow_fulltext_fetch=bool(args.allow_fulltext_fetch),
                     )

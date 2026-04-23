@@ -13,10 +13,12 @@ template: |
   2. Do not leak future-only facts, internal packet fields, taxonomy paths, node IDs, or builder artifacts.
   3. Use a technical, formal, agent-facing style.
   4. Use natural language only.
-  5. The question must ask for both a technical positioning and a venue-aware rationale.
-  6. The gold answer should concisely state which direction-positioning combination was strongest and why.
-  7. The expected answer points should emphasize technical grounding and venue-aware reasoning.
-  8. Output valid JSON only.
+  5. The question must ask for one concrete next-step direction, one likely venue bucket, and a concise explanation of why that venue fit is plausible.
+  6. Make the venue-facing requirement explicit in the public wording. Do not rely on vague phrasing such as "gain traction" alone.
+  7. The venue rationale should be tied to contribution framing, evaluation style, or methodological emphasis that is historically visible before the time boundary.
+  8. The gold answer should concisely state which direction-positioning combination was strongest and why.
+  9. The expected answer points should emphasize technical grounding and venue-aware reasoning.
+  10. Output valid JSON only.
 
   Candidate:
   {candidate_json}
