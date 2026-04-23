@@ -41,13 +41,15 @@ Example:
 python ResearchForesight/scripts/run_researchagent_offline.py \
   --release-dir ResearchForesight/benchmark_release \
   --kb-dir /path/to/cutoff_aligned_kb \
-  --output-dir ResearchForesight/results/researchagent_offline_example \
+  --output-dir /path/to/local_run_output \
   --reasoning-llm-config ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml \
   --render-llm-config ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml \
   --fallback-llm-config ''
 ```
 
 The same explicit `--kb-dir` pattern can be used with `ARIS-Offline`, `ResearchAgent-Offline`, and other offline runners in `scripts/`.
+
+Generated experiment outputs such as intermediate run directories, evaluation summaries, and pairwise comparison artifacts are expected to live in local working directories and are not part of the versioned benchmark asset surface.
 
 ### 4. Prompt assets
 We only keep the **latest** prompt inventory in-repo.
@@ -73,10 +75,6 @@ We only keep the **latest** prompt inventory in-repo.
 - `pairwise_round_robin.yaml`
 
 These prompt files are the canonical latest snapshots we want visible on GitHub for transparency and reproducibility.
-
-### 5. Results and summaries
-- `results/final_metrics/`: merged metric tables for the current standardized comparison setting
-- `results/pairwise_round_robin/`: pairwise round-robin comparison summaries
 
 ## Current task families
 1. `bottleneck_opportunity_discovery`
