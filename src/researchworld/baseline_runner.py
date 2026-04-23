@@ -385,8 +385,10 @@ def answer_task(
     baseline_name: str,
     evidence_packet: Dict[str, Any],
 ) -> str:
-    evidence_block = render_evidence_block(evidence_packet["retrieved"])
-    prompt = f"""You are answering an offline research benchmark.
+    retrieved_rows = list(evidence_packet.get("retrieved") or [])
+    evidence_block = render_evidence_block(retrieved_rows) if retrieved_rows else ""
+    if retrieved_rows:
+        prompt = f"""You are answering an offline research benchmark.
 
 Task ID: {task['task_id']}
 Family: {task['family']}
@@ -406,6 +408,27 @@ Constraints:
 
 Retrieved evidence ({baseline_name}):
 {evidence_block}
+
+Write a concise but substantive research answer."""
+    else:
+        prompt = f"""You are answering an offline research benchmark.
+
+Task ID: {task['task_id']}
+Family: {task['family']}
+Domain: {task['domain']}
+Horizon: {task['horizon']}
+Time cutoff: {task['time_cutoff']}
+Title: {task['title']}
+Question:
+{task['question']}
+
+Constraints:
+- No retrieval evidence is provided for this baseline.
+- Answer using your prior knowledge only, while respecting the cutoff.
+- Do not claim access to papers after the cutoff.
+- Do not fabricate inline evidence ids or paper citations.
+- Make a concrete conclusion instead of generic trend language.
+- If you are uncertain, say what remains uncertain.
 
 Write a concise but substantive research answer."""
     return client.complete_text(
@@ -480,6 +503,13 @@ def aggregate_scores(rows: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
+def build_native_evidence() -> Dict[str, Any]:
+    return {
+        "retrieval_mode": "native_llm",
+        "retrieved": [],
+    }
+
+
 def run_baseline(
     *,
     release_dir: Path,
@@ -490,6 +520,8 @@ def run_baseline(
     task_limit: Optional[int] = None,
     domain_filter: Optional[set[str]] = None,
     family_filter: Optional[set[str]] = None,
+    task_ids: Optional[set[str]] = None,
+    resume: bool = False,
 ) -> Dict[str, Any]:
     tasks = load_release_tasks(release_dir)
     hidden_by_id = load_hidden_eval(release_dir) if judge_llm_config else {}
@@ -504,6 +536,9 @@ def run_baseline(
     rows_out: List[Dict[str, Any]] = []
     selected_tasks = []
     for task in tasks:
+        task_id = str(task.get("task_id") or "")
+        if task_ids is not None and task_id not in task_ids:
+            continue
         domain_id = PUBLIC_DOMAIN_TO_ID.get(str(task.get("domain") or "").strip())
         if not domain_id:
             continue
@@ -514,6 +549,22 @@ def run_baseline(
         selected_tasks.append((task, domain_id))
     if task_limit is not None:
         selected_tasks = selected_tasks[:task_limit]
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    results_path = output_dir / "results.jsonl"
+    completed_task_ids: set[str] = set()
+    if resume and results_path.exists():
+        for row in iter_jsonl(results_path):
+            rows_out.append(row)
+            task_id = str(row.get("task_id") or "")
+            if task_id:
+                completed_task_ids.add(task_id)
+        if completed_task_ids:
+            selected_tasks = [
+                (task, domain_id)
+                for task, domain_id in selected_tasks
+                if str(task.get("task_id") or "") not in completed_task_ids
+            ]
 
     for idx, (task, domain_id) in enumerate(selected_tasks, start=1):
         print(
@@ -528,6 +579,8 @@ def run_baseline(
             evidence_packet = build_hybrid_evidence(task, corpus)
         elif baseline_name == "pageindex":
             evidence_packet = build_pageindex_evidence(task, corpus)
+        elif baseline_name == "native":
+            evidence_packet = build_native_evidence()
         else:
             raise ValueError(f"Unsupported baseline: {baseline_name}")
         answer = answer_task(
@@ -558,12 +611,17 @@ def run_baseline(
                     candidate_answer=answer,
                 )
         rows_out.append(row)
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-    results_path = output_dir / "results.jsonl"
-    with results_path.open("w", encoding="utf-8") as handle:
-        for row in rows_out:
-            handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+    write_mode = "a" if resume and results_path.exists() else "w"
+    if not resume or not results_path.exists():
+        write_mode = "w"
+    if write_mode == "a":
+        with results_path.open("a", encoding="utf-8") as handle:
+            for row in rows_out[len(completed_task_ids):]:
+                handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+    else:
+        with results_path.open("w", encoding="utf-8") as handle:
+            for row in rows_out:
+                handle.write(json.dumps(row, ensure_ascii=False) + "\n")
     summary = {
         "baseline": baseline_name,
         "release_dir": str(release_dir),

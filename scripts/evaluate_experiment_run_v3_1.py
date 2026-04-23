@@ -15,9 +15,8 @@ from researchworld.corpus import iter_jsonl
 from researchworld.experiment_eval_v3 import infer_domain_id
 from researchworld.experiment_eval_v3_1 import (
     build_experiment_result_row_v3_1,
-    evaluate_component_task_fulfillment_v3_1,
-    evaluate_strategic_intelligence_v3_1,
     summarize_results_v3_1,
+    write_breakdown_csv_v3_1,
     write_main_table_csv_v3_1,
 )
 from researchworld.factscore_eval_v3 import FactScoreV3Config, evaluate_answer_factscore_v3
@@ -97,18 +96,6 @@ def main() -> None:
                 gt_row=hidden_row,
                 cfg=fact_cfg,
             )
-            task_fulfillment_eval = evaluate_component_task_fulfillment_v3_1(
-                judge_client,
-                public_task=public_task,
-                hidden_row=hidden_row,
-                candidate_answer=str(row.get('answer') or ''),
-            )
-            strategic_eval = evaluate_strategic_intelligence_v3_1(
-                judge_client,
-                public_task=public_task,
-                hidden_row=hidden_row,
-                candidate_answer=str(row.get('answer') or ''),
-            )
             future_alignment_eval = evaluate_future_alignment_v3_1(
                 future_kb=future_kb,
                 judge_client=judge_client,
@@ -123,8 +110,6 @@ def main() -> None:
                 hidden_row=hidden_row,
                 result_row=row,
                 fact_eval=fact_eval,
-                task_fulfillment_eval=task_fulfillment_eval,
-                strategic_eval=strategic_eval,
                 future_alignment_eval=future_alignment_eval,
             )
             outputs.append(out_row)
@@ -139,6 +124,7 @@ def main() -> None:
     })
     (output_dir / 'summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
     write_main_table_csv_v3_1(outputs, output_dir / 'main_results.csv')
+    write_breakdown_csv_v3_1(outputs, output_dir / 'metric_breakdown.csv')
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 

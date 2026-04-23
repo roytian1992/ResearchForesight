@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -18,6 +19,17 @@ if str(SRC) not in sys.path:
 from researchworld.corpus import iter_jsonl
 from researchworld.llm import OpenAICompatChatClient, complete_json_object, load_openai_compat_config
 
+JUDGE_PROFILES = [
+    "legacy",
+    "idea_arena",
+    "structured_idea_arena",
+    "structured_idea_arena_evidence",
+    "structured_idea_arena_evidence_light",
+    "structured_idea_arena_linkage_light",
+]
+CITATION_SPAN_PATTERN = re.compile(r"\[(?:(?:P|F|T)\d+(?:\s*,\s*(?:P|F|T)\d+)*)\]|\((?:(?:P|F|T)\d+(?:\s*,\s*(?:P|F|T)\d+)*)\)")
+CITATION_ID_PATTERN = re.compile(r"(?:P|F|T)\d+")
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run direct best-of-k pairwise judging on benchmark v3 answers.")
@@ -32,6 +44,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-rounds", type=int, default=5)
     parser.add_argument("--escalate-conf-threshold", type=float, default=0.65)
     parser.add_argument("--job-retries", type=int, default=3)
+    parser.add_argument("--judge-profile", choices=JUDGE_PROFILES, default="legacy")
     parser.add_argument("--task-limit", type=int, default=None)
     parser.add_argument("--task-ids-file", default=None)
     parser.add_argument(
@@ -74,32 +87,469 @@ def family_dimensions(family: str) -> List[str]:
     return dims
 
 
-def base_orientation(seed: int, task_id: str, method_x: str, method_y: str) -> Tuple[str, str]:
-    key = f"{seed}:{task_id}:{method_x}:{method_y}"
-    digest = hashlib.md5(key.encode("utf-8")).hexdigest()
-    return (method_x, method_y) if int(digest, 16) % 2 == 0 else (method_y, method_x)
+def idea_arena_dimensions(*, include_evidence_anchoring: bool = False, include_linkage_quality: bool = False) -> List[str]:
+    dims = ["novelty", "significance"]
+    if include_linkage_quality:
+        dims.append("linkage_quality")
+    dims.extend(["clarity", "feasibility", "expected_effectiveness"])
+    if include_evidence_anchoring:
+        dims.append("evidence_anchoring")
+    return dims
 
 
-def round_orientation(seed: int, task_id: str, method_x: str, method_y: str, round_index: int) -> Tuple[str, str]:
-    first, second = base_orientation(seed, task_id, method_x, method_y)
-    if round_index % 2 == 1:
-        return first, second
-    return second, first
+def judge_dimensions(profile: str, family: str) -> List[str]:
+    if profile == "structured_idea_arena_evidence":
+        return idea_arena_dimensions(include_evidence_anchoring=True)
+    if profile == "structured_idea_arena_evidence_light":
+        return idea_arena_dimensions()
+    if profile == "structured_idea_arena_linkage_light":
+        return idea_arena_dimensions(include_linkage_quality=True)
+    if profile in {"idea_arena", "structured_idea_arena"}:
+        return idea_arena_dimensions()
+    return family_dimensions(family)
 
 
-def judge_round(
-    client: OpenAICompatChatClient,
-    fallback_client: OpenAICompatChatClient | None,
+def normalize_answer_for_judging(answer: str, *, max_sentences: int = 8, max_chars: int = 1800) -> str:
+    text = str(answer or "")
+    text = CITATION_SPAN_PATTERN.sub("", text)
+    text = re.sub(r"[*_`#>-]+", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    if not text:
+        return "(empty answer)"
+    sentences = [part.strip(" ;") for part in re.split(r"(?<=[.!?])\s+", text) if part.strip()]
+    if not sentences:
+        sentences = [text]
+    kept: List[str] = []
+    used = 0
+    for sentence in sentences:
+        clipped = sentence[:280].strip()
+        if not clipped:
+            continue
+        extra = len(clipped) + (1 if kept else 0)
+        if kept and (len(kept) >= max_sentences or used + extra > max_chars):
+            break
+        if not kept and len(clipped) > max_chars:
+            kept.append(clipped[:max_chars].strip())
+            break
+        kept.append(clipped)
+        used += extra
+    return "\n".join(f"- {sentence}" for sentence in kept)
+
+
+def split_answer_sentences(answer: str, *, keep_citations: bool) -> List[str]:
+    text = str(answer or "")
+    if not keep_citations:
+        text = CITATION_SPAN_PATTERN.sub("", text)
+    text = re.sub(r"[*_`#>-]+", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    if not text:
+        return []
+    sentences = [part.strip(" ;") for part in re.split(r"(?<=[.!?])\s+", text) if part.strip()]
+    if not sentences:
+        sentences = [text]
+    return sentences
+
+
+def extract_evidence_anchor(answer: str, *, include_source_ids: bool = True, max_chunks: int = 2) -> str:
+    raw_text = str(answer or "")
+    if not raw_text.strip():
+        return "(no explicit evidence anchors)"
+
+    evidence_chunks: List[str] = []
+    citation_ids = []
+    for span in CITATION_SPAN_PATTERN.findall(raw_text):
+        for cited in CITATION_ID_PATTERN.findall(span):
+            if cited not in citation_ids:
+                citation_ids.append(cited)
+            if len(citation_ids) >= 4:
+                break
+        if len(citation_ids) >= 4:
+            break
+    raw_sentences = split_answer_sentences(raw_text, keep_citations=True)
+    clean_sentences = split_answer_sentences(raw_text, keep_citations=False)
+    explicit_patterns = [
+        r"\bEvidence\s*:\s*([^\n]+)",
+        r"\bEvidence Anchors?\s*:\s*([^\n]+)",
+        r"\bSupport(?:ing Evidence)?\s*:\s*([^\n]+)",
+        r"\bGround(?:ing|ed By)?\s*:\s*([^\n]+)",
+        r"\bRetrieved Evidence\s*:\s*([^\n]+)",
+    ]
+    for pattern in explicit_patterns:
+        for match in re.finditer(pattern, raw_text, flags=re.IGNORECASE):
+            chunk = re.sub(r"\s+", " ", match.group(1)).strip(" ;,.")
+            if chunk and not re.fullmatch(r"(?:(?:P|F|T)\d+(?:\s*,\s*(?:P|F|T)\d+)*)", chunk):
+                evidence_chunks.append(chunk[:260])
+
+    citation_sentences = []
+    for idx, (raw_sentence, clean_sentence) in enumerate(zip(raw_sentences, clean_sentences)):
+        if re.search(r"\b(?:Evidence(?: Anchors?)?|Support(?:ing Evidence)?|Ground(?:ing|ed By)?|Retrieved Evidence)\s*:", raw_sentence, flags=re.IGNORECASE):
+            if idx > 0:
+                citation_sentences.append(clean_sentences[idx - 1][:260].strip())
+            if not re.search(r"^\s*Evidence(?: Anchors?)?\s*:\s*(?:(?:P|F|T)\d+(?:\s*,\s*(?:P|F|T)\d+)*)\.?\s*$", clean_sentence, flags=re.IGNORECASE):
+                citation_sentences.append(clean_sentence[:260].strip())
+        elif CITATION_SPAN_PATTERN.search(raw_sentence):
+            citation_sentences.append(clean_sentence[:260].strip())
+
+    picked: List[str] = []
+    seen = set()
+    for chunk in evidence_chunks + citation_sentences:
+        key = chunk.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        picked.append(chunk)
+        if len(picked) >= max_chunks:
+            break
+
+    if include_source_ids and citation_ids:
+        picked.insert(0, f"retrieved_sources: {', '.join(citation_ids)}")
+
+    if not picked:
+        return "(no explicit evidence anchors)"
+    return " | ".join(picked)[:420]
+
+
+def build_structured_idea_view(
+    answer: str,
+    *,
+    include_evidence_anchor: bool = False,
+    evidence_include_source_ids: bool = True,
+    evidence_max_chunks: int = 2,
+    include_linkage_summary: bool = False,
+) -> str:
+    sentences = split_answer_sentences(answer, keep_citations=False)
+    if not sentences:
+        sentences = ["(empty answer)"]
+
+    def take(indices: List[int], fallback_slice: slice) -> str:
+        selected = []
+        for idx in indices:
+            if 0 <= idx < len(sentences):
+                selected.append(sentences[idx][:260].strip())
+        if not selected:
+            selected = [s[:260].strip() for s in sentences[fallback_slice] if s.strip()]
+        joined = " ".join(part for part in selected if part)
+        return joined[:420].strip() if joined else "(not clearly stated)"
+
+    slots = {
+        "core_bottleneck": take([0], slice(0, 1)),
+        "mechanism_or_causal_claim": take([1, 2], slice(1, 3)),
+        "enabled_opportunity": take([3, 4], slice(3, 5)),
+        "why_it_matters": take([2, 3], slice(2, 4)),
+        "scope_and_generality": take([0, 4, 5], slice(0, 6)),
+    }
+    if include_linkage_summary:
+        slots["linkage_summary"] = take([0, 1, 3], slice(0, 4))
+    if include_evidence_anchor:
+        slots["evidence_anchor"] = extract_evidence_anchor(
+            answer,
+            include_source_ids=evidence_include_source_ids,
+            max_chunks=evidence_max_chunks,
+        )
+    return "\n".join(f"- {key}: {value}" for key, value in slots.items())
+
+
+def build_prompt(
+    profile: str,
     *,
     public_task: Dict[str, Any],
     family: str,
-    method_a: str,
-    method_b: str,
-    row_a: Dict[str, Any],
-    row_b: Dict[str, Any],
-) -> Dict[str, Any]:
-    dims = family_dimensions(family)
-    prompt = f"""# Role
+    dims: List[str],
+    answer_a: str,
+    answer_b: str,
+) -> str:
+    if profile == "idea_arena":
+        return f"""# Role
+You are evaluating two competing research-intelligence outputs in a blind pairwise comparison inspired by Idea Arena.
+
+# Task Context
+- Task ID: {public_task.get("task_id")}
+- Family: {family}
+- Domain: {public_task.get("domain")}
+- Time Cutoff: {public_task.get("time_cutoff")}
+- Research Question: {public_task.get("question")}
+
+# Evaluation Dimensions
+{json.dumps(dims, ensure_ascii=False)}
+
+# Dimension Guidance
+- novelty: Which answer offers the more non-obvious, original, or differentiating research idea or framing relative to the pre-cutoff literature?
+- significance: Which answer would matter more if a research team followed it?
+- clarity: Which answer is easier to understand and evaluate after normalization?
+- feasibility: Which answer is more realistically actionable under the stated cutoff and available evidence?
+- expected_effectiveness: Which answer is more likely to help a research team make the right next move on this task?
+
+# Bias Controls
+1. Do not reward answer length, citation count, formatting quality, markdown polish, or namedropping by themselves.
+2. The answers have been normalized into the same presentation format. Judge content, not style.
+3. Penalize hidden hindsight or future leakage beyond the cutoff.
+4. Avoid tie unless the two answers are genuinely hard to separate after considering all five dimensions.
+
+# Normalized Answer A
+{answer_a}
+
+# Normalized Answer B
+{answer_b}
+
+# Output Format (Strict JSON)
+{{
+  "winner": "A | B | tie",
+  "confidence": 0.0,
+  "reason": "State the decisive difference in research value. Do not mention formatting, length, or citation density as positives by themselves.",
+  "dimension_votes": {{
+    "novelty": "A | B | tie",
+    "significance": "A | B | tie",
+    "clarity": "A | B | tie",
+    "feasibility": "A | B | tie",
+    "expected_effectiveness": "A | B | tie"
+  }}
+}}
+"""
+    if profile == "structured_idea_arena":
+        return f"""# Role
+You are evaluating two competing research-intelligence outputs in a blind pairwise comparison inspired by Idea Arena.
+
+# Task Context
+- Task ID: {public_task.get("task_id")}
+- Family: {family}
+- Domain: {public_task.get("domain")}
+- Time Cutoff: {public_task.get("time_cutoff")}
+- Research Question: {public_task.get("question")}
+
+# Evaluation Dimensions
+{json.dumps(dims, ensure_ascii=False)}
+
+# Structured Comparison Protocol
+Each answer has been converted into the same five slots:
+- core_bottleneck
+- mechanism_or_causal_claim
+- enabled_opportunity
+- why_it_matters
+- scope_and_generality
+
+Judge only the research content represented by these slots.
+
+# Bias Controls
+1. Do not reward original prose quality, citation count, formatting polish, or verbosity.
+2. The slot extraction may omit detail; prefer the answer whose slots imply the stronger research idea, not the more polished wording.
+3. Penalize hindsight or future leakage beyond the cutoff.
+4. Avoid tie unless the two structured ideas are genuinely comparable.
+
+# Dimension Guidance
+- novelty: Which structured idea is more original or less obvious relative to pre-cutoff literature?
+- significance: Which idea would matter more if pursued?
+- clarity: Which structured idea is easier to interpret after conversion into the same slots?
+- feasibility: Which idea is more realistically actionable from the pre-cutoff state of the field?
+- expected_effectiveness: Which idea is more likely to help a research team choose the right next direction?
+
+# Structured Answer A
+{answer_a}
+
+# Structured Answer B
+{answer_b}
+
+# Output Format (Strict JSON)
+{{
+  "winner": "A | B | tie",
+  "confidence": 0.0,
+  "reason": "State the decisive difference in idea quality using the structured slots. Do not mention length, citations, or style.",
+  "dimension_votes": {{
+    "novelty": "A | B | tie",
+    "significance": "A | B | tie",
+    "clarity": "A | B | tie",
+    "feasibility": "A | B | tie",
+    "expected_effectiveness": "A | B | tie"
+  }}
+}}
+"""
+    if profile == "structured_idea_arena_evidence":
+        return f"""# Role
+You are evaluating two competing research-intelligence outputs in a blind pairwise comparison inspired by Idea Arena.
+
+# Task Context
+- Task ID: {public_task.get("task_id")}
+- Family: {family}
+- Domain: {public_task.get("domain")}
+- Time Cutoff: {public_task.get("time_cutoff")}
+- Research Question: {public_task.get("question")}
+
+# Evaluation Dimensions
+{json.dumps(dims, ensure_ascii=False)}
+
+# Structured Comparison Protocol
+Each answer has been converted into the same six slots:
+- core_bottleneck
+- mechanism_or_causal_claim
+- enabled_opportunity
+- why_it_matters
+- scope_and_generality
+- evidence_anchor
+
+Judge the research content represented by these slots, plus how well the key claims are anchored to specific pre-cutoff evidence.
+
+# Bias Controls
+1. Do not reward citation count, formatting polish, verbosity, or namedropping by themselves.
+2. Give modest credit when the core claim is anchored to specific, relevant, auditable pre-cutoff evidence signals such as retrieved papers, benchmarks, datasets, explicit evidence clauses, or concrete prior systems.
+3. Do not reward decorative citations or irrelevant evidence that does not materially support the main claim.
+4. Penalize hindsight or future leakage beyond the cutoff.
+5. Avoid tie unless the two structured ideas are genuinely comparable after considering both idea quality and evidence anchoring.
+
+# Dimension Guidance
+- novelty: Which structured idea is more original or less obvious relative to pre-cutoff literature?
+- significance: Which idea would matter more if pursued?
+- clarity: Which structured idea is easier to interpret after conversion into the same slots?
+- feasibility: Which idea is more realistically actionable from the pre-cutoff state of the field?
+- expected_effectiveness: Which idea is more likely to help a research team choose the right next direction?
+- evidence_anchoring: Which answer better grounds its key claims in specific, relevant, and auditable pre-cutoff evidence rather than unsupported assertion?
+
+# Structured Answer A
+{answer_a}
+
+# Structured Answer B
+{answer_b}
+
+# Output Format (Strict JSON)
+{{
+  "winner": "A | B | tie",
+  "confidence": 0.0,
+  "reason": "State the decisive difference in idea quality or evidence anchoring using the structured slots. Do not treat citation density alone as a positive.",
+  "dimension_votes": {{
+    "novelty": "A | B | tie",
+    "significance": "A | B | tie",
+    "clarity": "A | B | tie",
+    "feasibility": "A | B | tie",
+    "expected_effectiveness": "A | B | tie",
+    "evidence_anchoring": "A | B | tie"
+  }}
+}}
+"""
+    if profile == "structured_idea_arena_evidence_light":
+        return f"""# Role
+You are evaluating two competing research-intelligence outputs in a blind pairwise comparison inspired by Idea Arena.
+
+# Task Context
+- Task ID: {public_task.get("task_id")}
+- Family: {family}
+- Domain: {public_task.get("domain")}
+- Time Cutoff: {public_task.get("time_cutoff")}
+- Research Question: {public_task.get("question")}
+
+# Evaluation Dimensions
+{json.dumps(dims, ensure_ascii=False)}
+
+# Structured Comparison Protocol
+Each answer has been converted into the same six slots:
+- core_bottleneck
+- mechanism_or_causal_claim
+- enabled_opportunity
+- why_it_matters
+- scope_and_generality
+- evidence_anchor
+
+Primary judgment should still come from idea quality. Treat `evidence_anchor` only as a weak calibration signal that matters mainly when two ideas are otherwise very close, or when one answer makes claims that look clearly under-supported relative to its confidence.
+
+# Bias Controls
+1. Do not reward citation count, formatting polish, verbosity, or namedropping by themselves.
+2. Use evidence anchoring very lightly: it should mostly break close calls or penalize overconfident unsupported claims, and it should never outweigh a clearly better idea.
+3. Give some credit when key claims are anchored to specific, relevant, auditable pre-cutoff evidence signals such as retrieved papers, benchmarks, datasets, explicit evidence clauses, or concrete prior systems.
+4. Do not reward decorative citations, repeated references to essentially the same benchmark, or irrelevant evidence that does not materially support the main claim.
+5. A narrow or weak benchmark signal should not by itself justify a broad bottleneck, forecast, or opportunity claim; prefer evidence that directly supports the central mechanism or the bottleneck-to-opportunity link being proposed.
+6. Penalize hindsight or future leakage beyond the cutoff.
+7. If one answer has a clearly stronger bottleneck-to-opportunity logic, better task fit, or better executional reasoning, do not let lighter evidence differences reverse that judgment.
+8. Avoid tie unless the two structured ideas are genuinely comparable after considering both idea quality and weak evidence anchoring.
+
+# Dimension Guidance
+- novelty: Which structured idea is more original or less obvious relative to pre-cutoff literature?
+- significance: Which idea would matter more if pursued?
+- clarity: Which structured idea is easier to interpret after conversion into the same slots?
+- feasibility: Which idea is more realistically actionable from the pre-cutoff state of the field? Use evidence anchoring only as a weak credibility check here, and prefer evidence that actually supports the proposed mechanism rather than merely showing a nearby failure case.
+- expected_effectiveness: Which idea is more likely to help a research team choose the right next direction? Prefer answers whose key claims are at least somewhat auditable when the core ideas are otherwise similar, but do not let repetitive, weak, or slightly better evidence outweigh better research judgment.
+
+# Structured Answer A
+{answer_a}
+
+# Structured Answer B
+{answer_b}
+
+# Output Format (Strict JSON)
+{{
+  "winner": "A | B | tie",
+  "confidence": 0.0,
+  "reason": "State the decisive difference in idea quality. Mention evidence anchoring only if it was a weak tie-breaker or exposed a clearly unsupported claim. Do not treat citation density alone as a positive.",
+  "dimension_votes": {{
+    "novelty": "A | B | tie",
+    "significance": "A | B | tie",
+    "clarity": "A | B | tie",
+    "feasibility": "A | B | tie",
+    "expected_effectiveness": "A | B | tie"
+  }}
+}}
+"""
+    if profile == "structured_idea_arena_linkage_light":
+        return f"""# Role
+You are evaluating two competing research-intelligence outputs in a blind pairwise comparison inspired by Idea Arena.
+
+# Task Context
+- Task ID: {public_task.get("task_id")}
+- Family: {family}
+- Domain: {public_task.get("domain")}
+- Time Cutoff: {public_task.get("time_cutoff")}
+- Research Question: {public_task.get("question")}
+
+# Evaluation Dimensions
+{json.dumps(dims, ensure_ascii=False)}
+
+# Structured Comparison Protocol
+Each answer has been converted into the same seven slots:
+- core_bottleneck
+- mechanism_or_causal_claim
+- enabled_opportunity
+- why_it_matters
+- scope_and_generality
+- linkage_summary
+- evidence_anchor
+
+Primary judgment should come from research-intelligence quality, especially whether the answer identifies the right bottleneck and explains a concrete causal path from that bottleneck to the proposed opportunity, forecast, agenda, or venue positioning. Treat `evidence_anchor` only as a secondary calibration signal.
+
+# Bias Controls
+1. Do not reward citation count, formatting polish, verbosity, or namedropping by themselves.
+2. Prefer answers with a tighter bottleneck-to-opportunity linkage even if the other answer has more visible retrieval traces.
+3. Do not over-reward answers that mainly diagnose a benchmark failure or local paper limitation without clearly explaining why that failure implies the proposed next move.
+4. Use evidence anchoring lightly: it should break close calls or penalize overconfident unsupported claims, not outweigh a clearly better mechanism-level idea.
+5. A narrow benchmark signal should not by itself justify a broad bottleneck, forecast, or opportunity claim; prefer evidence that directly supports the central mechanism or the bottleneck-to-opportunity link being proposed.
+6. Penalize hindsight or future leakage beyond the cutoff.
+7. Avoid tie unless the two structured ideas are genuinely comparable after considering idea quality, linkage quality, and light evidence anchoring.
+
+# Dimension Guidance
+- novelty: Which structured idea is more original or less obvious relative to pre-cutoff literature?
+- significance: Which idea would matter more if pursued?
+- linkage_quality: Which answer better explains why the identified bottleneck causally leads to the proposed opportunity, forecast, agenda, or venue recommendation?
+- clarity: Which structured idea is easier to interpret after conversion into the same slots?
+- feasibility: Which idea is more realistically actionable from the pre-cutoff state of the field? Prefer mechanisms that are internally coherent and do not rely on unsupported jumps.
+- expected_effectiveness: Which idea is more likely to help a research team choose the right next direction? Prefer answers with stronger mechanistic closure and only use evidence anchoring as a secondary check.
+
+# Structured Answer A
+{answer_a}
+
+# Structured Answer B
+{answer_b}
+
+# Output Format (Strict JSON)
+{{
+  "winner": "A | B | tie",
+  "confidence": 0.0,
+  "reason": "State the decisive difference in idea quality, especially linkage quality when relevant. Do not treat citation density alone as a positive.",
+  "dimension_votes": {{
+    "novelty": "A | B | tie",
+    "significance": "A | B | tie",
+    "linkage_quality": "A | B | tie",
+    "clarity": "A | B | tie",
+    "feasibility": "A | B | tie",
+    "expected_effectiveness": "A | B | tie"
+  }}
+}}
+"""
+    return f"""# Role
 You are a Lead Research Auditor conducting a blind peer review of two competing technical responses. Your goal is to identify which answer provides superior "Research Intelligence" and "Strategic Utility."
 
 # Core Evaluation Philosophy
@@ -123,8 +573,8 @@ You are a Lead Research Auditor conducting a blind peer review of two competing 
 3. Winner Selection: Avoid tie unless the answers are structurally and qualitatively indistinguishable. A tie is a failure of discrimination.
 
 # Evaluation Data
-- Answer A: {str(row_a.get('answer') or '')}
-- Answer B: {str(row_b.get('answer') or '')}
+- Answer A: {answer_a}
+- Answer B: {answer_b}
 
 # Output Format (Strict JSON)
 {{
@@ -136,6 +586,79 @@ You are a Lead Research Auditor conducting a blind peer review of two competing 
   }}
 }}
 """
+
+
+def base_orientation(seed: int, task_id: str, method_x: str, method_y: str) -> Tuple[str, str]:
+    key = f"{seed}:{task_id}:{method_x}:{method_y}"
+    digest = hashlib.md5(key.encode("utf-8")).hexdigest()
+    return (method_x, method_y) if int(digest, 16) % 2 == 0 else (method_y, method_x)
+
+
+def round_orientation(seed: int, task_id: str, method_x: str, method_y: str, round_index: int) -> Tuple[str, str]:
+    first, second = base_orientation(seed, task_id, method_x, method_y)
+    if round_index % 2 == 1:
+        return first, second
+    return second, first
+
+
+def judge_round(
+    client: OpenAICompatChatClient,
+    fallback_client: OpenAICompatChatClient | None,
+    *,
+    judge_profile: str,
+    public_task: Dict[str, Any],
+    family: str,
+    method_a: str,
+    method_b: str,
+    row_a: Dict[str, Any],
+    row_b: Dict[str, Any],
+) -> Dict[str, Any]:
+    dims = judge_dimensions(judge_profile, family)
+    answer_a = str(row_a.get("answer") or "")
+    answer_b = str(row_b.get("answer") or "")
+    if judge_profile == "idea_arena":
+        answer_a = normalize_answer_for_judging(answer_a)
+        answer_b = normalize_answer_for_judging(answer_b)
+    elif judge_profile == "structured_idea_arena":
+        answer_a = build_structured_idea_view(answer_a)
+        answer_b = build_structured_idea_view(answer_b)
+    elif judge_profile == "structured_idea_arena_evidence":
+        answer_a = build_structured_idea_view(answer_a, include_evidence_anchor=True)
+        answer_b = build_structured_idea_view(answer_b, include_evidence_anchor=True)
+    elif judge_profile == "structured_idea_arena_evidence_light":
+        answer_a = build_structured_idea_view(
+            answer_a,
+            include_evidence_anchor=True,
+            evidence_include_source_ids=False,
+            evidence_max_chunks=1,
+        )
+        answer_b = build_structured_idea_view(
+            answer_b,
+            include_evidence_anchor=True,
+            evidence_include_source_ids=False,
+            evidence_max_chunks=1,
+        )
+    elif judge_profile == "structured_idea_arena_linkage_light":
+        answer_a = build_structured_idea_view(
+            answer_a,
+            include_evidence_anchor=True,
+            evidence_include_source_ids=False,
+            include_linkage_summary=True,
+        )
+        answer_b = build_structured_idea_view(
+            answer_b,
+            include_evidence_anchor=True,
+            evidence_include_source_ids=False,
+            include_linkage_summary=True,
+        )
+    prompt = build_prompt(
+        judge_profile,
+        public_task=public_task,
+        family=family,
+        dims=dims,
+        answer_a=answer_a,
+        answer_b=answer_b,
+    )
     messages = [
         {"role": "system", "content": "You are a strict pairwise benchmark judge. Return JSON only."},
         {"role": "user", "content": prompt},
@@ -185,6 +708,7 @@ You are a Lead Research Auditor conducting a blind peer review of two competing 
         "confidence": round(float(obj.get("confidence") or 0.0), 4),
         "reason": str(obj.get("reason") or "").strip(),
         "dimension_votes": dim_votes,
+        "judge_profile": judge_profile,
     }
 
 
@@ -231,6 +755,7 @@ def run_comparison(
     client: OpenAICompatChatClient,
     fallback_client: OpenAICompatChatClient | None,
     *,
+    judge_profile: str,
     seed: int,
     public_task: Dict[str, Any],
     method_x: str,
@@ -252,6 +777,7 @@ def run_comparison(
         judged = judge_round(
             client,
             fallback_client,
+            judge_profile=judge_profile,
             public_task=public_task,
             family=family,
             method_a=method_a,
@@ -281,6 +807,7 @@ def run_comparison(
         "family": family,
         "domain": str(public_task.get("domain") or ""),
         "methods": [method_x, method_y],
+        "judge_profile": judge_profile,
         "rounds": raw_rounds,
         **final,
     }
@@ -290,6 +817,7 @@ def run_comparison_with_retries(
     client: OpenAICompatChatClient,
     fallback_client: OpenAICompatChatClient | None,
     *,
+    judge_profile: str,
     seed: int,
     public_task: Dict[str, Any],
     method_x: str,
@@ -307,6 +835,7 @@ def run_comparison_with_retries(
             return run_comparison(
                 client,
                 fallback_client,
+                judge_profile=judge_profile,
                 seed=seed,
                 public_task=public_task,
                 method_x=method_x,
@@ -394,6 +923,7 @@ def main() -> None:
                     run_comparison_with_retries,
                     judge_client,
                     fallback_client,
+                    judge_profile=args.judge_profile,
                     seed=args.seed,
                     public_task=job["public_task"],
                     method_x=job["method_x"],
@@ -433,6 +963,7 @@ def main() -> None:
                                 "family": row["family"],
                                 "domain": row["domain"],
                                 "methods": row["methods"],
+                                "judge_profile": args.judge_profile,
                                 **round_row,
                             },
                             ensure_ascii=False,
@@ -458,6 +989,7 @@ def main() -> None:
         "min_rounds": args.min_rounds,
         "max_rounds": args.max_rounds,
         "job_retries": args.job_retries,
+        "judge_profile": args.judge_profile,
         "fallback_judge_llm_config": str(fallback_path) if fallback_client is not None else None,
     }
     (output_dir / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")

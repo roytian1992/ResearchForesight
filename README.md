@@ -99,7 +99,7 @@ These prompt files are the canonical latest snapshots we want visible on GitHub 
 ### Family-specific auxiliary metrics
 - `Opportunity Grounding`: used for `bottleneck_opportunity_discovery`
 - `Forecast Grounding`: used for `direction_forecasting`
-- `Technical Dependency Grounding`: used for `strategic_research_planning`
+- `Strategic Execution Grounding`: used for `strategic_research_planning`
 - `Venue Positioning Grounding`: used for `venue_aware_research_positioning`
 
 ## Benchmark positioning

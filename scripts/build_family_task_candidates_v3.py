@@ -25,6 +25,11 @@ def iter_jsonl(path: Path) -> Iterable[Dict[str, Any]]:
                 yield json.loads(line)
 
 
+def render_candidate_direction_list(directions: List[str]) -> str:
+    parts = [f"({idx}) {sentence_case_phrase(direction)}" for idx, direction in enumerate(directions, start=1) if str(direction).strip()]
+    return "; ".join(parts)
+
+
 def build_direction_candidate(packet: Dict[str, Any]) -> Dict[str, Any]:
     history_chain = packet.get("history_chain") or []
     chain_labels = [sentence_case_phrase(str(row.get("display_name") or "")) for row in history_chain if str(row.get("display_name") or "").strip()]
@@ -176,11 +181,19 @@ def build_planning_candidate(packet: Dict[str, Any]) -> Dict[str, Any]:
     topic = public_topic_from_packet({"display_name": packet.get("topic") or packet.get("seed_node_id")})
     candidate_directions = [sentence_case_phrase(x) for x in (packet.get("candidate_directions") or []) if str(x).strip()]
     future_themes = public_descendant_names(packet.get("future_descendant_records") or packet.get("direction_records") or [], limit=4)
-    question = (
-        f"Assume you are planning research on {topic} at the cutoff {packet.get('history_end_date')}. "
-        f"If you could prioritize only a small number of next-step directions for the next six months, which directions should receive priority, "
-        f"and what evidence-based rationale supports that ranking?"
-    )
+    if candidate_directions:
+        question = (
+            f"Assume you are planning research on {topic} at the cutoff {packet.get('history_end_date')}. "
+            f"Rank the following candidate next-step directions for the next six months: {render_candidate_direction_list(candidate_directions)}. "
+            f"Return a complete ordering of the listed options and justify the ranking using evidence about bottlenecks, dependencies, momentum, "
+            f"and likely downstream leverage visible in the pre-cutoff literature. Do not introduce new candidate directions."
+        )
+    else:
+        question = (
+            f"Assume you are planning research on {topic} at the cutoff {packet.get('history_end_date')}. "
+            f"If you could prioritize only a small number of next-step directions for the next six months, which directions should receive priority, "
+            f"and what evidence-based rationale supports that ranking?"
+        )
     answer = (
         f"A high-value plan should prioritize directions such as "
         f"{', '.join(candidate_directions) or 'the strongest candidate directions'}, "

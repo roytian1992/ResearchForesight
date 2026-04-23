@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List
 
-from researchworld.eval_v3 import aliases_for_label, dedupe_keep_order, normalize_text
+from researchworld.eval_v3 import aliases_for_label, build_slot_targets, dedupe_keep_order, normalize_text
 
 
 def _top_titles(rows: List[Dict[str, Any]], limit: int = 4) -> List[str]:
@@ -38,7 +38,7 @@ def _component(name: str, description: str, values: List[str], *, importance: fl
 
 def build_component_targets_v3_1(hidden_v3_row: Dict[str, Any], trace_row: Dict[str, Any]) -> Dict[str, Any]:
     family = str(hidden_v3_row.get("family") or "")
-    slots = hidden_v3_row.get("slot_targets") or {}
+    slots = hidden_v3_row.get("slot_targets") or build_slot_targets(hidden_v3_row, trace_row) or {}
     gt = (trace_row.get("ground_truth") or {})
     support = (trace_row.get("support_context") or {})
     components: List[Dict[str, Any]] = []
@@ -147,13 +147,19 @@ def build_future_alignment_targets_v3_1(hidden_v3_row: Dict[str, Any], trace_row
     family = str(hidden_v3_row.get("family") or "")
     gt = trace_row.get("ground_truth") or {}
     support = trace_row.get("support_context") or {}
-    slots = hidden_v3_row.get("slot_targets") or {}
+    slots = hidden_v3_row.get("slot_targets") or build_slot_targets(hidden_v3_row, trace_row) or {}
+    public = hidden_v3_row.get("public_metadata") or trace_row.get("public_metadata") or {}
 
     units: List[Dict[str, Any]] = []
     future_papers = _top_titles(list(support.get("future_validation_set") or []), limit=6)
 
     if family == "bottleneck_opportunity_discovery":
-        for idx, value in enumerate(list(slots.get("core_opportunity_labels") or [])[:3], start=1):
+        opportunity_labels = dedupe_keep_order(
+            list(slots.get("core_opportunity_labels") or [])
+            or list(public.get("future_themes") or [])
+            or _top_names(list(gt.get("future_descendants") or []), "display_name", limit=3)
+        )
+        for idx, value in enumerate(opportunity_labels[:3], start=1):
             units.append(
                 {
                     "unit_id": f"opp_{idx}",
@@ -166,7 +172,12 @@ def build_future_alignment_targets_v3_1(hidden_v3_row: Dict[str, Any], trace_row
             )
     elif family == "direction_forecasting":
         venue_forecast = gt.get("venue_forecast") or {}
-        for idx, value in enumerate(list(slots.get("emergent_direction_labels") or [])[:4], start=1):
+        direction_labels = dedupe_keep_order(
+            list(slots.get("emergent_direction_labels") or [])
+            or list(public.get("future_themes") or [])
+            or _top_names(list(gt.get("emergent_descendants") or []), "display_name", limit=4)
+        )
+        for idx, value in enumerate(direction_labels[:4], start=1):
             units.append(
                 {
                     "unit_id": f"dir_{idx}",
@@ -195,9 +206,36 @@ def build_future_alignment_targets_v3_1(hidden_v3_row: Dict[str, Any], trace_row
                     "target_venue_bucket": normalize_text(gt.get("target_venue_bucket") or ""),
                 }
             )
+    elif family == "venue_aware_research_positioning":
+        venue_forecast = gt.get("venue_forecast") or {}
+        direction_labels = dedupe_keep_order(
+            list(public.get("future_themes") or [])
+            or _top_names(list(gt.get("emergent_descendants") or []), "display_name", limit=3)
+        )
+        for idx, value in enumerate(direction_labels[:3], start=1):
+            units.append(
+                {
+                    "unit_id": f"venue_{idx}",
+                    "unit_type": "venue_direction",
+                    "text": value,
+                    "aliases": aliases_for_label(value),
+                    "importance": 1.0 if idx == 1 else 0.85,
+                    "future_paper_titles": future_papers[:4],
+                    "target_venue_bucket": normalize_text(
+                        gt.get("target_venue_bucket")
+                        or venue_forecast.get("likely_bucket")
+                        or ""
+                    ),
+                }
+            )
 
     return {
-        "enabled": family in {"bottleneck_opportunity_discovery", "direction_forecasting", "strategic_research_planning"},
+        "enabled": family in {
+            "bottleneck_opportunity_discovery",
+            "direction_forecasting",
+            "strategic_research_planning",
+            "venue_aware_research_positioning",
+        },
         "alignment_units": units,
         "future_window_stats": {
             "paper_count": (gt.get("future_half_stats") or gt.get("target_window_stats") or {}).get("paper_count"),

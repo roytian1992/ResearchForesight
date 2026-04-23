@@ -1,0 +1,1130 @@
+# Experiment Log 2026-04-20
+
+## Venue Evaluation Prior-Knowledge Refresh
+
+- goal:
+  - make `venue_aware_research_positioning` evaluation less brittle than exact bucket naming
+  - let venue evaluation use soft venue-family prior knowledge about accepted contribution types and reviewer expectations
+  - explicitly support cases where one answer can plausibly fit multiple nearby venue families if it distinguishes primary fit from secondary fit
+- files changed:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/src/researchworld/experiment_eval_aux.py`
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/docs/venue_prior_knowledge_20260420.md`
+- key changes:
+  - expanded venue bucket alias parsing to catch patterns such as `AAAI-class`
+  - added bucket-level venue prior profiles for:
+    - `ACL / EMNLP / NAACL`
+    - `ICLR / ICML / NeurIPS`
+    - `AAAI / IJCAI`
+    - `KDD / SIGIR`
+    - `CVPR / ICCV / ECCV`
+  - `venue_positioning_audit` now also checks:
+    - prior-profile contribution fit
+    - prior-profile reviewer expectation fit
+    - whether multi-venue answers distinguish primary fit from secondary fit
+  - venue family caps now penalize:
+    - prestige-only rhetoric
+    - missing venue-typical contribution package
+    - missing venue-typical reviewer expectation grounding
+    - mentioning multiple compatible venues without primary-vs-secondary reasoning
+- validation:
+  - static compile passed for `experiment_eval_aux.py`
+  - target venue bucket extraction was re-checked on current `experiment100` venue-targeted planning tasks
+  - previously missed `AAAI-class` style tasks now resolve to `aaai`
+- reference note:
+  - official bucket-level source summary is recorded in:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/docs/venue_prior_knowledge_20260420.md`
+
+## CoI Bottleneck Pairfix Smoke-8
+
+- release dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- method:
+  - `CoI-Agent-Offline`
+- family:
+  - `bottleneck_opportunity_discovery`
+- code change under test:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/src/researchworld/coi_agent_offline.py`
+  - split bottleneck candidate space and opportunity candidate space instead of using one mixed label pool
+  - added per-chain limitation -> future-work pairing aggregation
+  - added deterministic repair so final `bottleneck` and `opportunity` do not collapse into the same or near-duplicate label
+  - tightened bottleneck head / adapter prompts to prefer paired unlocks and separate candidate pools
+- smoke subset:
+  - task ids file:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/smoke_task_ids/coi_bottleneck_smoke8_pairfix_20260420.txt`
+  - task ids:
+    - `RTLv3-0004`
+    - `RTLv3-0014`
+    - `RTLv3-0026`
+    - `RTLv3-0034`
+    - `RTLv3-0006`
+    - `RTLv3-0015`
+    - `RTLv3-0024`
+    - `RTLv3-0038`
+  - selection rationale:
+    - keep the original four auxfix-failure smoke tasks
+    - add four bottleneck tasks where `Hybrid RAG` had a clear `Opportunity Grounding` advantage over current `CoI`
+- launch config:
+  - output dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_bottleneck_smoke8_pairfix_20260420`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_coi_bottleneck_smoke8_pairfix_20260420.sh`
+  - tmux:
+    - `coi_bottleneck_smoke8_pairfix_20260420`
+  - answer shards:
+    - `4`
+  - internal anchor workers:
+    - `3`
+  - main / cheap llm:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8001.local.yaml`
+  - embedding:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/configs/embedding/bge_m3.local.yaml`
+- status at launch:
+  - static compile passed
+  - tmux session started successfully
+  - four shard processes are running
+  - no completed results yet at log-write time
+
+## CoI Bottleneck Pairfix V2 Repair
+
+- release dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- method:
+  - `CoI-Agent-Offline`
+- family:
+  - `bottleneck_opportunity_discovery`
+- code change under test:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/src/researchworld/coi_agent_offline.py`
+  - collect `title_like_blocks` from retrieved paper titles and chain profile titles
+  - filter title-like labels out of `bottleneck_candidates`, `opportunity_candidates`, and `paired_unlocks`
+  - repair nested bottleneck payloads more robustly and also de-title `bottleneck` when a raw paper title leaks through
+  - tighten bottleneck prompts so `selected_opportunity` must be a reusable technical direction label rather than a paper / benchmark / method title
+  - tighten final adapter / critic prompts so blank bottlenecks and title-copy opportunities are explicitly disallowed
+  - second-stage adapter fix:
+    - merge the bottleneck head's own `recurring_bottlenecks` / `opportunity_candidates` / selected pair back into the final adapter candidate pool
+    - prevents the adapter from downgrading a good abstract opportunity label into an overly generic packet label
+    - deterministic postprocess now re-applies head-selected `selected_bottleneck` / `selected_opportunity` after adapter generation so the adapter cannot overwrite them with weaker generic labels
+- smoke subset:
+  - reused task ids file:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/smoke_task_ids/coi_bottleneck_smoke8_pairfix_20260420.txt`
+- launch config:
+  - output dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_bottleneck_smoke8_pairfix_v2_20260420`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_coi_bottleneck_smoke8_pairfix_v2_20260420.sh`
+  - tmux:
+    - `coi_bottleneck_smoke8_pairfix_v2_20260420`
+  - outer answer shards:
+    - `1`
+  - internal anchor workers:
+    - `3`
+  - main / cheap llm:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml`
+  - embedding:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/configs/embedding/bge_m3.local.yaml`
+- validation before launch:
+  - static compile passed for `src/researchworld/coi_agent_offline.py`
+  - queried `http://127.0.0.1:8002/v1/models` and confirmed the live served id is `Qwen3-235B`; corrected the stale local `qwen_235b_8002*.yaml` files before relaunch
+  - target low-score cases rechecked:
+    - `RTLv3-0004`
+    - `RTLv3-0014`
+    - `RTLv3-0015`
+    - `RTLv3-0024`
+    - `RTLv3-0026`
+- target outcome:
+  - remove title-like opportunities on `RTLv3-0004` and `RTLv3-0024`
+  - stop blank bottleneck failure on `RTLv3-0026`
+  - raise `Opportunity Grounding` without sacrificing the three primary metrics
+
+## CoI Bottleneck Focusfix Smoke-8
+
+- release dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- method:
+  - `CoI-Agent-Offline`
+- family:
+  - `bottleneck_opportunity_discovery`
+- code change under test:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/src/researchworld/coi_agent_offline.py`
+  - added task-focus-aware filtering so parent-topic labels too close to the task focus are less likely to survive as bottleneck / opportunity candidates
+  - added deterministic pair scoring for `paired_unlocks` so limitation -> unlock pairs are ranked by support count, specificity, and anti-generic penalties instead of support count alone
+  - extended bottleneck payload repair so generic focus-level labels are rewritten toward better-supported pairs before final rendering
+  - tightened head-analysis alignment so focus-level generic labels from the head do not overwrite a better repaired bottleneck / opportunity pair
+- smoke subset:
+  - reused task ids file:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/smoke_task_ids/coi_bottleneck_smoke8_pairfix_20260420.txt`
+- launch config:
+  - output dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_bottleneck_smoke8_focusfix_20260420`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_coi_bottleneck_smoke8_focusfix_20260420.sh`
+  - tmux:
+    - `coi_bottleneck_smoke8_focusfix_20260420`
+  - outer answer shards:
+    - `1`
+  - internal anchor workers:
+    - `3`
+  - main / cheap llm:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml`
+  - embedding:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/configs/embedding/bge_m3.local.yaml`
+- validation before launch:
+  - static compile passed for `src/researchworld/coi_agent_offline.py`
+- result summary on the matched `8` bottleneck tasks:
+  - previous `pairfix_v2`:
+    - factuality: `0.4826`
+    - future alignment: `0.4588`
+    - evidence traceability: `0.6731`
+    - opportunity grounding: `0.7378`
+  - new `focusfix`:
+    - factuality: `0.5791`
+    - future alignment: `0.5292`
+    - evidence traceability: `0.6850`
+    - opportunity grounding: `0.6863`
+  - delta:
+    - factuality: `+0.0965`
+    - future alignment: `+0.0704`
+    - evidence traceability: `+0.0119`
+    - opportunity grounding: `-0.0515`
+- interpretation:
+  - the focus-level filtering successfully removed some generic parent-topic bottlenecks and improved all three primary metrics on this smoke slice
+  - however, the family auxiliary regressed overall, so this should not be treated as a clean bottleneck win
+  - the main regressions are concentrated in:
+    - `RTLv3-0026`: `0.6550 -> 0.3450`
+    - `RTLv3-0014`: `0.6200 -> 0.3900`
+  - one clear improvement exists:
+    - `RTLv3-0034`: `0.6200 -> 0.9275`
+- next diagnosis:
+  - keep the anti-generic focus filter as a promising ingredient for primary metrics
+  - revisit the opportunity-side narrowing because the current focus filter over-constrains some canonical benchmark-native opportunity labels on `RTLv3-0014` and `RTLv3-0026`
+
+## CoI Bottleneck Focusfix V3 Relaunch
+
+- release dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- method:
+  - `CoI-Agent-Offline`
+- family:
+  - `bottleneck_opportunity_discovery`
+- code change under test:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/src/researchworld/coi_agent_offline.py`
+  - fixed bottleneck focus extraction for title-only bottleneck tasks such as:
+    - `Identifying a Key Bottleneck in ...`
+    - `Identifying Bottlenecks in ...`
+    - `Bottleneck and Opportunity Discovery in ...`
+  - added opportunity-side fallback:
+    - if the current opportunity is judged too close to the task focus, fall back to a more specific non-focus opportunity candidate instead of keeping the generic label
+  - added contract-candidate canonicalization hook where available, but this benchmark slice currently exposes no `task_contract.candidate_directions` to the method on the affected bottleneck tasks
+- aborted intermediate run:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_bottleneck_smoke8_focusfix_v2_20260420`
+  - reason:
+    - after inspecting trace payloads for `RTLv3-0014`, it became clear that the generic opportunity label survived because the focus-level opportunity repair had no fallback to a better candidate even though `opportunity_candidates` already contained a more specific alternative
+  - do not use this partial run for reporting
+- relaunch config:
+  - output dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_bottleneck_smoke8_focusfix_v3_20260420`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_coi_bottleneck_smoke8_focusfix_v3_20260420.sh`
+  - tmux:
+    - `coi_bottleneck_smoke8_focusfix_v3_20260420`
+  - outer answer shards:
+    - `1`
+  - internal anchor workers:
+    - `3`
+  - main / cheap llm:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml`
+  - embedding:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/configs/embedding/bge_m3.local.yaml`
+- status:
+  - launch confirmed
+  - in progress
+
+## CoI Experiment100 FocusfixV3 Launch
+
+- release dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- release task count:
+  - `100` (read from `manifest.json`)
+- method:
+  - `CoI-Agent-Offline`
+- code basis:
+  - current `CoI` code after the bottleneck `focusfix_v3` repairs in:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/src/researchworld/coi_agent_offline.py`
+- launch config:
+  - output dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_experiment100_focusfixv3_20260420_parallel4`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_coi_experiment100_focusfixv3_20260420_parallel4.sh`
+  - tmux:
+    - `coi_experiment100_focusfixv3_20260420_parallel4`
+- outer answer shards:
+  - `4`
+
+## CoI Experiment100 FocusfixV3 Completion
+
+- release dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- release task count:
+  - `100`
+- method:
+  - `CoI-Agent-Offline`
+- result dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_experiment100_focusfixv3_20260420_parallel4`
+- completed tasks:
+  - `100 / 100`
+- source answers:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_experiment100_focusfixv3_20260420_parallel4/results_merged.jsonl`
+- eval release path:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- metric files produced:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_experiment100_focusfixv3_20260420_parallel4/final_metrics/summary.json`
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_experiment100_focusfixv3_20260420_parallel4/final_metrics/eval_v31/results_eval_v3_1.jsonl`
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_experiment100_focusfixv3_20260420_parallel4/final_metrics/eval_v4/results_eval_v4.jsonl`
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_experiment100_focusfixv3_20260420_parallel4/final_metrics/eval_aux/results_eval_aux.jsonl`
+- final overall metrics:
+  - factuality: `0.4749`
+  - future alignment: `0.4487`
+  - evidence traceability: `0.6848`
+- final family breakdown:
+  - bottleneck: `0.5511 / 0.5007 / 0.7089 / 0.7056`
+  - forecasting: `0.5061 / 0.5006 / 0.7254 / 0.5724`
+  - strategic: `0.5005 / 0.4920 / 0.6361 / 0.6000`
+  - venue: `0.3420 / 0.3013 / 0.6687 / 0.6015`
+- interpretation:
+  - this supersedes the older `coi_experiment100_contractalign_20260420_parallel4` row for master-table reporting
+  - `CoI` now leads the current full-100 table on:
+    - `Opportunity Grounding`
+    - `Forecast Grounding`
+    - `Strategic Execution Grounding`
+  - `ARIS` still remains the strongest current venue-positioning method
+  - overall, this is the first `CoI` full-100 row in the current metric stack that is a clear net upgrade rather than a family-specific tradeoff
+
+## ResearchAgent Full-100 Main Row Sync Into Master Table And Paper
+
+- release dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- method:
+  - `ResearchAgent-Offline`
+- canonical result source:
+  - answers:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_experiment100_qwen8002_20260420_parallel4`
+  - final metrics:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_experiment100_qwen8002_20260420_parallel4/final_metrics/summary.json`
+- updated docs:
+  - master comparison table:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/docs/experiment100_method_table_20260418.md`
+  - diagnostic companion note:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/docs/experiment100_dimension_diagnostic_table_20260418.md`
+  - paper experiment section:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/papers/ResearchBenchmark/sections/05_experiments.tex`
+- synced primary metrics:
+  - `Evidence-Grounded Factuality = 0.4505`
+  - `Future Alignment = 0.4257`
+  - `Evidence Traceability = 0.5456`
+- synced family rows:
+  - `bottleneck_opportunity_discovery = 0.5822 / 0.5420 / 0.4992 / 0.5219`
+  - `direction_forecasting = 0.4165 / 0.3745 / 0.6772 / 0.2916`
+  - `strategic_research_planning = 0.4360 / 0.3997 / 0.5331 / 0.4903`
+  - `venue_aware_research_positioning = 0.3673 / 0.3865 / 0.4728 / 0.5035`
+- note:
+  - the paper's two main result tables are now aligned with the current master comparison table
+  - the detailed dimension discussion is explicitly marked as a family-targeted diagnostic companion rather than the canonical main-row source
+
+## Venue Aux Re-Eval After Prior-Knowledge Refresh
+
+- reason:
+  - `venue_aware_research_positioning` family auxiliary now uses soft venue prior knowledge in:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/src/researchworld/experiment_eval_aux.py`
+  - this change affects `Venue Positioning Grounding` only
+  - it does not require answer regeneration and does not change the three primary metrics
+- evaluator:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/scripts/evaluate_experiment_final_metrics.py --metrics aux`
+- judge config:
+  - primary:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml`
+  - fallback:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8001.local.yaml`
+- benchmark releases used:
+  - full-100 methods:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+  - `ARIS` bottleneck+venue 50-task slice:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_bottleneck_venue50_20260418`
+- launched re-eval outputs:
+  - `Native LLM`:
+    - input answers:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/native_llm_experiment100_evidenceexp_v1_parallel4/results.jsonl`
+    - output:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/native_llm_experiment100_aux_venueprior_20260420`
+    - tmux:
+      - `venueaux_native_20260420`
+  - `Hybrid RAG`:
+    - input answers:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/hybrid_rag_experiment100_evidenceexp_v1_parallel4/results.jsonl`
+    - output:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/hybrid_rag_experiment100_aux_venueprior_20260420`
+    - tmux:
+      - `venueaux_hybrid_20260420`
+  - `ARIS`:
+    - input answers:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/aris_experiment100_bottleneck_venue50_20260418_parallel4/results.jsonl`
+    - output:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/aris_experiment100_bottleneck_venue50_aux_venueprior_20260420`
+    - tmux:
+      - `venueaux_aris_20260420`
+  - `CoI`:
+    - input answers:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_experiment100_contractalign_20260420_parallel4/results_merged.jsonl`
+    - output:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_experiment100_contractalign_aux_venueprior_20260420`
+    - tmux:
+      - `venueaux_coi_20260420`
+  - `ResearchAgent`:
+    - input answers:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_experiment100_qwen8002_20260420_parallel4/results_merged.jsonl`
+    - output:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_experiment100_qwen8002_aux_venueprior_20260420`
+    - tmux:
+      - `venueaux_ra_20260420`
+- launch status:
+  - all 5 tmux sessions started successfully
+  - each re-eval uses `workers=2`
+  - no QA rerun was launched in this step
+- completion summary:
+  - `Native LLM`: `0.6049 -> 0.5577`
+  - `Hybrid RAG`: `0.8467 -> 0.5771`
+  - `CoI`: `0.5407 -> 0.5146`
+  - `ResearchAgent`: `0.5035 -> 0.5053`
+  - `ARIS` venue slice: `0.7919 -> 0.7281`
+- synced docs after completion:
+  - master comparison table:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/docs/experiment100_method_table_20260418.md`
+  - venue diagnostic companion section:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/docs/experiment100_dimension_diagnostic_table_20260418.md`
+  - paper experiment section:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/papers/ResearchBenchmark/sections/05_experiments.tex`
+  - internal anchor workers:
+    - `3`
+  - main / cheap llm:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml`
+  - embedding:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/configs/embedding/bge_m3.local.yaml`
+  - unified eval:
+    - `scripts/evaluate_experiment_final_metrics.py`
+    - metrics: `all`
+    - eval workers: `6`
+- note:
+  - this full-100 launch is intended to test the current best `CoI` code state, not just the bottleneck-only smoke slice
+  - forecasting and strategic stay on the already stronger current `CoI` path; the main newly changed family is bottleneck
+
+## ResearchAgent Bottleneck Auxfix Freeze Decision
+
+- release dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- method:
+  - `ResearchAgent`
+- family:
+  - `bottleneck_opportunity_discovery`
+- frozen reference run:
+  - answers + final metrics:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_experiment100_bottleneck25_auxfix_20260420_parallel4`
+- comparison baseline:
+  - `Hybrid RAG` bottleneck row from:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/docs/experiment100_method_table_20260418.md`
+- final readout on the matched `25` bottleneck tasks:
+  - `ResearchAgent auxfix`:
+    - factuality: `0.5651`
+    - future alignment: `0.5178`
+    - evidence traceability: `0.5098`
+    - opportunity grounding: `0.5532`
+  - `Hybrid RAG` reference:
+    - factuality: `0.4880`
+    - future alignment: `0.4606`
+    - evidence traceability: `0.3514`
+    - opportunity grounding: `0.5646`
+- decision:
+  - freeze this `ResearchAgent bottleneck` variant for now
+  - do not spend more iteration budget on bottleneck before venue is addressed
+- reason:
+  - this variant already exceeds `Hybrid RAG` on all three primary metrics on the matched bottleneck slice
+  - only family aux remains slightly lower: `0.5532` vs `0.5646`
+- next `ResearchAgent` optimization focus:
+  - `venue_aware_research_positioning`
+
+## CoI Smoke Relaunch After Branch-Coverage Expansion
+
+- Release dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- Release task count:
+  - `100` (read from `manifest.json`)
+- Method:
+  - `CoI-Agent-Offline`
+- Code change under test:
+  - Increased effective retained branch count in `src/researchworld/coi_agent_offline.py`
+  - all four task families now keep up to `5` anchor branches
+  - Family heads now synthesize recurring cross-branch signals instead of explicitly comparing branches
+- Launch config:
+  - answer workers / shards: `4`
+  - internal anchor workers: `3` via `RTL_COI_ANCHOR_WORKERS=3`
+  - main llm: `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8001.local.yaml`
+  - cheap llm: `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8001.local.yaml`
+  - fallback llm: disabled
+  - embedding: `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/configs/embedding/bge_m3.local.yaml`
+
+### Planned smoke runs
+
+- Venue smoke rerun
+  - task ids source: `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/smoke_task_ids/coi_venue_smoke4_20260419.txt`
+  - output dir: `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_venue_smoke4_queryfix_v3_covexp_20260420`
+  - tmux session: `coi_venue_smoke_covexp_20260420`
+
+- Strategic smoke rerun
+  - task ids source: `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/smoke_task_ids/coi_strategic_smoke4_20260419.txt`
+  - output dir: `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_strategic_smoke4_covexp_20260420`
+  - tmux session: `coi_strategic_smoke_covexp_20260420`
+
+- Bottleneck smoke rerun
+  - task ids source:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/coi_bottleneck_smoke4_canonical_v2_20260419/task_ids_00.txt`
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/coi_bottleneck_smoke4_canonical_v2_20260419/task_ids_01.txt`
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/coi_bottleneck_smoke4_canonical_v2_20260419/task_ids_02.txt`
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/coi_bottleneck_smoke4_canonical_v2_20260419/task_ids_03.txt`
+  - output dir: `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_bottleneck_smoke4_covexp_20260420`
+  - tmux session: `coi_bottleneck_smoke_covexp_20260420`
+
+### Notes
+
+- This is a retrieval/coverage-focused CoI rerun, not a benchmark release change.
+- The canonical release path is unchanged.
+- Unified final metrics should be run after each smoke completes.
+
+## CoI Forecast Smoke After Primary-Direction Forecast Rewrite
+
+- Goal:
+  - improve `direction_forecasting` auxiliary quality by making the final forecast answer consume multi-branch evidence as one mainline forecast instead of a flat list of co-equal directions
+- Code change under test:
+  - `src/researchworld/coi_agent_offline.py`
+  - `direction_forecasting` branch projection now emits:
+    - `primary_direction`
+    - `secondary_directions`
+    - `supporting_signals`
+    - `counter_signals`
+    - `calibration`
+  - forecasting family head now explicitly:
+    - extracts recurring cross-branch signals
+    - picks exactly one `primary_direction`
+    - demotes alternatives into `secondary_directions`
+    - requires explicit calibration / uncertainty handling
+  - final verbalizer now renders:
+    - `Trajectory`
+    - `Primary next direction`
+    - `Why this follows from pre-cutoff signals`
+    - optional `Secondary but weaker branches`
+
+## ResearchAgent Venue Contractfix Smoke-4
+
+- release dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- method:
+  - `ResearchAgent`
+- family:
+  - `venue_aware_research_positioning`
+- code changes under test:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/src/researchworld/researchagent_offline.py`
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/src/researchworld/researchagent_prompts.py`
+  - added `ResearchAgent`-local fallback parsing for explicit numbered candidate directions from question text
+  - generalized comparative hard contract so venue comparative tasks also require complete ordering over listed candidates
+  - venue decomposition now preserves contract labels and explicitly asks for package / reviewer-expectation / evaluation rationale
+  - venue query builder and signal map now inject target-venue prior signals and reviewer expectations
+  - venue family packet now preserves `ranked_candidates`; finalizer renders `Positioning 1..N` for comparative venue tasks instead of collapsing to one winner
+  - venue contract penalty now punishes missing full ranking on explicit candidate-direction tasks
+- smoke subset:
+  - task ids file:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/smoke_task_ids/researchagent_venue_smoke4_chainsignal_20260420.txt`
+  - task ids:
+    - `RTLv3-0163`
+    - `RTLv3-0168`
+    - `RTLv3-1196`
+    - `RTLv3-1199`
+- launch config:
+  - output dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_venue_smoke4_contractfix_20260420_parallel4`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_researchagent_venue_smoke4_contractfix_20260420.sh`
+  - tmux:
+    - `researchagent_venue_smoke4_contractfix_20260420`
+  - answer shards:
+    - `4`
+  - llm:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml`
+- validation before launch:
+  - static compile passed for both modified source files
+  - local parser check now correctly extracts full candidate lists for:
+    - `RTLv3-0163`
+    - `RTLv3-0168`
+  - local finalizer check now emits `Positioning 1..N` for comparative venue packets
+- status at log-write time:
+  - running
+  - first observed shard progress:
+    - `shard_00`: `1/25 RTLv3-0004`
+    - `shard_01`: `1/25 RTLv3-0006`
+    - `shard_02`: `1/25 RTLv3-0007`
+    - `shard_03`: `1/25 RTLv3-0009`
+- final status:
+  - completed
+  - output dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_venue_smoke4_contractfix_20260420_parallel4`
+  - metric summary:
+    - factuality: `0.5000`
+    - future alignment: `0.3101`
+    - evidence traceability: `0.6187`
+    - venue positioning grounding: `0.5625`
+  - venue aux dimensions:
+    - `venue_specific_contribution_fit`: `0.85`
+    - `reviewer_expectation_grounding`: `0.65`
+    - `paper_package_specificity`: `0.70`
+    - `contrastive_venue_discrimination`: `0.30`
+- comparison against previous venue smoke:
+  - previous reference run:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_venue4_signalmap_20260419_parallel4`
+  - factuality: `0.3812 -> 0.5000`
+  - future alignment: `0.2794 -> 0.3101`
+  - evidence traceability: `0.6837 -> 0.6187`
+  - venue positioning grounding: `0.6012 -> 0.5625`
+- direct outcome:
+  - explicit candidate-list venue tasks now render complete ranked answers using `Positioning 1..N`
+  - the contract failure on `RTLv3-0163` / `RTLv3-0168` is fixed
+  - remaining weakness is no longer contract compliance; it is semantic abstraction and contrast quality on non-explicit-list tasks
+- main failure observed in outputs:
+  - `RTLv3-1196` and `RTLv3-1199` still let paper-title-like strings leak into the primary positioning instead of abstracting to reusable technical direction labels
+  - contrastive reasoning is too weak and often degenerates into one shallow rejection sentence, which explains the drop in `contrastive_venue_discrimination`
+
+### ResearchAgent Venue Contractfix Smoke-4 Rerun After Title-Abstraction / Contrastfix
+
+- additional code changes:
+  - added title-like venue label detection and deterministic abstraction into reusable technical direction labels
+  - venue canonicalization now rewrites title-like `canonical_focus` / `secondary_focus` / `nearby_but_wrong_positioning`
+  - added bucket-aware contrast hints in final venue answer rendering
+- rerun status:
+  - completed
+  - same output dir reused:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_venue_smoke4_contractfix_20260420_parallel4`
+- rerun metrics:
+  - factuality: `0.3937`
+  - future alignment: `0.3875`
+  - evidence traceability: `0.6162`
+  - venue positioning grounding: `0.6000`
+- rerun aux dimensions:
+  - `venue_specific_contribution_fit`: `0.85`
+  - `reviewer_expectation_grounding`: `0.75`
+  - `paper_package_specificity`: `0.80`
+  - `contrastive_venue_discrimination`: `0.425`
+- comparison against previous contractfix pass:
+  - factuality: `0.5000 -> 0.3937`
+  - future alignment: `0.3101 -> 0.3875`
+  - evidence traceability: `0.6187 -> 0.6162`
+  - venue positioning grounding: `0.5625 -> 0.6000`
+- qualitative readout:
+  - `RTLv3-1196` is no longer a raw paper-title answer; it now abstracts to venue-facing direction labels
+  - `RTLv3-1199` improves aux dimensions but still has one renderer bug where `Positioning 1/2` is serialized as dict-like text instead of clean prose labels
+
+## ResearchAgent Exp100 Qwen8002 Launch
+
+- release dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- release task count:
+  - `100` (read from `manifest.json`)
+- method:
+  - `ResearchAgent`
+- code changes included:
+  - latest task-family-specific `ResearchAgent` code
+  - venue comparative contract fix
+  - venue title-abstraction / contrast fix
+  - venue `ranked_candidates` dict-string serialization fix
+- output dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_experiment100_qwen8002_20260420_parallel4`
+- launcher:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_researchagent_exp100_qwen8002_20260420.sh`
+- tmux:
+  - `researchagent_exp100_qwen8002_20260420`
+- answer shards:
+  - `4`
+- llm:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml`
+- evaluator:
+  - `scripts/evaluate_experiment_final_metrics.py --metrics all`
+- validation before launch:
+  - static compile passed for modified `researchagent_offline.py`
+  - local sanity check passed for `ranked_candidates` dict/dict-string -> clean direction label extraction
+- status at log-write time:
+  - ready to launch
+    - optional `Counter-signals`
+    - `Calibration`
+- Smoke subset:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/smoke_task_ids/coi_forecast_smoke4_20260420.txt`
+  - task ids:
+    - `RTLv3-0056`
+    - `RTLv3-0071`
+    - `RTLv3-0410`
+    - `RTLv3-EXP-1047`
+  - selection rationale:
+    - low `CoI` forecast aux
+    - `Hybrid RAG` clearly higher on the same forecasting tasks
+- Launch config:
+  - tmux session: `coi_forecast_smoke_primarydir_20260420`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_coi_forecast_smoke_primarydir_20260420.sh`
+  - output dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_forecast_smoke4_primarydir_20260420`
+  - answer workers / shards: `4`
+  - internal anchor workers: `3`
+  - main llm:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8001.local.yaml`
+  - embedding:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/configs/embedding/bge_m3.local.yaml`
+- Expected readout:
+  - compare against the existing exp100 `CoI` forecasting baseline on the same four tasks
+  - inspect whether:
+    - `signal_grounding` rises via explicit signal sentences + inline evidence ids
+    - `forecast_discipline` rises via one-primary-direction formatting + calibration
+
+## CoI Forecast Contract-Alignment Rewrite And Full Exp100 Launch
+
+- Goal:
+  - keep the improved forecasting structure, but stop `primary_direction` from drifting into paper titles / method titles on `chain_terminal_forecast` tasks
+- Root cause identified:
+  - many `direction_forecasting` tasks in exp100 have no explicit public `candidate_directions` contract
+  - previous CoI forecasting label pools were too broad and included profile titles / paper-like strings
+  - this let `primary_direction` collapse onto title-level labels such as specific method names instead of reusable future-direction labels
+- Code change under test:
+  - `src/researchworld/coi_agent_offline.py`
+  - added forecasting-specific candidate-label builders:
+    - `_forecast_candidate_labels(...)`
+    - `_aggregate_forecast_labels(...)`
+  - forecasting candidate labels now prioritize:
+    - task-extracted candidate directions when present
+    - packet descendants
+    - packet `top_future_work`
+    - short profile ideas
+  - forecasting candidate labels now explicitly avoid:
+    - paper titles
+    - benchmark-style title strings
+    - long method-title phrasing when a descendant / future-work label is available
+  - `_project_structured_answer(...)` and `_adapt_head_output(...)` now use the narrower forecast label pool for `direction_forecasting`
+  - `_run_direction_head(...)` now shows candidate direction labels directly in the head prompt and instructs the model to prefer descendant / future-work labels over titles
+  - `_canonicalize_text(...)` now has a token-overlap fallback so paraphrased forecast directions can still snap back onto a close candidate label
+- Full run launch:
+  - release dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+  - output dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_experiment100_contractalign_20260420_parallel4`
+  - tmux session:
+    - `coi_exp100_contractalign_20260420`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_coi_experiment100_contractalign_20260420.sh`
+  - config:
+    - answer shards: `4`
+    - internal anchor workers: `3`
+    - main llm:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8001.local.yaml`
+    - embedding:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/configs/embedding/bge_m3.local.yaml`
+  - auto-postrun:
+    - copy merged outputs to `results.jsonl` / `summary.json`
+    - run unified evaluator:
+      - `scripts/evaluate_experiment_final_metrics.py --metrics all`
+
+## CoI Family Isolation Follow-Up
+
+- decision:
+  - treat `direction_forecasting` and `strategic_research_planning` as the currently stabilized `CoI` family paths
+  - future `CoI` iteration should focus on `bottleneck_opportunity_discovery` and `venue_aware_research_positioning`
+- implementation note:
+  - `src/researchworld/coi_agent_offline.py`
+  - separated stable family-specific helpers so later bottleneck / venue work does not need to edit mixed family branches:
+    - `_project_direction_structured_answer(...)`
+    - `_project_strategic_structured_answer(...)`
+    - `_strategic_candidate_labels(...)`
+  - `forecast / strategic` candidate shaping and adapter selection now route through their own helper path first
+- intent:
+  - reduce accidental regressions where a later prompt or label-pool tweak for bottleneck / venue spills back into forecast / strategic
+
+## CoI Venue Chain-Stage Signal Aggregation
+
+- goal:
+  - strengthen `venue_aware_research_positioning` by making venue cues explicit at the chain stage instead of leaving them scattered across paper rows and the final head prompt
+- user-driven design change:
+  - every CoI branch should collect venue metadata from its chain papers
+  - every branch should summarize venue-family compatibility plus recurring packaging / evaluation signatures before the final venue head runs
+- code change:
+  - `src/researchworld/coi_agent_offline.py`
+  - `extract_paper_profile(...)` now carries:
+    - `venue`
+    - `venue_bucket`
+    - `citation_count`
+  - added chain-stage summarizer:
+    - `_build_chain_venue_signals(...)`
+  - `build_faithful_chain(...)` now writes:
+    - `venue_signals`
+    - `venue_signal_summary`
+  - `_render_coi_backbone_state(...)` now includes:
+    - per-branch `venue_signal_summary`
+    - cross-branch venue-count / venue-bucket / packaging / evaluation aggregation for venue tasks only
+  - `_run_venue_head(...)` now receives an explicit `Chain-stage venue signal summaries` block and is instructed to use it for contribution packaging and evaluation recipe selection
+  - final trace export now preserves `venue_signals` and `venue_signal_summary` in both the selected chain and candidate chains
+- verification:
+  - static compile:
+    - `python3 -m py_compile src/researchworld/coi_agent_offline.py`
+    - passed
+  - single-task smoke:
+    - release dir:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+    - output dir:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/coi_venue_signal_smoke_20260420`
+    - task filter:
+      - `family=venue_aware_research_positioning`
+      - `task_limit=1`
+    - llm config:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8001.local.yaml`
+    - status:
+      - launch succeeded after correcting the Python environment and config paths
+      - no completed output row yet at log-write time, so only compile is fully verified in this section
+- caveat:
+  - this change intentionally touches only the venue path; `forecast / strategic` family logic was left unchanged
+
+## CoI Bottleneck Chain-Stage Signal Aggregation
+
+- goal:
+  - make `bottleneck_opportunity_discovery` use explicit chain-stage limitation / future-work summaries instead of relying only on downstream evidence retrieval and the final bottleneck head
+- design:
+  - each chain paper should carry structural bottleneck signals from the offline KB
+  - each branch should summarize recurring limitations, future-work unlocks, and related problem statements before the final bottleneck head runs
+- code change:
+  - `src/researchworld/coi_agent_offline.py`
+  - `extract_paper_profile(...)` now additionally carries:
+    - `problem_statement`
+    - `structure_limitations`
+    - `structure_future_work`
+    - `structure_core_ideas`
+  - added chain-stage summarizer:
+    - `_build_chain_bottleneck_signals(...)`
+  - `build_faithful_chain(...)` now writes:
+    - `bottleneck_signals`
+    - `bottleneck_signal_summary`
+  - `_render_coi_backbone_state(...)` now includes:
+    - per-branch bottleneck summary
+    - cross-branch recurring limitation / future-work / core-idea aggregation for bottleneck tasks only
+  - `_run_bottleneck_head(...)` now receives an explicit `Chain-stage bottleneck signal summaries` block and is instructed to preserve repeated historical limitation wording when choosing the bottleneck and unlock opportunity
+  - final trace export now preserves `bottleneck_signals` and `bottleneck_signal_summary`
+- verification:
+  - static compile:
+    - `python3 -m py_compile src/researchworld/coi_agent_offline.py`
+    - passed
+- caveat:
+  - this change is local to the bottleneck path and reuses the same branch-level pattern already added for venue
+
+## CoI Bottleneck And Venue Chain-Signal Smoke Launch
+
+- launch_intent:
+  - validate the new chain-stage signal aggregation on both currently active CoI adaptation fronts:
+    - `bottleneck_opportunity_discovery`
+    - `venue_aware_research_positioning`
+- release_path:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- kb_dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1/kb`
+- bottleneck_smoke:
+  - task_count:
+    - `4`
+  - task_ids:
+    - `RTLv3-0004`
+    - `RTLv3-0014`
+    - `RTLv3-0026`
+    - `RTLv3-0034`
+  - output_dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_bottleneck_smoke4_chainsignal_20260420`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_coi_bottleneck_smoke4_chainsignal_20260420.sh`
+  - tmux_session:
+    - `coi_bottleneck_smoke4_chainsignal_20260420`
+- venue_smoke:
+  - task_count:
+    - `4`
+  - task_ids:
+    - `RTLv3-0163`
+    - `RTLv3-0168`
+    - `RTLv3-1196`
+    - `RTLv3-1199`
+  - output_dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_venue_smoke4_chainsignal_20260420`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_coi_venue_smoke4_chainsignal_20260420.sh`
+  - tmux_session:
+    - `coi_venue_smoke4_chainsignal_20260420`
+- runtime_config:
+  - answer workers:
+    - `4`
+  - internal anchor workers:
+    - `3`
+  - main / cheap judge config:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8001.local.yaml`
+  - embedding config:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/configs/embedding/bge_m3.local.yaml`
+  - postrun:
+    - merge `results_merged.jsonl`
+    - run unified evaluator `evaluate_experiment_final_metrics.py --metrics all`
+
+## ResearchAgent Bottleneck And Venue Chain-Signal Adaptation
+
+- goal:
+  - port the same family-specific signal-aggregation idea from `CoI` into `ResearchAgent`, but map it onto the native `retrieval -> evidence_digest -> historical_signal_map -> task_module_packet` pipeline instead of a multi-branch CoI chain
+- code paths:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/src/researchworld/researchagent_offline.py`
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/src/researchworld/researchagent_prompts.py`
+- bottleneck changes:
+  - `evidence_digest` now exposes chain-style bottleneck aggregates:
+    - `chain_recurring_limitations`
+    - `chain_future_unlocks`
+    - `chain_problem_patterns`
+    - `chain_core_idea_signals`
+    - `chain_bottleneck_summary`
+  - `historical_signal_map` now prioritizes those chain-style bottleneck aggregates when building:
+    - `recurring_bottlenecks`
+    - `unlock_chains`
+    - `bottleneck_signal_summary`
+  - fallback and canonicalization now consume those signals before broader digest fields when constructing the final bottleneck packet
+- venue changes:
+  - `evidence_digest` now exposes chain-style venue aggregates:
+    - `chain_venue_names`
+    - `chain_venue_buckets`
+    - `chain_contribution_packages`
+    - `chain_evaluation_signatures`
+    - `chain_venue_fit_patterns`
+    - `chain_venue_summary`
+  - `historical_signal_map` now prioritizes those chain-style venue aggregates when building:
+    - `venue_names`
+    - `venue_buckets`
+    - `contribution_packages`
+    - `evaluation_signatures`
+    - `venue_fit_patterns`
+    - `venue_signal_summary`
+  - added a venue-specific packet canonicalizer so the final venue packet is no longer just a pass-through normalization stage
+- prompt updates:
+  - `researchagent_prompts.py`
+  - bottleneck and venue family requirements now explicitly tell the task module / decision packet stages to use the new chain-style summary signals
+- verification:
+  - static compile pending at log-write time
+- caveat:
+  - this change is scoped to `bottleneck_opportunity_discovery` and `venue_aware_research_positioning`; `forecast / strategic` behavior should remain unchanged
+
+## ResearchAgent Bottleneck And Venue Chain-Signal Smoke Launch
+
+- launch_intent:
+  - validate the new family-specific signal aggregation for `ResearchAgent` on the same cross-domain smoke tasks used for the current `CoI` smoke
+- release_path:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- kb_dir:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1/kb`
+- bottleneck_smoke:
+  - task_count:
+    - `4`
+  - task_ids:
+    - `RTLv3-0004`
+    - `RTLv3-0014`
+    - `RTLv3-0026`
+    - `RTLv3-0034`
+  - output_dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_bottleneck_smoke4_chainsignal_20260420_parallel4`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_researchagent_bottleneck_smoke4_chainsignal_20260420.sh`
+  - tmux_session:
+    - `researchagent_bottleneck_smoke4_chainsignal_20260420`
+- venue_smoke:
+  - task_count:
+    - `4`
+  - task_ids:
+    - `RTLv3-0163`
+    - `RTLv3-0168`
+    - `RTLv3-1196`
+    - `RTLv3-1199`
+  - output_dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_venue_smoke4_chainsignal_20260420_parallel4`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_researchagent_venue_smoke4_chainsignal_20260420.sh`
+  - tmux_session:
+    - `researchagent_venue_smoke4_chainsignal_20260420`
+- runtime_config:
+  - answer workers:
+    - `4`
+  - llm config:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8001.local.yaml`
+  - iterations:
+    - `2`
+  - render_passes:
+    - `1`
+  - postrun:
+    - merge `results_merged.jsonl`
+    - run unified evaluator `evaluate_experiment_final_metrics.py --metrics all`
+
+## Chain-Signal Smoke Status Checkpoint
+
+- checked_at:
+  - `2026-04-20`
+- release_path:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- completion_status:
+  - `CoI bottleneck smoke`: finished
+  - `CoI venue smoke`: finished
+  - `ResearchAgent bottleneck smoke`: finished
+  - `ResearchAgent venue smoke`: finished
+- result_dirs:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_bottleneck_smoke4_chainsignal_20260420`
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_venue_smoke4_chainsignal_20260420`
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_bottleneck_smoke4_chainsignal_20260420_parallel4`
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_venue_smoke4_chainsignal_20260420_parallel4`
+- summary:
+  - `CoI bottleneck smoke`
+    - tasks: `4`
+    - Fact: `0.3701`
+    - Future Alignment: `0.1594`
+    - Evidence Traceability: `0.7425`
+    - Opportunity Grounding: `0.4888`
+  - `CoI venue smoke`
+    - tasks: `4`
+    - Fact: `0.1688`
+    - Future Alignment: `0.1309`
+    - Evidence Traceability: `0.3456`
+    - Venue Positioning Grounding: `0.3756`
+  - `ResearchAgent bottleneck smoke`
+    - tasks: `4`
+    - Fact: `0.6324`
+    - Future Alignment: `0.7077`
+    - Evidence Traceability: `0.4888`
+    - Opportunity Grounding: `0.6412`
+  - `ResearchAgent venue smoke`
+    - tasks: `4`
+    - Fact: `0.3178`
+    - Future Alignment: `0.3639`
+    - Evidence Traceability: `0.2550`
+    - Venue Positioning Grounding: `0.5025`
+- key_observation:
+  - `ResearchAgent` now clearly beats the current `CoI` smoke on both bottleneck and venue auxiliary metrics for this four-task slice.
+  - `ResearchAgent venue` auxiliary improved, but its factuality and traceability are still weak enough that venue remains the fragile path.
+
+## Auxiliary-Signal Demotion Fix And Smoke Relaunch
+
+- motivation:
+  - the previous chain-signal adaptation was too aggressive
+  - the user explicitly wanted the new bottleneck / venue signals to be auxiliary support, not replacements for the original decision signals
+  - manual inspection of failed outputs showed this concretely:
+    - `ResearchAgent venue` could collapse concrete positioning into abstract package categories such as `empirical_comparison` / `new_method`
+    - `ResearchAgent bottleneck` could drift toward broader summary phrasing when chain summaries got priority in fallback / canonicalization
+    - `CoI` bottleneck / venue prompts were phrased as if the chain-stage signals should directly drive the head decision, which risks overwriting sharper branch-level labels
+- code changes:
+  - `src/researchworld/researchagent_offline.py`
+    - added a guard against abstract venue positioning labels
+    - changed venue fallback / canonicalization so chain-stage venue signals only fill package / fit / evaluation support fields instead of replacing the main positioning label
+    - changed bottleneck fallback ordering so chain-stage summaries are supplemental rather than first-priority seeds
+    - reduced venue focus-candidate dependence on chain-derived package labels
+  - `src/researchworld/researchagent_prompts.py`
+    - updated bottleneck / venue instructions so chain-stage signals are explicitly auxiliary corroboration only
+    - explicitly forbid using abstract package taxonomy labels as the primary venue positioning
+  - `src/researchworld/coi_agent_offline.py`
+    - removed per-branch signal-summary lines from the main branch render block
+    - changed bottleneck / venue head prompts so auxiliary chain-stage summaries reinforce package / limitation wording but do not override sharper branch-supported labels
+- verification:
+  - static compile passed:
+    - `python3 -m py_compile src/researchworld/researchagent_offline.py src/researchworld/researchagent_prompts.py src/researchworld/coi_agent_offline.py`
+- relaunches:
+  - `ResearchAgent bottleneck auxfix smoke`
+    - output dir:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_bottleneck_smoke4_auxfix_20260420_parallel4`
+    - tmux:
+      - `researchagent_bottleneck_smoke4_auxfix_20260420`
+  - `ResearchAgent venue auxfix smoke`
+    - output dir:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_venue_smoke4_auxfix_20260420_parallel4`
+    - tmux:
+      - `researchagent_venue_smoke4_auxfix_20260420`
+  - `CoI bottleneck auxfix smoke`
+    - output dir:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_bottleneck_smoke4_auxfix_20260420`
+    - tmux:
+      - `coi_bottleneck_smoke4_auxfix_20260420`
+  - `CoI venue auxfix smoke`
+    - output dir:
+      - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_venue_smoke4_auxfix_20260420`
+    - tmux:
+      - `coi_venue_smoke4_auxfix_20260420`
+- release_path:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- status_at_log_write:
+  - all four relaunches started successfully and entered their first smoke task
+  - no final rows or metrics yet at this checkpoint
+
+## Family Exp100 Promotion After Auxfix Smoke
+
+- release_path:
+  - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/data/releases/benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1`
+- release_task_count:
+  - `100`
+- promotion_decision:
+  - promote `ResearchAgent bottleneck` to the full `bottleneck_opportunity_discovery` family slice
+  - promote `CoI venue` to the full `venue_aware_research_positioning` family slice
+  - keep `ResearchAgent venue` and `CoI bottleneck` on the optimization track for another round instead of promoting immediately
+- rationale:
+  - `ResearchAgent bottleneck auxfix smoke` improved:
+    - `Fact`: `0.6324 -> 0.6670`
+    - `Future Alignment`: `0.7077 -> 0.8116`
+    - `Opportunity Grounding`: `0.6412 -> 0.6469`
+  - `CoI venue auxfix smoke` improved strongly across both primary and family metrics:
+    - `Fact`: `0.1688 -> 0.4313`
+    - `Future Alignment`: `0.1309 -> 0.4847`
+    - `Evidence Traceability`: `0.3456 -> 0.6731`
+    - `Venue Positioning Grounding`: `0.3756 -> 0.6656`
+- launch_1:
+  - method:
+    - `ResearchAgent-Offline`
+  - family_scope:
+    - `bottleneck_opportunity_discovery`
+  - expected_task_count:
+    - `25`
+  - task_ids_file:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/researchagent_experiment100_bottleneck25_auxfix_20260420_task_ids.txt`
+  - output_dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/researchagent_experiment100_bottleneck25_auxfix_20260420_parallel4`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_researchagent_bottleneck25_auxfix_20260420.sh`
+  - tmux:
+    - `researchagent_bottleneck25_auxfix_20260420`
+  - runtime:
+    - answer workers: `4`
+    - reasoning/render/judge llm: `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8001.local.yaml`
+  - postrun:
+    - merge ordered `results_merged.jsonl`
+    - run unified evaluator with `--metrics all`
+- launch_2:
+  - method:
+    - `CoI-Agent-Offline`
+  - family_scope:
+    - `venue_aware_research_positioning`
+  - expected_task_count:
+    - `25`
+  - task_ids_file:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/coi_experiment100_venue25_auxfix_20260420_task_ids.txt`
+  - output_dir:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/results/coi_experiment100_venue25_auxfix_20260420_parallel4`
+  - launcher:
+    - `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/launch_coi_venue25_auxfix_20260420.sh`
+  - tmux:
+    - `coi_venue25_auxfix_20260420`
+  - runtime:
+    - answer workers: `4`
+    - main/cheap/judge llm: `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/tmp/local_llm_configs/qwen_235b_8001.local.yaml`
+    - embedding: `/vepfs-mlp2/c20250513/241404044/users/roytian/ResearchForesight/configs/embedding/bge_m3.local.yaml`
+  - postrun:
+    - merge ordered `results_merged.jsonl`
+    - run unified evaluator with `--metrics all`
+- status_at_launch_log:
+  - `ResearchAgent bottleneck25` entered shard starts:
+    - `RTLv3-0004 / RTLv3-0006 / RTLv3-0007 / RTLv3-0009`
+  - `CoI venue25` entered shard starts:
+    - `RTLv3-0163 / RTLv3-0164 / RTLv3-0168 / RTLv3-1195`

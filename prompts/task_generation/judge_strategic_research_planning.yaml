@@ -5,6 +5,12 @@ task_variables:
 template: |
   You are judging whether a "strategic_research_planning" benchmark item is high-quality enough for release.
 
+  Guidance:
+  - The public wording must make clear whether the agent is ranking a surfaced candidate set or, only as a fallback, proposing directions.
+  - If candidate_directions are available in the candidate payload, strong items surface them explicitly and ask for a ranking over those listed options.
+  - If no candidate set is explicitly shown, the question should say "identify" or "propose and rank" or equivalent.
+  - Strong items ask for concrete next-step directions tied to bottlenecks, dependencies, or mechanisms, not broad topic areas.
+
   Evaluate:
   - family_fit
   - temporal_discipline

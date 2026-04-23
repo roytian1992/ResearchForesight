@@ -8,13 +8,21 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 import sys
 
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from researchworld.baseline_runner import PUBLIC_DOMAIN_TO_ID, load_release_tasks
 from researchworld.coi_agent_offline import CoIAgentOffline
 from researchworld.fulltext_cache import LocalFulltextCache
-from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
+from researchworld.llm import (
+    FallbackOpenAICompatChatClient,
+    OpenAICompatChatClient,
+    OpenAICompatEmbeddingClient,
+    load_openai_compat_config,
+    load_openai_compat_embedding_config,
+)
 from researchworld.offline_kb import OfflineKnowledgeBase
 
 
@@ -26,6 +34,7 @@ def main() -> None:
     parser.add_argument("--main-llm-config", default="configs/llm/mimo_pro.local.yaml")
     parser.add_argument("--cheap-llm-config", default="configs/llm/mimo_pro.local.yaml")
     parser.add_argument("--fallback-llm-config", default="configs/llm/qwen_235b.local.yaml")
+    parser.add_argument("--embedding-config", default="configs/embedding/bge_m3.local.yaml")
     parser.add_argument("--task-limit", type=int, default=None)
     parser.add_argument("--domains", nargs="*", default=None)
     parser.add_argument("--families", nargs="*", default=None)
@@ -48,6 +57,12 @@ def main() -> None:
     cheap_client = FallbackOpenAICompatChatClient(
         OpenAICompatChatClient(load_openai_compat_config(Path(args.cheap_llm_config))),
         fallback_client,
+    )
+    embedding_path = Path(args.embedding_config) if args.embedding_config else None
+    embedding_client = (
+        OpenAICompatEmbeddingClient(load_openai_compat_embedding_config(embedding_path))
+        if (embedding_path and embedding_path.exists())
+        else None
     )
     kb = OfflineKnowledgeBase(kb_dir)
     tasks = load_release_tasks(release_dir)
@@ -122,6 +137,7 @@ def main() -> None:
             kb=kb,
             main_client=main_client,
             cheap_client=cheap_client,
+            embedding_client=embedding_client,
             fulltext_cache=fulltext_cache,
             allow_fulltext_fetch=bool(args.allow_fulltext_fetch),
         )
@@ -143,6 +159,10 @@ def main() -> None:
             "answer": result["answer"],
             "trace": result,
         }
+        if str(result.get("raw_answer") or "").strip():
+            row["raw_answer"] = result.get("raw_answer")
+        if isinstance(result.get("adapter"), dict) and result.get("adapter"):
+            row["adapter"] = result.get("adapter")
         outputs.append(row)
         with results_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")

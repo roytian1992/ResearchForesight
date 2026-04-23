@@ -449,6 +449,29 @@ class MechanismReasonerV6(StructuredGenerator):
             return candidates[0]
         return value
 
+    def _contract_direction_candidates(self, task: Optional[Dict[str, Any]]) -> List[str]:
+        if not task:
+            return []
+        return [
+            str(x).strip()
+            for x in (extract_task_contract(task).get('candidate_directions') or [])
+            if str(x).strip()
+        ]
+
+    def _align_to_contract_direction(self, value: Any, candidate_directions: List[str]) -> str:
+        text = str(value or '').strip()
+        if not text or not candidate_directions:
+            return text
+        norm = self._norm_label(text)
+        for candidate in candidate_directions:
+            cand_norm = self._norm_label(candidate)
+            if norm == cand_norm or norm in cand_norm or cand_norm in norm:
+                return candidate
+        best = max(candidate_directions, key=lambda cand: self._overlap_score(text, cand), default='')
+        if best and self._overlap_score(text, best) >= 0.34:
+            return best
+        return text
+
     def _ground_bottleneck_payload(self, obj: Dict[str, Any], abstraction: Dict[str, Any]) -> Dict[str, Any]:
         out = dict(obj or {})
         out['opportunity'] = self._canonical_successor_label(out.get('opportunity'), abstraction, prefer_top_if_generic=True)
@@ -474,15 +497,20 @@ class MechanismReasonerV6(StructuredGenerator):
             out['evidence_titles'] = self._pick_titles(abstraction)
         return out
 
-    def _ground_planning_payload(self, obj: Dict[str, Any], abstraction: Dict[str, Any]) -> Dict[str, Any]:
+    def _ground_planning_payload(self, obj: Dict[str, Any], abstraction: Dict[str, Any], task: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         out = dict(obj or {})
+        contract_candidates = self._contract_direction_candidates(task)
+        contract_candidate_keys = {self._norm_label(x) for x in contract_candidates}
         rows: List[Dict[str, Any]] = []
         seen = set()
         for row in list(out.get('ranked_directions') or [])[:6]:
             item = dict(row or {})
             direction = self._canonical_successor_label(item.get('direction'), abstraction, prefer_top_if_generic=True)
+            direction = self._align_to_contract_direction(direction, contract_candidates)
             key = self._norm_label(direction)
             if not direction or key in seen:
+                continue
+            if contract_candidates and key not in contract_candidate_keys:
                 continue
             seen.add(key)
             item['rank'] = len(rows) + 1
@@ -640,6 +668,7 @@ Return JSON with the same schema as the draft.
 
     def _run_planning(self, *, task: Dict[str, Any], abstraction: Dict[str, Any], head_result: Dict[str, Any]) -> Dict[str, Any]:
         contract = extract_task_contract(task)
+        candidate_directions = [str(x).strip() for x in (contract.get('candidate_directions') or []) if str(x).strip()]
         prompt = f"""Produce a prioritized strategic research plan from grounded historical signals.
 
 Task:
@@ -665,7 +694,15 @@ Requirements:
 - Prefer executable near-term priorities over broad umbrellas.
 - When strong successor-topic candidates exist, rank them ahead of generic enabling work unless the generic work is the only clearly grounded option.
 - When successor-topic candidates exist, each ranked direction should come from that candidate set or be a close paraphrase of one item whenever possible.
+"""
+        if candidate_directions:
+            prompt += f"""
+- This is a comparative planning task. You must rank only among these listed candidate directions: {json.dumps(candidate_directions, ensure_ascii=False)}.
+- Do not introduce any third direction, substitute label, umbrella category, or sibling topic outside that candidate list.
+- Reuse the listed direction labels verbatim unless a trivial casing/punctuation cleanup is needed.
+"""
 
+        prompt += """
 Return JSON:
 {{
   "ranked_directions": [
@@ -704,7 +741,14 @@ Rules:
 - If a top-ranked item falls outside the concrete successor-topic set despite stronger grounded candidates being available, revise it.
 - Ensure each item has non-redundant why-now logic.
 - Ensure each item includes one dependency or trade-off.
-
+"""
+        if candidate_directions:
+            review_prompt += f"""
+- This task explicitly constrains the answer to the listed candidate directions: {json.dumps(candidate_directions, ensure_ascii=False)}.
+- Reject any draft item whose direction is not one of those candidates.
+- The repaired plan must use only those candidate labels and must not add any extra direction.
+"""
+        review_prompt += """
 Return JSON with the same schema as the draft.
 """
         final = self._complete_json(
@@ -712,7 +756,7 @@ Return JSON with the same schema as the draft.
             system='You are a strict strategic planning judge. Output JSON only.',
             prompt=review_prompt,
         )
-        obj = self._ground_planning_payload(final or draft, abstraction)
+        obj = self._ground_planning_payload(final or draft, abstraction, task=task)
         return {
             'family_reasoning': obj,
             'answer': self._render_planning(obj),
@@ -888,7 +932,18 @@ Rules:
 - Preserve at least one explicit evidence anchor when paper titles are available.
 - Reject vague reformulations that are less specific than the current answer.
 - Keep task-family fit strict and concise.
+"""
+        contract = extract_task_contract(task)
+        candidate_directions = [str(x).strip() for x in (contract.get('candidate_directions') or []) if str(x).strip()]
+        if str(task.get('family') or '') == 'strategic_research_planning' and candidate_directions:
+            prompt += f"""
+- This is a comparative planning task with explicit candidate directions: {json.dumps(candidate_directions, ensure_ascii=False)}.
+- Preserve those listed direction labels verbatim in the final answer.
+- Do not sharpen, replace, or descend below the listed candidate directions even if narrower sub-directions appear in the evidence.
+- If you use a ranked list or comparative sentence, the compared items must be exactly those listed candidates.
+"""
 
+        prompt += """
 Return JSON with the same schema as the draft.
 """
         final = self._complete_json(
@@ -955,6 +1010,69 @@ Return JSON with the same schema as the draft.
         ]
         return any(phrase in norm for phrase in generic_phrases)
 
+    @staticmethod
+    def _strip_internal_signals(text: Any) -> str:
+        value = str(text or '').strip()
+        value = re.sub(r"\(?(?:score|split pressure|split_pressure|top_conf_share|citation median|citation_median)\s*=\s*[^\);,.]+\)?", '', value, flags=re.IGNORECASE)
+        value = re.sub(r"\s+", ' ', value)
+        return value.strip(' ;,.')
+
+    @staticmethod
+    def _naturalize_label(text: Any) -> str:
+        value = str(text or '').strip().replace('_', ' ')
+        value = re.sub(r'\s+', ' ', value).strip()
+        return value
+
+    def _has_substantive_overlap(self, answer: str, text: str) -> bool:
+        norm_answer = self._normalize_text(answer)
+        norm_text = self._normalize_text(text)
+        if not norm_text:
+            return True
+        if norm_text in norm_answer:
+            return True
+        tokens = [tok for tok in re.findall(r'[a-z0-9][a-z0-9\-]+', norm_text) if len(tok) > 3]
+        if not tokens:
+            return False
+        overlap = sum(1 for tok in tokens if tok in norm_answer)
+        return overlap >= max(2, min(4, len(tokens) // 2))
+
+    def _coverage_anchor_sentences(self, *, task: Dict[str, Any], family_reasoning: Dict[str, Any]) -> List[str]:
+        family = str(task.get('family') or '')
+        anchors: List[str] = []
+        if family == 'bottleneck_opportunity_discovery':
+            bottleneck = str(family_reasoning.get('bottleneck') or '').strip()
+            opportunity = str(family_reasoning.get('opportunity') or '').strip()
+            if bottleneck:
+                anchors.append(f"Core bottleneck: {bottleneck}.")
+            if opportunity:
+                anchors.append(f"Concrete opportunity if solved: {opportunity}.")
+            return anchors[:2]
+        if family == 'direction_forecasting':
+            trajectory = str(family_reasoning.get('trajectory_label') or '').strip().lower()
+            primary = self._naturalize_label(self._strip_internal_signals(family_reasoning.get('primary_direction')))
+            if trajectory:
+                anchors.append(f"Trajectory call: {trajectory}.")
+            if primary:
+                anchors.append(f"Immediate next direction: {primary}.")
+            return anchors[:2]
+        ranked = list(family_reasoning.get('ranked_directions') or [])
+        if ranked:
+            top_direction = self._naturalize_label(self._strip_internal_signals((ranked[0] or {}).get('direction')))
+            second_direction = ''
+            if len(ranked) > 1:
+                second_direction = self._naturalize_label(self._strip_internal_signals((ranked[1] or {}).get('direction')))
+            if family == 'venue_aware_research_positioning':
+                if top_direction:
+                    anchors.append(f"Most promising next-step direction: {top_direction}.")
+                if second_direction:
+                    anchors.append(f"Secondary direction: {second_direction}.")
+                return anchors[:2]
+            if top_direction:
+                anchors.append(f"Top priority direction: {top_direction}.")
+            if family != 'strategic_research_planning' and second_direction:
+                anchors.append(f"Second priority direction: {second_direction}.")
+        return anchors[:2]
+
     def _postprocess_final_answer(
         self,
         *,
@@ -965,12 +1083,26 @@ Return JSON with the same schema as the draft.
         abstraction: Dict[str, Any],
     ) -> str:
         family = str(task.get('family') or '')
+        contract = extract_task_contract(task)
+        candidate_directions = [str(x).strip() for x in (contract.get('candidate_directions') or []) if str(x).strip()]
         out = str(answer or '').strip() or current_answer
         titles = self._collect_titles(family_reasoning, abstraction)
         if current_answer and self._is_over_generic(out) and not self._is_over_generic(current_answer):
             out = current_answer
+        if family == 'strategic_research_planning' and candidate_directions:
+            missing_from_out = [label for label in candidate_directions if self._normalize_text(label) not in self._normalize_text(out)]
+            current_has_all = all(self._normalize_text(label) in self._normalize_text(current_answer) for label in candidate_directions)
+            if missing_from_out and current_has_all:
+                out = current_answer
         out = re.sub(r"\(?(?:score|split pressure|split_pressure|top_conf_share|citation median|citation_median)\s*=\s*[^\);,.]+\)?", '', out, flags=re.IGNORECASE)
         out = re.sub(r"\s+", ' ', out).replace(' \n ', '\n').strip()
+        anchor_sentences = [
+            sentence
+            for sentence in self._coverage_anchor_sentences(task=task, family_reasoning=family_reasoning)
+            if sentence and not self._has_substantive_overlap(out, sentence)
+        ]
+        if anchor_sentences:
+            out = f"{' '.join(anchor_sentences)} {out}".strip()
         if titles and not self._has_any_title_anchor(out, titles):
             anchor = ', '.join(titles[:2])
             if family == 'strategic_research_planning' and '\n' in out:

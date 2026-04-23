@@ -109,3 +109,29 @@ novelty cleanup 后从 strict 中掉出的 task 只有 `2` 个：
 - 固定 benchmark 修复顺序
 - 强制区分 `task_count` / `strict_task_count` / `future-novelty-processed`
 - 强制把 release 变更和实验运行记录写入 markdown
+
+
+## Step 6. Core100 Alignment Note
+
+当前 `benchmark_core100` 不是 novelty-cleaned `strict 373` 的严格子集。
+
+统计结果时，应从 `core100` 结果中剔除以下 `2` 个 task：
+- `RTLv3-0115`
+- `RTLv3-EXP-VENUE-1142`
+
+原因：
+- 这两题在 `benchmark_full_curated_recovered21_bottleneck18_expanded75_venuecover_future_novelty_v1` 上经过 `future GT / support` 去重后，已不再满足 metrics 对应 GT 的 strict 非空条件。
+- 因此后续若直接沿用旧 `core100` 结果做统计，这两题不应纳入汇总。
+
+## Step 7. Rename Reporting Subset To Core98
+
+已新建：
+- `data/releases/benchmark_core98/`
+- `results/hybrid_rag_core98_v2_rebuilt_parallel4/`
+
+做法：
+- 从当前 rebuilt 的 `benchmark_core100` 中移除 `RTLv3-0115` 与 `RTLv3-EXP-VENUE-1142`
+- 得到 `98` 题的 reporting subset
+- 该 `core98` 已核实是当前 novelty-cleaned full-release `strict 373` 的严格子集
+
+因此后续若提到 `core98`，默认指这套 `98` 题子集。

@@ -10,6 +10,142 @@ from researchworld.offline_kb import OfflineKnowledgeBase, clip_text, merge_mult
 
 
 TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_\-\./+]{0,63}")
+NUMERIC_TOKEN_RE = re.compile(r"\b\d+(?:\.\d+)?%?\b")
+
+GENERIC_FACT_TOKENS = {
+    "a",
+    "an",
+    "and",
+    "approach",
+    "approaches",
+    "challenge",
+    "challenges",
+    "direction",
+    "directions",
+    "for",
+    "framework",
+    "frameworks",
+    "in",
+    "is",
+    "method",
+    "methods",
+    "model",
+    "models",
+    "of",
+    "on",
+    "or",
+    "paper",
+    "papers",
+    "research",
+    "study",
+    "studies",
+    "system",
+    "systems",
+    "task",
+    "tasks",
+    "the",
+    "to",
+    "toward",
+    "towards",
+    "using",
+    "with",
+}
+
+SOFT_GENERIC_FACT_TOKENS = {
+    "agent",
+    "agents",
+    "augmented",
+    "benchmark",
+    "benchmarks",
+    "control",
+    "evaluation",
+    "fine",
+    "finegrained",
+    "generation",
+    "graph",
+    "llm",
+    "memory",
+    "multi",
+    "rag",
+    "retrieval",
+    "semantic",
+    "training",
+    "video",
+}
+
+BOTTLENECK_CUES = [
+    "bottleneck",
+    "barrier",
+    "challenge",
+    "fails",
+    "failure",
+    "friction",
+    "hinders",
+    "insufficient",
+    "lack of",
+    "limitation",
+    "limited",
+    "underperform",
+    "unresolved",
+]
+
+OPPORTUNITY_CUES = [
+    "becomes viable",
+    "downstream opportunity",
+    "enable",
+    "enables",
+    "opportunity",
+    "opens room",
+    "opens the door",
+    "unlock",
+    "unlocks",
+]
+
+DIRECTION_CUES = [
+    "emerging as",
+    "future work",
+    "immediate next",
+    "most likely next",
+    "next direction",
+    "next focus",
+    "next step",
+    "primary focus",
+    "research is shifting",
+    "shifting toward",
+]
+
+TRAJECTORY_CUES = [
+    "accelerating",
+    "consolidating",
+    "fragmenting",
+    "plateauing",
+    "slowing",
+    "trajectory",
+]
+
+VENUE_CUES = [
+    "aaai",
+    "acl",
+    "conference",
+    "emnlp",
+    "iclr",
+    "icml",
+    "ijcai",
+    "kdd",
+    "naacl",
+    "neurips",
+    "sigir",
+    "venue",
+]
+
+STATISTICAL_CUES = [
+    "citation",
+    "count",
+    "paper count",
+    "papers",
+    "percent",
+    "share",
+]
 
 
 @dataclass
@@ -41,6 +177,110 @@ def _complete_json(client: OpenAICompatChatClient, *, system: str, prompt: str, 
 
 def tokenize(text: Any) -> List[str]:
     return [token.lower() for token in TOKEN_RE.findall(str(text or "").replace("_", " "))]
+
+
+def _normalize_text(text: Any) -> str:
+    return normalize_ws(text).lower().replace("_", " ")
+
+
+def _has_numeric_fact(text: Any) -> bool:
+    return NUMERIC_TOKEN_RE.search(str(text or "")) is not None
+
+
+def _target_anchor_tokens(text: Any) -> List[str]:
+    tokens: List[str] = []
+    for tok in tokenize(text):
+        if tok in GENERIC_FACT_TOKENS:
+            continue
+        if len(tok) <= 2:
+            continue
+        tokens.append(tok)
+    out: List[str] = []
+    seen = set()
+    for tok in tokens:
+        if tok in seen:
+            continue
+        seen.add(tok)
+        out.append(tok)
+    return out
+
+
+def _distinctive_tokens(text: Any) -> List[str]:
+    return [tok for tok in _target_anchor_tokens(text) if tok not in SOFT_GENERIC_FACT_TOKENS]
+
+
+def _phrase_hits(text: Any, phrases: List[str]) -> List[str]:
+    norm = _normalize_text(text)
+    hits: List[str] = []
+    for phrase in phrases:
+        if phrase in norm:
+            hits.append(phrase)
+    return hits
+
+
+def _answer_claim_profile(answer_claim: str) -> Dict[str, bool]:
+    return {
+        "bottleneck": bool(_phrase_hits(answer_claim, BOTTLENECK_CUES)),
+        "opportunity": bool(_phrase_hits(answer_claim, OPPORTUNITY_CUES)),
+        "direction": bool(_phrase_hits(answer_claim, DIRECTION_CUES)),
+        "trajectory": bool(_phrase_hits(answer_claim, TRAJECTORY_CUES)),
+        "venue": bool(_phrase_hits(answer_claim, VENUE_CUES)),
+        "statistical": bool(_phrase_hits(answer_claim, STATISTICAL_CUES)) or _has_numeric_fact(answer_claim),
+    }
+
+
+def _gt_claim_family(gt_claim: Dict[str, Any]) -> str:
+    claim_type = str(gt_claim.get("claim_type") or "").lower()
+    if "bottleneck" in claim_type:
+        return "bottleneck"
+    if "opportunity" in claim_type:
+        return "opportunity"
+    if "direction" in claim_type or "ranked" in claim_type:
+        return "direction"
+    if "trajectory" in claim_type:
+        return "trajectory"
+    if "venue" in claim_type:
+        return "venue"
+    if "statistical" in claim_type or "volume" in claim_type or "share" in claim_type:
+        return "statistical"
+    return "other"
+
+
+def _claim_family_compatibility(answer_claim: str, gt_claim: Dict[str, Any]) -> float:
+    profile = _answer_claim_profile(answer_claim)
+    family = _gt_claim_family(gt_claim)
+    if family == "bottleneck":
+        if profile["trajectory"] or profile["venue"]:
+            return 0.72
+        if profile["opportunity"] and not profile["bottleneck"]:
+            return 0.78
+        if profile["bottleneck"]:
+            return 1.06
+    elif family == "opportunity":
+        if profile["trajectory"] or profile["venue"]:
+            return 0.74
+        if profile["bottleneck"] and not profile["opportunity"] and not profile["direction"]:
+            return 0.78
+        if profile["opportunity"] or profile["direction"]:
+            return 1.05
+    elif family == "direction":
+        if profile["trajectory"]:
+            return 0.82
+        if profile["bottleneck"] and not profile["direction"] and not profile["opportunity"]:
+            return 0.76
+        if profile["direction"] or profile["opportunity"]:
+            return 1.06
+    elif family == "trajectory":
+        if profile["trajectory"]:
+            return 1.08
+        if profile["direction"]:
+            return 0.86
+        return 0.72
+    elif family == "venue":
+        return 1.08 if profile["venue"] else 0.74
+    elif family == "statistical":
+        return 1.08 if profile["statistical"] else 0.72
+    return 1.0
 
 
 def extract_atomic_claims(client: OpenAICompatChatClient, *, answer: str, max_claims: int) -> List[str]:
@@ -126,7 +366,33 @@ def _text_match_score(a: str, b: str) -> float:
     jaccard = inter / union
     recall = inter / len(b_tokens)
     precision = inter / len(a_tokens)
-    return max(jaccard, 0.65 * recall + 0.35 * precision)
+    current = max(jaccard, 0.65 * recall + 0.35 * precision)
+    if _has_numeric_fact(a) or _has_numeric_fact(b):
+        return current
+
+    a_distinctive = _distinctive_tokens(a)
+    b_distinctive = _distinctive_tokens(b)
+    if not a_distinctive or not b_distinctive:
+        return current
+    overlap = [tok for tok in a_distinctive if tok in set(b_distinctive)]
+    if not overlap:
+        return current
+
+    distinct_recall = len(overlap) / max(1, len(b_distinctive))
+    target_bigrams = {
+        f"{b_distinctive[idx]} {b_distinctive[idx + 1]}"
+        for idx in range(len(b_distinctive) - 1)
+        if b_distinctive[idx] and b_distinctive[idx + 1]
+    }
+    bigram_hits = [bg for bg in target_bigrams if bg in a_norm]
+    if bigram_hits:
+        current = max(current, min(0.86, 0.64 + 0.08 * len(bigram_hits) + 0.12 * distinct_recall))
+    elif len(overlap) >= 2:
+        if distinct_recall >= 0.5:
+            current = max(current, min(0.8, 0.58 + 0.22 * distinct_recall))
+        else:
+            current = max(current, 0.54)
+    return current
 
 
 def match_answer_claim_to_gt(answer_claim: str, claim_bank: List[Dict[str, Any]], threshold: float) -> Tuple[Optional[Dict[str, Any]], float]:
@@ -135,7 +401,9 @@ def match_answer_claim_to_gt(answer_claim: str, claim_bank: List[Dict[str, Any]]
     for gt_claim in claim_bank:
         local_best = 0.0
         for candidate in _claim_candidates(gt_claim):
-            local_best = max(local_best, _text_match_score(answer_claim, candidate))
+            score = _text_match_score(answer_claim, candidate)
+            score = min(1.0, score * _claim_family_compatibility(answer_claim, gt_claim))
+            local_best = max(local_best, score)
         if local_best > best_score:
             best_score = local_best
             best = gt_claim
@@ -289,6 +557,7 @@ def verify_claim_v3(
     if matched_gt_claim:
         gt_note = json.dumps(
             {
+                "claim_text": matched_gt_claim.get("text"),
                 "claim_type": matched_gt_claim.get("claim_type"),
                 "time_scope": matched_gt_claim.get("time_scope"),
                 "canonical_objects": matched_gt_claim.get("canonical_objects"),
@@ -303,6 +572,8 @@ You are a High-Precision Research Fact-Verifier. Your task is to audit whether a
 A claim may be a "Generalization" or a "Synthesized Point" that covers multiple ground-truth aspects. You should evaluate it with "rigorous flexibility":
 1. If the claim is a high-level summary, it is supported as long as the evidence confirms its constituent parts or the overarching logic.
 2. Avoid being pedantic about exact wording; focus on whether the research substance is corroborated.
+3. If the claim is only slightly broader or narrower than the matched benchmark target, but stays inside the same immediate technical cluster or mechanism family, treat that as acceptable alignment rather than as a mismatch.
+4. Penalize only when the claim drifts to a materially different mechanism family, future direction family, venue family, or trajectory label.
 
 # Input Context
 - Answer Claim: {claim}
@@ -323,6 +594,8 @@ Evaluate the Temporal Consistency:
 # Rules of Engagement
 - Do NOT use external knowledge; rely solely on the provided Evidence.
 - In the rationale, explain how the specific evidence IDs roll up to support the claim, especially if the claim is a generalization.
+- For benchmark taxonomy-like claims about bottlenecks, opportunities, directions, trajectories, or venues, exact canonical phrase equality is NOT required.
+- If the evidence supports the same technical mechanism but the claim uses a nearby parent/child abstraction, mark it as supported rather than insufficient.
 
 # Output (Strict JSON)
 {{
