@@ -1,0 +1,36 @@
+{
+  "domain_slug": "visual_generative_modeling_and_diffusion",
+  "domain": "Visual generative modeling and diffusion",
+  "history_cutoff": "2025-08-31",
+  "source_files": {
+    "papers": "data/domains/visual_generative_modeling_and_diffusion/interim/papers_merged.publication_enriched.semanticscholar.jsonl",
+    "pageindex": "data/support_packets/pageindex/visual_generative_modeling_and_diffusion/pageindex.jsonl",
+    "structures": "data/support_packets/paper_structures/visual_generative_modeling_and_diffusion/paper_structures.jsonl",
+    "content": "data/support_packets/fulltext_content/visual_generative_modeling_and_diffusion/content.jsonl"
+  },
+  "files": {
+    "papers": "domains/visual_generative_modeling_and_diffusion/papers.jsonl",
+    "pageindex": "domains/visual_generative_modeling_and_diffusion/pageindex.jsonl",
+    "structures": "domains/visual_generative_modeling_and_diffusion/structures.jsonl",
+    "content": "domains/visual_generative_modeling_and_diffusion/content.jsonl",
+    "sections": "domains/visual_generative_modeling_and_diffusion/sections.jsonl",
+    "manifest": "domains/visual_generative_modeling_and_diffusion/manifest.json"
+  },
+  "coverage": {
+    "source_papers_total": 9391,
+    "papers_exported": 7546,
+    "pageindex_rows_exported": 85,
+    "structures_rows_exported": 85,
+    "content_rows_exported": 85,
+    "section_rows_exported": 85,
+    "papers_missing_published_date": 0,
+    "papers_with_pageindex_share": 0.0113,
+    "papers_with_structures_share": 0.0113,
+    "papers_with_content_share": 0.0113
+  },
+  "notes": [
+    "This KB contains only papers published on or before the history cutoff.",
+    "pageindex/content/structures are partial layers and do not cover all exported papers.",
+    "The current content layer is abstract-derived normalized content rather than uniformly recovered raw full text."
+  ]
+}
