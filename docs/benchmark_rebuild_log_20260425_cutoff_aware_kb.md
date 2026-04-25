@@ -53,6 +53,22 @@ Date: 2026-04-25
 - Default-config smoke passed with unified final metrics:
   - `.venv-researchforesight/bin/python scripts/evaluate_experiment_final_metrics.py --results-jsonl data/releases/benchmark_researchagent_refined_smoke1_20260425/results.jsonl --release-dir data/releases/researchforesight_refined_422 --output-dir /tmp/rf_default_config_final_metrics_smoke --metrics factuality --task-limit 1`
 
+## Metric Logic Audit
+
+- FactScore evidence now carries `published_date` for paper, structure, section, and pageindex retrieval rows wherever available.
+- History evidence is filtered to each task's `history_cutoff`; future evidence is filtered to each task's `[future_start, future_end]` window.
+- Embedded future evidence used by future-alignment evaluation is also filtered to `[future_start, future_end]`, so omitting `--future-kb-dir` does not bypass the future window.
+- Empty evidence no longer goes through an LLM judge path. Fact verification returns `insufficient`; future alignment returns `not_aligned`.
+- Judge-returned `cited_evidence_ids` are filtered to IDs that were actually provided in the evidence bundle.
+- FactScore precision, coverage, final score, and supported counts now exclude temporally inconsistent support.
+- v3 task fulfillment, v3 insight, v4 traceability, and aux family scores now clamp judge scores to `[0, 1]` and tolerate non-numeric score fields.
+- Unified final metrics still resolves `--metrics factuality` and `--metrics future_alignment` to the shared `eval_v31` bundle. This avoids duplicating the expensive shared pass, but the root `summary.json` records the bundle-resolution note explicitly.
+- Metric hardening smoke passed:
+  - `.venv-researchforesight/bin/python -m py_compile src/researchworld/factscore_eval_v3.py src/researchworld/future_alignment_eval_v3_1.py src/researchworld/experiment_eval_v3.py src/researchworld/experiment_eval_v4.py src/researchworld/experiment_eval_aux.py scripts/evaluate_experiment_final_metrics.py`
+  - `.venv-researchforesight/bin/python scripts/validate_refined_release.py --release-dir data/releases/researchforesight_refined_422`
+  - `.venv-researchforesight/bin/python scripts/evaluate_experiment_final_metrics.py --results-jsonl data/releases/benchmark_researchagent_refined_smoke1_20260425/results.jsonl --release-dir data/releases/researchforesight_refined_422 --output-dir /tmp/rf_metric_logic_smoke --metrics factuality --task-limit 1`
+  - Smoke output `summary.json` resolved to `v31`, used empty `future_kb_dir`, and completed with 0 future evidence date-window violations for `RTLv3-0001`.
+
 ## Caveats
 
 - Methods are safe only if they continue passing `task["time_cutoff"]` into all KB retrievers. Current ResearchAgent, ARIS, and CoI retrieval paths already do this.

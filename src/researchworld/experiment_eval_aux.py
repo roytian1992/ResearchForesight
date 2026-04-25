@@ -54,6 +54,13 @@ def _mean(values: List[float]) -> float:
     return round(sum(values) / len(values), 4) if values else 0.0
 
 
+def _clamp01(value: Any) -> float:
+    try:
+        return max(0.0, min(1.0, float(value)))
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def _rubric_dimension_summary(group: List[Dict[str, Any]], family: str) -> Dict[str, float]:
     dimensions = AUX_DIMENSIONS_BY_FAMILY.get(family) or []
     if not group or not dimensions:
@@ -595,7 +602,7 @@ VENUE_PRIOR_KNOWLEDGE: Dict[str, Dict[str, Any]] = {
 
 def _weighted(dimensions: List[Dict[str, Any]], raw_scores: Dict[str, Any], fallback_key: str, obj: Dict[str, Any]) -> tuple[float, Dict[str, float]]:
     dim_names = [str(item['name']) for item in dimensions]
-    scores = {name: max(0.0, min(1.0, float(raw_scores.get(name) or 0.0))) for name in dim_names}
+    scores = {name: _clamp01(raw_scores.get(name)) for name in dim_names}
     if any(name in raw_scores for name in dim_names):
         weighted = 0.0
         total_w = 0.0
@@ -606,8 +613,8 @@ def _weighted(dimensions: List[Dict[str, Any]], raw_scores: Dict[str, Any], fall
             weighted += weight * float(scores.get(name) or 0.0)
         overall = weighted / total_w if total_w else sum(scores.values()) / max(1, len(scores))
     else:
-        overall = max(0.0, min(1.0, float(obj.get(fallback_key) or 0.0)))
-    return round(float(overall), 4), {k: round(float(v), 4) for k, v in scores.items()}
+        overall = _clamp01(obj.get(fallback_key))
+    return round(_clamp01(overall), 4), {k: round(_clamp01(v), 4) for k, v in scores.items()}
 
 
 def _compact_public_task(public_task: Dict[str, Any]) -> Dict[str, Any]:
@@ -1471,7 +1478,7 @@ def build_aux_result_row(
             'schema_version': 'aux_v4',
         },
         'scores': {
-            score_key: round(float(family_aux_eval.get(score_key) or 0.0), 4),
+            score_key: round(_clamp01(family_aux_eval.get(score_key)), 4),
         },
         'family_aux_eval': family_aux_eval,
     }

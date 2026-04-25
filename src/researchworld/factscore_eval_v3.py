@@ -175,6 +175,13 @@ def _complete_json(client: OpenAICompatChatClient, *, system: str, prompt: str, 
     )
 
 
+def _clamp01(value: Any) -> float:
+    try:
+        return max(0.0, min(1.0, float(value)))
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def tokenize(text: Any) -> List[str]:
     return [token.lower() for token in TOKEN_RE.findall(str(text or "").replace("_", " "))]
 
@@ -422,6 +429,7 @@ def _collect_evidence_from_domain(domain_kb, queries: List[str], *, cutoff_date:
                 "evidence_source": source_name,
                 "paper_id": doc.paper_id,
                 "paper_title": doc.title,
+                "published_date": doc.meta.get("published_date"),
                 "snippet": clip_text(doc.text, 1000),
                 "scores": scores,
             }
@@ -434,6 +442,7 @@ def _collect_evidence_from_domain(domain_kb, queries: List[str], *, cutoff_date:
                 "evidence_source": source_name,
                 "paper_id": doc.paper_id,
                 "paper_title": doc.title,
+                "published_date": (domain_kb.get_paper(doc.paper_id) or {}).get("published_date"),
                 "snippet": clip_text(doc.text, 1000),
                 "scores": scores,
             }
@@ -447,6 +456,7 @@ def _collect_evidence_from_domain(domain_kb, queries: List[str], *, cutoff_date:
                 "paper_id": doc.paper_id,
                 "paper_title": doc.meta.get("paper_title") or doc.title,
                 "section_title": doc.meta.get("section_title"),
+                "published_date": doc.meta.get("published_date") or (domain_kb.get_paper(doc.paper_id) or {}).get("published_date"),
                 "snippet": clip_text(doc.text, 1000),
                 "scores": scores,
             }
@@ -461,6 +471,7 @@ def _collect_evidence_from_domain(domain_kb, queries: List[str], *, cutoff_date:
                 "paper_title": doc.meta.get("paper_title") or doc.title,
                 "section_title": doc.meta.get("section_title"),
                 "kind": doc.meta.get("kind"),
+                "published_date": (domain_kb.get_paper(doc.paper_id) or {}).get("published_date"),
                 "snippet": clip_text(doc.text, 1000),
                 "scores": scores,
             }
@@ -477,6 +488,10 @@ def _date_in_window(value: Any, *, start: str = "", end: str = "") -> bool:
     if end and day > end:
         return False
     return True
+
+
+def _filter_evidence_window(rows: List[Dict[str, Any]], *, start: str = "", end: str = "") -> List[Dict[str, Any]]:
+    return [row for row in rows if _date_in_window(row.get("published_date"), start=start, end=end)]
 
 
 def _embedded_trace_evidence(
@@ -564,14 +579,15 @@ def retrieve_claim_evidence_v3(
     evidence_rows: List[Dict[str, Any]] = []
     scope = str((matched_gt_claim or {}).get("time_scope") or "cross_temporal")
     if scope in {"history", "cross_temporal"}:
+        history_rows = _collect_evidence_from_domain(
+            history_kb.domain(domain_id),
+            deduped_queries,
+            cutoff_date=str(temporal_policy.get("history_cutoff") or ""),
+            cfg=cfg,
+            source_name="history",
+        )
         evidence_rows.extend(
-            _collect_evidence_from_domain(
-                history_kb.domain(domain_id),
-                deduped_queries,
-                cutoff_date=str(temporal_policy.get("history_cutoff") or ""),
-                cfg=cfg,
-                source_name="history",
-            )
+            _filter_evidence_window(history_rows, end=str(temporal_policy.get("history_cutoff") or ""))
         )
         evidence_rows.extend(
             _embedded_trace_evidence(
@@ -583,13 +599,18 @@ def retrieve_claim_evidence_v3(
             )
         )
     if scope in {"future", "cross_temporal"} and future_kb is not None:
+        future_rows = _collect_evidence_from_domain(
+            future_kb.domain(domain_id),
+            deduped_queries,
+            cutoff_date=str(temporal_policy.get("future_end") or ""),
+            cfg=cfg,
+            source_name="future",
+        )
         evidence_rows.extend(
-            _collect_evidence_from_domain(
-                future_kb.domain(domain_id),
-                deduped_queries,
-                cutoff_date=str(temporal_policy.get("future_end") or ""),
-                cfg=cfg,
-                source_name="future",
+            _filter_evidence_window(
+                future_rows,
+                start=str(temporal_policy.get("future_start") or ""),
+                end=str(temporal_policy.get("future_end") or ""),
             )
         )
     if scope in {"future", "cross_temporal"}:
@@ -603,23 +624,29 @@ def retrieve_claim_evidence_v3(
             )
         )
     if not matched_gt_claim:
+        history_rows = _collect_evidence_from_domain(
+            history_kb.domain(domain_id),
+            deduped_queries,
+            cutoff_date=str(temporal_policy.get("history_cutoff") or ""),
+            cfg=cfg,
+            source_name="history",
+        )
         evidence_rows.extend(
-            _collect_evidence_from_domain(
-                history_kb.domain(domain_id),
-                deduped_queries,
-                cutoff_date=str(temporal_policy.get("history_cutoff") or ""),
-                cfg=cfg,
-                source_name="history",
-            )
+            _filter_evidence_window(history_rows, end=str(temporal_policy.get("history_cutoff") or ""))
         )
         if future_kb is not None:
+            future_rows = _collect_evidence_from_domain(
+                future_kb.domain(domain_id),
+                deduped_queries,
+                cutoff_date=str(temporal_policy.get("future_end") or ""),
+                cfg=cfg,
+                source_name="future",
+            )
             evidence_rows.extend(
-                _collect_evidence_from_domain(
-                    future_kb.domain(domain_id),
-                    deduped_queries,
-                    cutoff_date=str(temporal_policy.get("future_end") or ""),
-                    cfg=cfg,
-                    source_name="future",
+                _filter_evidence_window(
+                    future_rows,
+                    start=str(temporal_policy.get("future_start") or ""),
+                    end=str(temporal_policy.get("future_end") or ""),
                 )
             )
     evidence_rows.sort(key=lambda x: -float((x.get("scores") or {}).get("combined_score") or 0.0))
@@ -642,6 +669,13 @@ def verify_claim_v3(
     matched_gt_claim: Optional[Dict[str, Any]],
     evidence_rows: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
+    if not evidence_rows:
+        return {
+            "label": "insufficient",
+            "rationale": "No evidence rows were available for this claim.",
+            "cited_evidence_ids": [],
+            "temporal_consistency": "unclear",
+        }
     gt_note = ""
     if matched_gt_claim:
         gt_note = json.dumps(
@@ -706,10 +740,15 @@ Evaluate the Temporal Consistency:
     temporal_consistency = str(obj.get("temporal_consistency") or "clear").strip().lower()
     if temporal_consistency not in {"consistent", "inconsistent", "unclear"}:
         temporal_consistency = "unclear"
+    valid_evidence_ids = {str(row.get("evidence_id") or "") for row in evidence_rows}
     return {
         "label": label,
         "rationale": str(obj.get("rationale") or "").strip(),
-        "cited_evidence_ids": [str(x) for x in (obj.get("cited_evidence_ids") or []) if str(x).strip()],
+        "cited_evidence_ids": [
+            str(x)
+            for x in (obj.get("cited_evidence_ids") or [])
+            if str(x).strip() and str(x).strip() in valid_evidence_ids
+        ],
         "temporal_consistency": temporal_consistency,
     }
 
@@ -783,15 +822,20 @@ def evaluate_answer_factscore_v3(
         for claim in gt_claim_bank
         if str(claim.get("claim_id")) in covered_gt_claims
     )
-    precision_score = round(supported_weight / total_weight, 4) if total_weight else 0.0
-    coverage_score = round(covered_weight / gt_total_weight, 4) if gt_total_weight else 0.0
+    precision_score = round(_clamp01(supported_weight / total_weight), 4) if total_weight else 0.0
+    coverage_score = round(_clamp01(covered_weight / gt_total_weight), 4) if gt_total_weight else 0.0
     benchmark_factscore = round(
-        cfg.precision_weight * precision_score + cfg.coverage_weight * coverage_score,
+        _clamp01(cfg.precision_weight * precision_score + cfg.coverage_weight * coverage_score),
         4,
     )
     return {
         "claim_count": len(claim_rows),
-        "supported_count": sum(1 for row in claim_rows if row["verdict"]["label"] == "supported"),
+        "supported_count": sum(
+            1
+            for row in claim_rows
+            if row["verdict"]["label"] == "supported"
+            and row["verdict"]["temporal_consistency"] != "inconsistent"
+        ),
         "precision_score": precision_score,
         "coverage_score": coverage_score,
         "benchmark_factscore": benchmark_factscore,

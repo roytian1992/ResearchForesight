@@ -19,6 +19,13 @@ def _mean(values: List[float]) -> float:
     return round(sum(values) / len(values), 4) if values else 0.0
 
 
+def _clamp01(value: Any) -> float:
+    try:
+        return max(0.0, min(1.0, float(value)))
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def _rubric_dimension_summary(group: List[Dict[str, Any]]) -> Dict[str, float]:
     if not group:
         return {}
@@ -31,7 +38,7 @@ def _rubric_dimension_summary(group: List[Dict[str, Any]]) -> Dict[str, float]:
 
 def _weighted(dimensions: List[Dict[str, Any]], raw_scores: Dict[str, Any], fallback_key: str, obj: Dict[str, Any]) -> tuple[float, Dict[str, float]]:
     dim_names = [str(item['name']) for item in dimensions]
-    scores = {name: float(raw_scores.get(name) or 0.0) for name in dim_names}
+    scores = {name: _clamp01(raw_scores.get(name)) for name in dim_names}
     if any(name in raw_scores for name in dim_names):
         weighted = 0.0
         total_w = 0.0
@@ -42,8 +49,8 @@ def _weighted(dimensions: List[Dict[str, Any]], raw_scores: Dict[str, Any], fall
             weighted += weight * float(scores.get(name) or 0.0)
         overall = weighted / total_w if total_w else sum(scores.values()) / max(1, len(scores))
     else:
-        overall = float(obj.get(fallback_key) or 0.0)
-    return round(float(overall), 4), {k: round(float(v), 4) for k, v in scores.items()}
+        overall = _clamp01(obj.get(fallback_key))
+    return round(_clamp01(overall), 4), {k: round(_clamp01(v), 4) for k, v in scores.items()}
 
 
 def _truncate(text: Any, limit: int = 320) -> str:
@@ -304,7 +311,7 @@ def build_experiment_result_row_v4(
             'trace_highlight_count': len(support.get('trace_highlights') or []),
         },
         'scores': {
-            'evidence_traceability_score': round(float(evidence_traceability_eval.get('evidence_traceability_score') or 0.0), 4),
+            'evidence_traceability_score': round(_clamp01(evidence_traceability_eval.get('evidence_traceability_score')), 4),
         },
         'evidence_traceability_eval': evidence_traceability_eval,
     }

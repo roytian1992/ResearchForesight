@@ -26,6 +26,13 @@ def infer_domain_id(row: Dict[str, Any]) -> str:
     return PUBLIC_DOMAIN_TO_ID.get(domain, domain)
 
 
+def _clamp01(value: Any) -> float:
+    try:
+        return max(0.0, min(1.0, float(value)))
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def _task_family_guidance(family: str) -> List[str]:
     if family == "direction_forecasting":
         return [
@@ -125,7 +132,7 @@ You are a Task Fulfillment Auditor for a research benchmark. Your job is to judg
         repair_instruction="Your previous response was malformed JSON. Return exactly one valid JSON object with keys dimension_scores, task_fulfillment_score, strengths, weaknesses.",
     )
     raw_scores = obj.get("dimension_scores") or {}
-    dim_scores = {name: float(raw_scores.get(name) or 0.0) for name in dim_names}
+    dim_scores = {name: _clamp01(raw_scores.get(name)) for name in dim_names}
     if dim_scores:
         weighted = 0.0
         total_w = 0.0
@@ -136,9 +143,9 @@ You are a Task Fulfillment Auditor for a research benchmark. Your job is to judg
             weighted += weight * float(dim_scores.get(name) or 0.0)
         overall = weighted / total_w if total_w else sum(dim_scores.values()) / max(1, len(dim_scores))
     else:
-        overall = float(obj.get("task_fulfillment_score") or 0.0)
+        overall = _clamp01(obj.get("task_fulfillment_score"))
     return {
-        "task_fulfillment_score": round(float(obj.get("task_fulfillment_score") or overall), 4),
+        "task_fulfillment_score": round(_clamp01(overall), 4),
         "rubric_scores": {key: round(float(value), 4) for key, value in dim_scores.items()},
         "strengths": [str(x) for x in (obj.get("strengths") or []) if str(x).strip()],
         "weaknesses": [str(x) for x in (obj.get("weaknesses") or []) if str(x).strip()],
@@ -236,7 +243,7 @@ You are an Advanced Research Auditor and Strategy Consultant. Your mission is to
         repair_instruction="Your previous response was malformed JSON. Return exactly one valid JSON object with keys dimension_scores, insight_judge_score, strengths, weaknesses.",
     )
     raw_scores = obj.get("dimension_scores") or {}
-    dim_scores = {name: float(raw_scores.get(name) or 0.0) for name in dim_names}
+    dim_scores = {name: _clamp01(raw_scores.get(name)) for name in dim_names}
     if dim_scores:
         weighted = 0.0
         total_w = 0.0
@@ -247,9 +254,9 @@ You are an Advanced Research Auditor and Strategy Consultant. Your mission is to
             weighted += weight * float(dim_scores.get(name) or 0.0)
         overall = weighted / total_w if total_w else sum(dim_scores.values()) / max(1, len(dim_scores))
     else:
-        overall = float(obj.get("insight_judge_score") or 0.0)
+        overall = _clamp01(obj.get("insight_judge_score"))
     return {
-        "insight_judge_score": round(float(obj.get("insight_judge_score") or overall), 4),
+        "insight_judge_score": round(_clamp01(overall), 4),
         "rubric_scores": {key: round(float(value), 4) for key, value in dim_scores.items()},
         "strengths": [str(x) for x in (obj.get("strengths") or []) if str(x).strip()],
         "weaknesses": [str(x) for x in (obj.get("weaknesses") or []) if str(x).strip()],

@@ -93,11 +93,39 @@ def _label_score(label: str) -> float:
     return 0.0
 
 
+def _float_or_default(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _clamp01(value: Any) -> float:
+    return max(0.0, min(1.0, _float_or_default(value)))
+
+
+def _date_in_window(value: Any, *, start: str = "", end: str = "") -> bool:
+    day = normalize_ws(value)[:10]
+    if not day:
+        return True
+    if start and day < start:
+        return False
+    if end and day > end:
+        return False
+    return True
+
+
+def _filter_evidence_window(rows: List[Dict[str, Any]], *, start: str = "", end: str = "") -> List[Dict[str, Any]]:
+    return [row for row in rows if _date_in_window(row.get("published_date"), start=start, end=end)]
+
+
 def _embedded_future_evidence(
     hidden_row: Dict[str, Any],
     unit: Dict[str, Any],
     *,
     max_rows: int,
+    future_start: str = '',
+    future_end: str = '',
 ) -> List[Dict[str, Any]]:
     trace = hidden_row.get('trace') or {}
     future_items = [item for item in (trace.get('future_evidence') or []) if isinstance(item, dict)]
@@ -105,13 +133,19 @@ def _embedded_future_evidence(
         return []
     wanted_titles = {normalize_ws(x).lower() for x in (unit.get('future_paper_titles') or []) if normalize_ws(x)}
     selected: List[Dict[str, Any]] = []
+    had_specific_titles = bool(wanted_titles)
     for item in future_items:
         title = normalize_ws(item.get('title'))
         if wanted_titles and title.lower() not in wanted_titles:
             continue
         selected.append(item)
-    if not selected:
+    if not selected and not had_specific_titles:
         selected = future_items
+    selected = [
+        item
+        for item in selected
+        if _date_in_window(item.get('published_date'), start=future_start, end=future_end)
+    ]
     rows: List[Dict[str, Any]] = []
     for idx, item in enumerate(selected[:max_rows], start=1):
         rows.append(
@@ -153,6 +187,7 @@ def evaluate_future_alignment_v3_1(
     domain_id = str(result_row.get('domain_id') or result_row.get('domain') or '')
     answer = normalize_ws(result_row.get('answer'))
     temporal_policy = hidden_row.get('temporal_policy') or {}
+    future_start = str(temporal_policy.get('future_start') or '')
     cutoff = str(temporal_policy.get('future_end') or '')
     collect_cfg = FactScoreV3Config(evidence_per_view=cfg.evidence_per_view, max_evidence_rows=cfg.max_evidence_rows)
 
@@ -177,31 +212,51 @@ def evaluate_future_alignment_v3_1(
         evidence_rows: List[Dict[str, Any]] = []
         if future_kb is not None:
             evidence_rows.extend(
-                _collect_evidence_from_domain(
-                    future_kb.domain(domain_id),
-                    queries,
-                    cutoff_date=cutoff,
-                    cfg=collect_cfg,
-                    source_name='future',
+                _filter_evidence_window(
+                    _collect_evidence_from_domain(
+                        future_kb.domain(domain_id),
+                        queries,
+                        cutoff_date=cutoff,
+                        cfg=collect_cfg,
+                        source_name='future',
+                    ),
+                    start=future_start,
+                    end=cutoff,
                 )
             )
         if not evidence_rows:
-            evidence_rows.extend(_embedded_future_evidence(hidden_row, unit, max_rows=cfg.max_evidence_rows))
+            evidence_rows.extend(
+                _embedded_future_evidence(
+                    hidden_row,
+                    unit,
+                    max_rows=cfg.max_evidence_rows,
+                    future_start=future_start,
+                    future_end=cutoff,
+                )
+            )
         evidence_rows = evidence_rows[: cfg.max_evidence_rows]
-        obj = _future_alignment_json(
-            judge_client,
-            public_task=public_task,
-            family=family,
-            candidate_answer=answer,
-            unit=unit,
-            evidence_rows=evidence_rows,
-        )
-        label = str(obj.get('label') or 'not_aligned').strip().lower()
-        if label not in {'aligned', 'partial', 'not_aligned'}:
+        if not evidence_rows:
             label = 'not_aligned'
-        specificity = float(obj.get('specificity') or 0.0)
-        specificity = max(0.0, min(1.0, specificity))
-        importance = float(unit.get('importance') or 1.0)
+            specificity = 0.0
+            obj = {
+                'rationale': 'No future evidence rows were available for this alignment unit.',
+                'cited_evidence_ids': [],
+            }
+        else:
+            obj = _future_alignment_json(
+                judge_client,
+                public_task=public_task,
+                family=family,
+                candidate_answer=answer,
+                unit=unit,
+                evidence_rows=evidence_rows,
+            )
+            label = str(obj.get('label') or 'not_aligned').strip().lower()
+            if label not in {'aligned', 'partial', 'not_aligned'}:
+                label = 'not_aligned'
+            specificity = _clamp01(obj.get('specificity'))
+        valid_evidence_ids = {str(row.get('evidence_id') or '') for row in evidence_rows}
+        importance = max(0.0, _float_or_default(unit.get('importance'), 1.0))
         base = _label_score(label)
         unit_score = round(base * (0.5 + 0.5 * specificity), 4)
         total_importance += importance
@@ -219,7 +274,11 @@ def evaluate_future_alignment_v3_1(
                 'specificity': round(specificity, 4),
                 'unit_score': unit_score,
                 'rationale': str(obj.get('rationale') or '').strip(),
-                'cited_evidence_ids': [str(x) for x in (obj.get('cited_evidence_ids') or []) if str(x).strip()],
+                'cited_evidence_ids': [
+                    str(x)
+                    for x in (obj.get('cited_evidence_ids') or [])
+                    if str(x).strip() and str(x).strip() in valid_evidence_ids
+                ],
                 'evidence': evidence_rows,
             }
         )
