@@ -57,4 +57,10 @@ nohup .venv-researchforesight/bin/python -u scripts/run_refined422_full_experime
 
 ## Status
 
-- Initial state: prepared, launch pending.
+- Launched at `2026-04-25 10:29:17` Asia/Shanghai with orchestrator PID `3180980`.
+- Current first stage: `researchagent`, 4 shards.
+- Initial shard PIDs:
+  - shard 0: `3180987`, 106 tasks
+  - shard 1: `3180988`, 106 tasks
+  - shard 2: `3180989`, 105 tasks
+  - shard 3: `3180990`, 105 tasks
