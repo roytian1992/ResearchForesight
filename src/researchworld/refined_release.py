@@ -7,12 +7,6 @@ from researchworld.corpus import iter_jsonl
 
 
 REFINED_TASK_FILENAME = "task_refined.jsonl"
-LEGACY_PUBLIC_TASK_FILENAME = "tasks.jsonl"
-LEGACY_HIDDEN_FILENAMES = {
-    "base": "tasks_hidden_eval.jsonl",
-    "v3": "tasks_hidden_eval_v3.jsonl",
-    "v3_1": "tasks_hidden_eval_v3_1.jsonl",
-}
 
 PUBLIC_TASK_KEYS = [
     "schema_version",
@@ -39,6 +33,16 @@ EVAL_TARGET_KEYS = [
 
 def uses_refined_release(release_dir: Path) -> bool:
     return (release_dir / REFINED_TASK_FILENAME).exists()
+
+
+def require_refined_release(release_dir: Path) -> Path:
+    task_path = release_dir / REFINED_TASK_FILENAME
+    if not task_path.exists():
+        raise FileNotFoundError(
+            f"Expected unified refined release file at {task_path}. "
+            "Current runners and evaluators only support task_refined.jsonl."
+        )
+    return task_path
 
 
 def _split_future_window_label(label: Any) -> Tuple[str, str]:
@@ -105,13 +109,11 @@ def build_public_task_view(row: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def load_refined_rows(release_dir: Path) -> List[Dict[str, Any]]:
-    return [normalize_refined_eval_row(row) for row in iter_jsonl(release_dir / REFINED_TASK_FILENAME)]
+    return [normalize_refined_eval_row(row) for row in iter_jsonl(require_refined_release(release_dir))]
 
 
 def load_release_public_tasks(release_dir: Path) -> List[Dict[str, Any]]:
-    if uses_refined_release(release_dir):
-        return [build_public_task_view(row) for row in load_refined_rows(release_dir)]
-    return list(iter_jsonl(release_dir / LEGACY_PUBLIC_TASK_FILENAME))
+    return [build_public_task_view(row) for row in load_refined_rows(release_dir)]
 
 
 def load_release_public_by_id(release_dir: Path) -> Dict[str, Dict[str, Any]]:
@@ -119,10 +121,8 @@ def load_release_public_by_id(release_dir: Path) -> Dict[str, Dict[str, Any]]:
 
 
 def load_release_eval_rows(release_dir: Path, *, variant: str = "v3_1") -> List[Dict[str, Any]]:
-    if uses_refined_release(release_dir):
-        return load_refined_rows(release_dir)
-    filename = LEGACY_HIDDEN_FILENAMES.get(variant, LEGACY_HIDDEN_FILENAMES["v3_1"])
-    return list(iter_jsonl(release_dir / filename))
+    del variant
+    return load_refined_rows(release_dir)
 
 
 def load_release_eval_by_id(release_dir: Path, *, variant: str = "v3_1") -> Dict[str, Dict[str, Any]]:

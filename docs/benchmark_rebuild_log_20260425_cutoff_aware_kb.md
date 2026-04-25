@@ -19,6 +19,7 @@ Date: 2026-04-25
 - Updated direct and parallel v3/v3.1 evaluation entrypoints so `--kb-dir`, `--history-kb-dir`, and `--future-kb-dir` are optional and resolve to the canonical release defaults.
 - Updated v3, v3.1, v4, aux, and final metrics evaluators to fail fast when a result row references a task ID missing from the refined release eval view.
 - Updated evaluator fallback handling so missing optional fallback LLM config files do not abort runs when the primary judge config is valid.
+- Updated the maintained release loader to require `task_refined.jsonl` and stop falling back to legacy split release files.
 
 ## KB Counts
 
@@ -45,6 +46,8 @@ Date: 2026-04-25
   - Direct v3.1: `.venv-researchforesight/bin/python scripts/evaluate_experiment_run_v3_1.py --results-jsonl data/releases/benchmark_researchagent_refined_smoke1_20260425/results.jsonl --release-dir data/releases/researchforesight_refined_422 --output-dir /tmp/rf_eval_v31_optional_future_smoke --judge-llm-config configs/llm/qwen3_235b_8002.local.yaml --task-limit 1`
   - Unified final metrics: `.venv-researchforesight/bin/python scripts/evaluate_experiment_final_metrics.py --results-jsonl data/releases/benchmark_researchagent_refined_smoke1_20260425/results.jsonl --release-dir data/releases/researchforesight_refined_422 --output-dir /tmp/rf_final_metrics_smoke --judge-llm-config configs/llm/qwen3_235b_8002.local.yaml --metrics factuality --task-limit 1`
   - Both runs completed with no `--future-kb-dir` and no valid fallback LLM config file.
+- Strict-loader smoke passed with unified final metrics after removing legacy fallback:
+  - `.venv-researchforesight/bin/python scripts/evaluate_experiment_final_metrics.py --results-jsonl data/releases/benchmark_researchagent_refined_smoke1_20260425/results.jsonl --release-dir data/releases/researchforesight_refined_422 --output-dir /tmp/rf_final_metrics_loader_strict_smoke --judge-llm-config configs/llm/qwen3_235b_8002.local.yaml --metrics factuality --task-limit 1`
 
 ## Caveats
 
