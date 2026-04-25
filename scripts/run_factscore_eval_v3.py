@@ -14,6 +14,7 @@ if str(SRC) not in sys.path:
 from researchworld.factscore_eval_v3 import FactScoreV3Config, evaluate_answer_factscore_v3
 from researchworld.llm import OpenAICompatChatClient, load_openai_compat_config
 from researchworld.offline_kb import OfflineKnowledgeBase, PUBLIC_DOMAIN_TO_ID
+from researchworld.refined_release import load_release_eval_by_id
 
 
 def iter_jsonl(path: Path):
@@ -35,9 +36,11 @@ def infer_domain_id(row: dict) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run benchmark-aware FactScore v3.")
     parser.add_argument("--results-jsonl", required=True)
-    parser.add_argument("--history-kb-dir", required=True)
-    parser.add_argument("--future-kb-dir", required=True)
-    parser.add_argument("--hidden-eval-v3", required=True)
+    parser.add_argument("--release-dir", required=True)
+    parser.add_argument("--kb-dir", default="")
+    parser.add_argument("--history-kb-dir", default="")
+    parser.add_argument("--future-kb-dir", default="")
+    parser.add_argument("--hidden-eval-v3", default="", help="Legacy override. Prefer --release-dir with task_refined.jsonl.")
     parser.add_argument("--judge-llm-config", default="configs/llm/mimo_pro.local.yaml")
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--max-claims", type=int, default=8)
@@ -45,6 +48,7 @@ def main() -> None:
     args = parser.parse_args()
 
     results_path = Path(args.results_jsonl)
+    release_dir = Path(args.release_dir)
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -52,18 +56,30 @@ def main() -> None:
     if args.task_limit is not None:
         rows = rows[: args.task_limit]
 
-    gt_by_task = {row["task_id"]: row for row in iter_jsonl(Path(args.hidden_eval_v3))}
-    history_kb = OfflineKnowledgeBase(Path(args.history_kb_dir))
-    future_kb = OfflineKnowledgeBase(Path(args.future_kb_dir))
+    if str(args.hidden_eval_v3 or "").strip():
+        gt_by_task = {row["task_id"]: row for row in iter_jsonl(Path(args.hidden_eval_v3))}
+    else:
+        gt_by_task = load_release_eval_by_id(release_dir, variant="v3_1")
+    kb_dir = Path(args.kb_dir) if str(args.kb_dir or "").strip() else release_dir / "kb"
+    history_kb_dir = Path(args.history_kb_dir) if str(args.history_kb_dir or "").strip() else kb_dir
+    future_kb_dir = Path(args.future_kb_dir) if str(args.future_kb_dir or "").strip() else None
+    history_kb = OfflineKnowledgeBase(history_kb_dir)
+    future_kb = OfflineKnowledgeBase(future_kb_dir) if future_kb_dir is not None else None
     judge_client = OpenAICompatChatClient(load_openai_compat_config(Path(args.judge_llm_config)))
     cfg = FactScoreV3Config(max_claims=args.max_claims)
+
+    bad_task_ids = [
+        str(row.get("task_id") or "").strip() or "<missing-task-id>"
+        for row in rows
+        if (str(row.get("task_id") or "").strip() or "<missing-task-id>") not in gt_by_task
+    ]
+    if bad_task_ids:
+        raise SystemExit(f"results contain task IDs not present in release eval view: count={len(bad_task_ids)} first={bad_task_ids[:5]}")
 
     outputs = []
     for idx, row in enumerate(rows, start=1):
         task_id = str(row.get("task_id") or "")
         gt_row = gt_by_task.get(task_id)
-        if not gt_row:
-            continue
         row = dict(row)
         row["domain_id"] = infer_domain_id(row)
         print(f"[factscore_v3] {idx}/{len(rows)} {task_id} domain={row.get('domain_id')}", flush=True)
@@ -95,6 +111,9 @@ def main() -> None:
     coverage_scores = [float(row["factscore_v3"]["coverage_score"]) for row in outputs]
     summary = {
         "results_jsonl": str(results_path),
+        "release_dir": str(release_dir),
+        "history_kb_dir": str(history_kb_dir),
+        "future_kb_dir": str(future_kb_dir or ""),
         "task_count": total_tasks,
         "mean_benchmark_factscore": round(sum(benchmark_scores) / total_tasks, 4) if total_tasks else 0.0,
         "mean_precision_score": round(sum(precision_scores) / total_tasks, 4) if total_tasks else 0.0,

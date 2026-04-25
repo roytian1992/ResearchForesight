@@ -27,6 +27,10 @@ Date: 2026-04-25
 ## Validation
 
 - `python -m py_compile` passed for the changed export/eval modules.
+- `scripts/validate_refined_release.py` was added as the canonical release validator.
+- Validator initially found four future-evidence boundary violations where papers dated `2026-03-01` appeared after `future_end=2026-02-28`.
+- The following tasks were corrected by removing the out-of-window future evidence from `trace.future_evidence`, `future_alignment_targets`, and `claim_bank.reference_paper_ids`: `RTLv3-0041`, `RTLv3-0043`, `RTLv3-0149`, `RTLv3-0396`.
+- After correction, `python scripts/validate_refined_release.py --release-dir data/releases/researchforesight_refined_422` reports `error_count = 0`.
 - Runtime cutoff check passed on the rebuilt KB:
   - `llm_agent` with cutoff `2025-08-31`: 26,432 visible papers, max date `2025-08-31`, 0 papers after cutoff.
   - `llm_agent` with cutoff `2025-11-30`: 32,998 visible papers, max date `2025-11-30`, 0 papers after cutoff.

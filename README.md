@@ -13,8 +13,7 @@ This repository contains the current benchmark code, official benchmark releases
 
 ### 2. Official benchmark release
 The current official public release is the unified 422-task `ResearchForesight` release:
-- `benchmark_release/`: flattened public release directory at the repository root
-- `data/releases/benchmark_full_curated_polished/`: source release bundle used to assemble the public release
+- `data/releases/researchforesight_refined_422/`: canonical release directory
 
 This release does not split public tasks into separate half-year and quarter sub-releases. Instead, it exposes a single mixed-horizon benchmark with per-task temporal cutoffs.
 
@@ -22,32 +21,45 @@ Historical intermediate folders and smaller internal subsets under `data/release
 build artifacts, not as the recommended public entry point.
 
 ### 3. Public release contents
-The public release directory is `benchmark_release/`.
+The public release directory is `data/releases/researchforesight_refined_422/`.
 
 It contains:
-- `tasks.jsonl`: public task file
-- `manifest.json`: release metadata
-- `tasks_hidden_eval.jsonl`: hidden evaluation targets
-- `tasks_build_trace.jsonl`: build traces
-- `tasks_internal_full.jsonl`: internal construction view
+- `task_refined.jsonl`: unified task file containing public task fields and embedded evaluation targets
+- `kb/`: cutoff-aware offline knowledge base
 
-Because the official 422-task release mixes multiple time cutoffs, we do not bundle a single shared `kb/` directory inside `benchmark_release/`. A single frozen corpus would either leak future information for earlier-cutoff tasks or artificially underpower later-cutoff tasks.
+The `kb/` directory is exported up to the maximum task cutoff, but all runners filter retrieval by each task's own `time_cutoff`. This lets one KB serve mixed-cutoff tasks without leaking later history to earlier-cutoff tasks.
 
-If you want to run offline agents, use a cutoff-aligned task slice and pass the corresponding historical corpus explicitly with `--kb-dir`.
-
-Example:
+Validate the release:
 
 ```bash
-python ResearchForesight/scripts/run_researchagent_offline.py \
-  --release-dir ResearchForesight/benchmark_release \
-  --kb-dir /path/to/cutoff_aligned_kb \
+python scripts/validate_refined_release.py \
+  --release-dir data/releases/researchforesight_refined_422
+```
+
+Run an offline agent:
+
+```bash
+python scripts/run_researchagent_offline.py \
+  --release-dir data/releases/researchforesight_refined_422 \
   --output-dir /path/to/local_run_output \
-  --reasoning-llm-config ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml \
-  --render-llm-config ResearchForesight/tmp/local_llm_configs/qwen_235b_8002.local.yaml \
+  --reasoning-llm-config configs/llm/qwen3_235b_8002.local.yaml \
+  --render-llm-config configs/llm/qwen3_235b_8002.local.yaml \
   --fallback-llm-config ''
 ```
 
-The same explicit `--kb-dir` pattern can be used with `ARIS-Offline`, `ResearchAgent-Offline`, and other offline runners in `scripts/`.
+Evaluate predictions:
+
+```bash
+python scripts/evaluate_experiment_final_metrics.py \
+  --results-jsonl /path/to/local_run_output/results.jsonl \
+  --release-dir data/releases/researchforesight_refined_422 \
+  --output-dir /path/to/local_eval_output \
+  --judge-llm-config configs/llm/qwen3_235b_8002.local.yaml \
+  --judge-fallback-llm-config '' \
+  --metrics all
+```
+
+The same release directory can be used with `ARIS-Offline`, `CoI-Agent-Offline`, non-agent baselines, pairwise judges, and final metrics. Legacy scripts that build old split releases are retained for provenance but are not the recommended user path.
 
 Generated experiment outputs such as intermediate run directories, evaluation summaries, and pairwise comparison artifacts are expected to live in local working directories and are not part of the versioned benchmark asset surface.
 
