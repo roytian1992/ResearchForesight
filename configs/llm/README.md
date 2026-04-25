@@ -4,6 +4,7 @@ This directory stores provider-specific OpenAI-compatible configs and routing po
 
 Recommended usage:
 - qwen-235B: harder reasoning, taxonomy expansion, difficult audit decisions
+- Qwen3-235B OpenAI-compatible local server: current recommended judge and runner backend for refined-release smoke tests
 - mimo-v2-flash: cheap batch labeling, candidate polishing, first-pass judges
 - mimo-v2-pro: higher-quality rewrite / judge fallback
 

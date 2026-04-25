@@ -36,6 +36,13 @@ python scripts/validate_refined_release.py \
   --release-dir data/releases/researchforesight_refined_422
 ```
 
+Create a local OpenAI-compatible LLM config. Local configs are ignored by git:
+
+```bash
+cp configs/llm/qwen3_235b_8002.example.yaml \
+  configs/llm/qwen3_235b_8002.local.yaml
+```
+
 Run an offline agent:
 
 ```bash
@@ -43,8 +50,7 @@ python scripts/run_researchagent_offline.py \
   --release-dir data/releases/researchforesight_refined_422 \
   --output-dir /path/to/local_run_output \
   --reasoning-llm-config configs/llm/qwen3_235b_8002.local.yaml \
-  --render-llm-config configs/llm/qwen3_235b_8002.local.yaml \
-  --fallback-llm-config ''
+  --render-llm-config configs/llm/qwen3_235b_8002.local.yaml
 ```
 
 Evaluate predictions:
@@ -55,7 +61,6 @@ python scripts/evaluate_experiment_final_metrics.py \
   --release-dir data/releases/researchforesight_refined_422 \
   --output-dir /path/to/local_eval_output \
   --judge-llm-config configs/llm/qwen3_235b_8002.local.yaml \
-  --judge-fallback-llm-config '' \
   --metrics all
 ```
 

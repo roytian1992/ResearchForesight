@@ -32,3 +32,14 @@ Validate the release before running experiments:
 python scripts/validate_refined_release.py \
   --release-dir data/releases/researchforesight_refined_422
 ```
+
+The maintained evaluation entrypoint is:
+
+```bash
+python scripts/evaluate_experiment_final_metrics.py \
+  --results-jsonl /path/to/run/results.jsonl \
+  --release-dir data/releases/researchforesight_refined_422 \
+  --output-dir /path/to/eval \
+  --judge-llm-config configs/llm/qwen3_235b_8002.local.yaml \
+  --metrics all
+```
