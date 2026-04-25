@@ -17,6 +17,18 @@ from researchworld.refined_release import load_task_refined_public_tasks
 
 
 METHOD_SPECS = {
+    "native_llm": {
+        "label": "Native LLM",
+        "script": "scripts/run_offline_kb_baseline.py",
+        "result_name": "results.jsonl",
+        "baseline_mode": "native",
+    },
+    "hybrid_rag": {
+        "label": "Hybrid RAG",
+        "script": "scripts/run_offline_kb_baseline.py",
+        "result_name": "results.jsonl",
+        "baseline_mode": "hybrid",
+    },
     "researchagent": {
         "label": "ResearchAgent-Offline",
         "script": "scripts/run_researchagent_offline.py",
@@ -196,6 +208,16 @@ def run_sharded_method(
             )
         elif method == "aris":
             cmd.extend(["--answer-llm-config", llm_config, "--critic-llm-config", llm_config])
+        elif method in {"native_llm", "hybrid_rag"}:
+            cmd.extend(
+                [
+                    "--mode",
+                    str(spec["baseline_mode"]),
+                    "--answer-llm-config",
+                    llm_config,
+                    "--skip-judge",
+                ]
+            )
         proc = launch(cmd, log_path=shard_dir / "run.log")
         procs[shard_idx] = proc
         restarts[shard_idx] = 0

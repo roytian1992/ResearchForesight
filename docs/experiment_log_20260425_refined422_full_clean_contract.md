@@ -64,3 +64,13 @@ nohup .venv-researchforesight/bin/python -u scripts/run_refined422_full_experime
   - shard 1: `3180988`, 106 tasks
   - shard 2: `3180989`, 105 tasks
   - shard 3: `3180990`, 105 tasks
+
+## Supplemental Baselines
+
+- Added `native_llm` and `hybrid_rag` to `scripts/run_refined422_full_experiment.py`.
+- They use `scripts/run_offline_kb_baseline.py` with `--skip-judge`; evaluation is handled only by final metrics.
+- Planned output root: `results/refined422_baselines_clean_contract_20260425`
+- Planned methods: `native_llm`, `hybrid_rag`
+- Planned shards per method: 4
+- Planned final metric workers: 4
+- LLM config: `configs/llm/qwen3_235b_8002.local.yaml`
