@@ -20,8 +20,8 @@ from researchworld.llm import (
 )
 from researchworld.offline_kb import OfflineKnowledgeBase
 from researchworld.refined_release import (
-    load_release_eval_by_id as _load_release_eval_by_id,
-    load_release_public_tasks as _load_release_public_tasks,
+    load_task_refined_eval_by_id as _load_task_refined_eval_by_id,
+    load_task_refined_public_tasks as _load_task_refined_public_tasks,
 )
 
 PUBLIC_DOMAIN_TO_ID = {
@@ -70,12 +70,12 @@ def clip_text(text: str, limit: int) -> str:
     return value[:limit].rstrip() + "..."
 
 
-def load_release_tasks(release_dir: Path) -> List[Dict[str, Any]]:
-    return _load_release_public_tasks(release_dir)
+def load_task_refined_public_tasks(release_dir: Path) -> List[Dict[str, Any]]:
+    return _load_task_refined_public_tasks(release_dir)
 
 
-def load_hidden_eval(release_dir: Path) -> Dict[str, Dict[str, Any]]:
-    return _load_release_eval_by_id(release_dir, variant="base")
+def load_task_refined_eval_by_id(release_dir: Path) -> Dict[str, Dict[str, Any]]:
+    return _load_task_refined_eval_by_id(release_dir)
 
 
 @dataclass
@@ -306,18 +306,18 @@ def judge_answer(
     client: OpenAICompatChatClient,
     *,
     public_task: Dict[str, Any],
-    hidden_task: Dict[str, Any],
+    eval_task: Dict[str, Any],
     candidate_answer: str,
 ) -> Dict[str, Any]:
-    rubric = hidden_task.get("evaluation_rubric") or {}
+    rubric = eval_task.get("evaluation_rubric") or {}
     prompt = f"""Evaluate a benchmark answer.
 
 Public task:
 {json.dumps(public_task, ensure_ascii=False, indent=2)}
 
-Hidden reference:
-gold_answer: {hidden_task.get('gold_answer')}
-expected_answer_points: {json.dumps(hidden_task.get('expected_answer_points') or [], ensure_ascii=False)}
+Evaluation reference from task_refined.jsonl:
+gold_answer: {eval_task.get('gold_answer')}
+expected_answer_points: {json.dumps(eval_task.get('expected_answer_points') or [], ensure_ascii=False)}
 evaluation_rubric: {json.dumps(rubric, ensure_ascii=False)}
 
 Candidate answer:
@@ -387,8 +387,8 @@ def run_baseline(
     task_ids: Optional[set[str]] = None,
     resume: bool = False,
 ) -> Dict[str, Any]:
-    tasks = load_release_tasks(release_dir)
-    hidden_by_id = load_hidden_eval(release_dir) if judge_llm_config else {}
+    tasks = load_task_refined_public_tasks(release_dir)
+    eval_by_id = load_task_refined_eval_by_id(release_dir) if judge_llm_config else {}
     answer_client = OpenAICompatChatClient(load_openai_compat_config(answer_llm_config))
     kb = OfflineKnowledgeBase(kb_dir if kb_dir is not None else (release_dir / "kb"))
     judge_client = (
@@ -467,12 +467,12 @@ def run_baseline(
             "evidence": evidence_packet,
         }
         if judge_client is not None:
-            hidden_task = hidden_by_id.get(str(task["task_id"]))
-            if hidden_task is not None:
+            eval_task = eval_by_id.get(str(task["task_id"]))
+            if eval_task is not None:
                 row["judge"] = judge_answer(
                     judge_client,
                     public_task=task,
-                    hidden_task=hidden_task,
+                    eval_task=eval_task,
                     candidate_answer=answer,
                 )
         rows_out.append(row)

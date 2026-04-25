@@ -108,28 +108,27 @@ def build_public_task_view(row: Dict[str, Any]) -> Dict[str, Any]:
     return public_row
 
 
-def load_refined_rows(release_dir: Path) -> List[Dict[str, Any]]:
+def load_task_refined_rows(release_dir: Path) -> List[Dict[str, Any]]:
     return [normalize_refined_eval_row(row) for row in iter_jsonl(require_refined_release(release_dir))]
 
 
-def load_release_public_tasks(release_dir: Path) -> List[Dict[str, Any]]:
-    return [build_public_task_view(row) for row in load_refined_rows(release_dir)]
+def load_task_refined_public_tasks(release_dir: Path) -> List[Dict[str, Any]]:
+    return [build_public_task_view(row) for row in load_task_refined_rows(release_dir)]
 
 
-def load_release_public_by_id(release_dir: Path) -> Dict[str, Dict[str, Any]]:
-    return {str(row.get("task_id") or ""): row for row in load_release_public_tasks(release_dir)}
+def load_task_refined_public_by_id(release_dir: Path) -> Dict[str, Dict[str, Any]]:
+    return {str(row.get("task_id") or ""): row for row in load_task_refined_public_tasks(release_dir)}
 
 
-def load_release_eval_rows(release_dir: Path, *, variant: str = "v3_1") -> List[Dict[str, Any]]:
-    del variant
-    return load_refined_rows(release_dir)
+def load_task_refined_eval_rows(release_dir: Path) -> List[Dict[str, Any]]:
+    return load_task_refined_rows(release_dir)
 
 
-def load_release_eval_by_id(release_dir: Path, *, variant: str = "v3_1") -> Dict[str, Dict[str, Any]]:
-    return {str(row.get("task_id") or ""): row for row in load_release_eval_rows(release_dir, variant=variant)}
+def load_task_refined_eval_by_id(release_dir: Path) -> Dict[str, Dict[str, Any]]:
+    return {str(row.get("task_id") or ""): row for row in load_task_refined_eval_rows(release_dir)}
 
 
-def load_release_task_views(release_dir: Path, *, eval_variant: str = "v3_1") -> Tuple[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
-    public_by_id = load_release_public_by_id(release_dir)
-    eval_by_id = load_release_eval_by_id(release_dir, variant=eval_variant)
+def load_task_refined_views(release_dir: Path) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
+    public_by_id = load_task_refined_public_by_id(release_dir)
+    eval_by_id = load_task_refined_eval_by_id(release_dir)
     return public_by_id, eval_by_id

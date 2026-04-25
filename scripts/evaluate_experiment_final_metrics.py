@@ -39,7 +39,7 @@ from researchworld.factscore_eval_v3 import FactScoreV3Config, evaluate_answer_f
 from researchworld.future_alignment_eval_v3_1 import FutureAlignmentV3_1Config, evaluate_future_alignment_v3_1
 from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
 from researchworld.offline_kb import OfflineKnowledgeBase
-from researchworld.refined_release import load_release_public_by_id, load_release_task_views
+from researchworld.refined_release import load_task_refined_public_by_id, load_task_refined_views
 
 METRIC_BUNDLES = ('v31', 'v4', 'aux')
 
@@ -181,10 +181,10 @@ def _evaluate_rows(
     results_path: Path,
     resume: bool,
 ) -> Dict[str, Dict[str, Any]]:
-    public_by_id = load_release_public_by_id(release_dir)
-    hidden_by_id = {}
+    public_by_id = load_task_refined_public_by_id(release_dir)
+    eval_by_id = {}
     if any(bundle in {'v31', 'aux'} for bundle in selected_bundles):
-        _, hidden_by_id = load_release_task_views(release_dir, eval_variant='v3_1')
+        _, eval_by_id = load_task_refined_views(release_dir)
 
     history_kb = None
     future_kb = None
@@ -211,10 +211,10 @@ def _evaluate_rows(
         raise RuntimeError(f'results contain task IDs not present in release: count={len(bad_source_ids)} first={bad_source_ids[:5]}')
     if duplicate_source_ids:
         raise RuntimeError(f'results contain duplicate task IDs: count={len(duplicate_source_ids)} first={duplicate_source_ids[:5]}')
-    if hidden_by_id:
-        missing_hidden_ids = [task_id for task_id in seen_source_ids if task_id not in hidden_by_id]
-        if missing_hidden_ids:
-            raise RuntimeError(f'results contain task IDs not present in release eval data: count={len(missing_hidden_ids)} first={missing_hidden_ids[:5]}')
+    if eval_by_id:
+        missing_eval_ids = [task_id for task_id in seen_source_ids if task_id not in eval_by_id]
+        if missing_eval_ids:
+            raise RuntimeError(f'results contain task IDs not present in task_refined eval data: count={len(missing_eval_ids)} first={missing_eval_ids[:5]}')
 
     existing_rows_by_bundle: Dict[str, List[Dict[str, Any]]] = {}
     completed_by_bundle: Dict[str, Set[str]] = {}
@@ -237,7 +237,7 @@ def _evaluate_rows(
             public_task = public_by_id.get(task_id)
             if not public_task:
                 continue
-            hidden_row = hidden_by_id.get(task_id) if hidden_by_id else None
+            eval_row = eval_by_id.get(task_id) if eval_by_id else None
             row = dict(source_row)
             row['domain_id'] = infer_domain_id(row)
             pending_bundles = [bundle for bundle in selected_bundles if task_id not in completed_by_bundle[bundle]]
@@ -247,14 +247,14 @@ def _evaluate_rows(
             print(f"[eval_final] {idx}/{len(rows)} {task_id} family={family} bundles={','.join(pending_bundles)}", flush=True)
 
             if 'v31' in pending_bundles:
-                if hidden_row is None or history_kb is None or fact_cfg is None or future_cfg is None:
+                if eval_row is None or history_kb is None or fact_cfg is None or future_cfg is None:
                     raise RuntimeError(f'missing v31 evaluation dependencies for task {task_id}')
                 fact_eval = evaluate_answer_factscore_v3(
                     history_kb=history_kb,
                     future_kb=future_kb,
                     judge_client=judge_client,
                     result_row=row,
-                    gt_row=hidden_row,
+                    gt_row=eval_row,
                     cfg=fact_cfg,
                 )
                 future_alignment_eval = evaluate_future_alignment_v3_1(
@@ -262,13 +262,13 @@ def _evaluate_rows(
                     judge_client=judge_client,
                     public_task=public_task,
                     result_row=row,
-                    hidden_row=hidden_row,
+                    hidden_row=eval_row,
                     cfg=future_cfg,
                 )
                 out_row = build_experiment_result_row_v3_1(
                     run_id=run_id,
                     public_task=public_task,
-                    hidden_row=hidden_row,
+                    hidden_row=eval_row,
                     result_row=row,
                     fact_eval=fact_eval,
                     future_alignment_eval=future_alignment_eval,
@@ -296,18 +296,18 @@ def _evaluate_rows(
                 handles['v4'].flush()
 
             if 'aux' in pending_bundles:
-                if hidden_row is None:
-                    raise RuntimeError(f'missing aux hidden row for task {task_id}')
+                if eval_row is None:
+                    raise RuntimeError(f'missing task_refined eval row for task {task_id}')
                 family_aux_eval = evaluate_family_auxiliary(
                     judge_client,
                     public_task=public_task,
-                    hidden_row=hidden_row,
+                    hidden_row=eval_row,
                     result_row=row,
                 )
                 out_row = build_aux_result_row(
                     run_id=run_id,
                     public_task=public_task,
-                    hidden_row=hidden_row,
+                    hidden_row=eval_row,
                     result_row=row,
                     family_aux_eval=family_aux_eval,
                 )

@@ -12,7 +12,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from researchworld.refined_release import build_public_task_view, load_refined_rows
+from researchworld.refined_release import build_public_task_view, load_task_refined_rows
 
 REQUIRED_TASK_KEYS = [
     "schema_version",
@@ -121,7 +121,7 @@ def _validate_tasks(release_dir: Path, *, expected_count: int) -> tuple[List[Dic
     task_path = release_dir / "task_refined.jsonl"
     if not task_path.exists():
         return [], [f"missing task file: {task_path}"], {}
-    rows = load_refined_rows(release_dir)
+    rows = load_task_refined_rows(release_dir)
     if expected_count and len(rows) != expected_count:
         errors.append(f"task_count mismatch: got {len(rows)}, expected {expected_count}")
     ids = [str(row.get("task_id") or "") for row in rows]

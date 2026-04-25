@@ -234,7 +234,7 @@ def _extract_focus_from_question(question: str) -> str:
     return m.group(1).strip() if m else ""
 
 
-def legacy_extract_focus_text(task: Dict[str, Any]) -> str:
+def extract_focus_text_from_task_title(task: Dict[str, Any]) -> str:
     title = str(task.get("title") or "").strip()
     text = title
     for pattern in TITLE_PATTERNS:
@@ -733,7 +733,7 @@ class FocusScopeResolutionSkill(ResearchSkill):
 
     def run(self, ctx: SkillContext) -> SkillExecution:
         if ctx.profile == "judge_oriented":
-            focus_text = legacy_extract_focus_text(ctx.task)
+            focus_text = extract_focus_text_from_task_title(ctx.task)
             focus_terms = dedupe(norm_tokens(focus_text))[:12]
         else:
             focus_text = extract_focus_text(ctx.task)

@@ -162,14 +162,12 @@
     "allowed_evidence": "The KB includes papers with published_date <= 2025-11-30; methods must filter retrieval by each task's time_cutoff at query time.",
     "disallowed_sources": [
       "future papers after cutoff",
-      "tasks_hidden_eval.jsonl",
-      "tasks_internal_full.jsonl",
-      "tasks_build_trace.jsonl",
-      "support packets used during benchmark construction"
+      "any file outside task_refined.jsonl",
+      "any file outside this kb directory"
     ]
   },
   "usage_modes": {
-    "native_llm": "Use only public task fields from task_refined.jsonl. Do not load hidden eval fields.",
+    "native_llm": "Use only public task fields from task_refined.jsonl.",
     "llm_plus_rag": "Use this KB as the only retrieval source, always with per-task cutoff filtering.",
     "agent": "Use this KB plus non-network tools over the same KB, always with per-task cutoff filtering."
   },

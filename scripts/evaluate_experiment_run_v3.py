@@ -27,7 +27,7 @@ from researchworld.llm import (
     load_openai_compat_config,
 )
 from researchworld.offline_kb import OfflineKnowledgeBase
-from researchworld.refined_release import load_release_task_views
+from researchworld.refined_release import load_task_refined_views
 
 
 def main() -> None:
@@ -50,7 +50,7 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    public_by_id, hidden_by_id = load_release_task_views(release_dir, eval_variant="v3")
+    public_by_id, eval_by_id = load_task_refined_views(release_dir)
     kb_dir = Path(args.kb_dir) if str(args.kb_dir or "").strip() else release_dir / "kb"
     history_kb_dir = Path(args.history_kb_dir) if str(args.history_kb_dir or "").strip() else kb_dir
     future_kb_dir = Path(args.future_kb_dir) if str(args.future_kb_dir or "").strip() else None
@@ -71,10 +71,10 @@ def main() -> None:
     missing_task_ids = [
         str(row.get("task_id") or "")
         for row in result_rows
-        if str(row.get("task_id") or "") not in public_by_id or str(row.get("task_id") or "") not in hidden_by_id
+        if str(row.get("task_id") or "") not in public_by_id or str(row.get("task_id") or "") not in eval_by_id
     ]
     if missing_task_ids:
-        raise SystemExit(f"results contain task ids not present in release eval data: count={len(missing_task_ids)} first={missing_task_ids[:5]}")
+        raise SystemExit(f"results contain task ids not present in task_refined eval data: count={len(missing_task_ids)} first={missing_task_ids[:5]}")
 
     out_jsonl = output_dir / "results_eval_v3.jsonl"
     outputs = []
@@ -97,7 +97,7 @@ def main() -> None:
         for idx, row in enumerate(result_rows, start=1):
             task_id = str(row.get("task_id") or "")
             public_task = public_by_id.get(task_id)
-            hidden_row = hidden_by_id.get(task_id)
+            eval_row = eval_by_id.get(task_id)
             row = dict(row)
             row["domain_id"] = infer_domain_id(row)
             print(f"[eval_v3] {idx}/{len(result_rows)} {task_id} domain={row['domain_id']} family={row.get('family')}", flush=True)
@@ -106,25 +106,25 @@ def main() -> None:
                 future_kb=future_kb,
                 judge_client=judge_client,
                 result_row=row,
-                gt_row=hidden_row,
+                gt_row=eval_row,
                 cfg=cfg,
             )
             task_fulfillment_eval = evaluate_task_fulfillment_judge(
                 judge_client,
                 public_task=public_task,
-                hidden_row=hidden_row,
+                hidden_row=eval_row,
                 candidate_answer=str(row.get("answer") or ""),
             )
             judge_eval = evaluate_insight_judge(
                 judge_client,
                 public_task=public_task,
-                hidden_row=hidden_row,
+                hidden_row=eval_row,
                 candidate_answer=str(row.get("answer") or ""),
             )
             out_row = build_experiment_result_row(
                 run_id=run_id,
                 public_task=public_task,
-                hidden_row=hidden_row,
+                hidden_row=eval_row,
                 result_row=row,
                 fact_eval=fact_eval,
                 task_fulfillment_eval=task_fulfillment_eval,

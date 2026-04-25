@@ -15,8 +15,8 @@ if str(SRC) not in sys.path:
 from researchworld.baseline_runner import (
     aggregate_scores,
     judge_answer,
-    load_hidden_eval,
-    load_release_tasks,
+    load_task_refined_eval_by_id,
+    load_task_refined_public_tasks,
 )
 from researchworld.llm import (
     FallbackOpenAICompatChatClient,
@@ -152,8 +152,8 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    tasks = load_release_tasks(release_dir)
-    hidden_by_id = load_hidden_eval(release_dir) if not args.skip_judge else {}
+    tasks = load_task_refined_public_tasks(release_dir)
+    eval_by_id = load_task_refined_eval_by_id(release_dir) if not args.skip_judge else {}
     answer_primary = OpenAICompatChatClient(load_openai_compat_config(Path(args.answer_llm_config)))
     answer_fallback = None
     if str(args.answer_fallback_llm_config or "").strip():
@@ -257,9 +257,9 @@ def main() -> None:
         if evidence is not None:
             row["evidence"] = evidence
         if judge_client is not None:
-            hidden_task = hidden_by_id.get(str(task["task_id"]))
-            if hidden_task is not None:
-                row["judge"] = judge_answer(judge_client, public_task=task, hidden_task=hidden_task, candidate_answer=answer)
+            eval_task = eval_by_id.get(str(task["task_id"]))
+            if eval_task is not None:
+                row["judge"] = judge_answer(judge_client, public_task=task, eval_task=eval_task, candidate_answer=answer)
         rows_out.append(row)
         results_handle.write(json.dumps(row, ensure_ascii=False) + "\n")
         results_handle.flush()

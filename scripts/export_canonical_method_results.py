@@ -16,7 +16,7 @@ DEFAULT_RELEASE_DIR = (
     ROOT
     / "data"
     / "releases"
-    / "benchmark_experiment100_llmfuture_vote_v3_qwen8002_evidenceexp_v1"
+    / "researchforesight_refined_422"
 )
 
 FAMILY_TO_AUX_NAME = {
@@ -852,7 +852,7 @@ def main() -> None:
     args = parser.parse_args()
 
     release_dir = Path(args.release_dir)
-    tasks_path = release_dir / "tasks.jsonl"
+    tasks_path = release_dir / "task_refined.jsonl"
     if not tasks_path.exists():
         raise FileNotFoundError(tasks_path)
     tasks_by_id = {str(row["task_id"]): row for row in _load_jsonl(tasks_path)}

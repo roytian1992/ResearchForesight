@@ -20,7 +20,7 @@ from researchworld.experiment_eval_aux import (
     write_rubric_breakdown_csv_aux,
 )
 from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
-from researchworld.refined_release import load_release_task_views
+from researchworld.refined_release import load_task_refined_views
 
 
 def main() -> None:
@@ -40,7 +40,7 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    public_by_id, hidden_by_id = load_release_task_views(release_dir, eval_variant='v3_1')
+    public_by_id, eval_by_id = load_task_refined_views(release_dir)
     judge_primary = OpenAICompatChatClient(load_openai_compat_config(Path(args.judge_llm_config)))
     judge_fallback = None
     fallback_path = Path(args.judge_fallback_llm_config) if str(args.judge_fallback_llm_config or '').strip() else None
@@ -55,10 +55,10 @@ def main() -> None:
     missing_task_ids = [
         str(row.get('task_id') or '')
         for row in result_rows
-        if str(row.get('task_id') or '') not in public_by_id or str(row.get('task_id') or '') not in hidden_by_id
+        if str(row.get('task_id') or '') not in public_by_id or str(row.get('task_id') or '') not in eval_by_id
     ]
     if missing_task_ids:
-        raise SystemExit(f"results contain task ids not present in release eval data: count={len(missing_task_ids)} first={missing_task_ids[:5]}")
+        raise SystemExit(f"results contain task ids not present in task_refined eval data: count={len(missing_task_ids)} first={missing_task_ids[:5]}")
 
     out_jsonl = output_dir / 'results_eval_aux.jsonl'
     outputs = []
@@ -81,18 +81,18 @@ def main() -> None:
         for idx, row in enumerate(result_rows, start=1):
             task_id = str(row.get('task_id') or '')
             public_task = public_by_id.get(task_id)
-            hidden_row = hidden_by_id.get(task_id)
+            eval_row = eval_by_id.get(task_id)
             print(f"[eval_aux] {idx}/{len(result_rows)} {task_id} family={public_task.get('family')} method={row.get('agent') or row.get('baseline')}", flush=True)
             family_aux_eval = evaluate_family_auxiliary(
                 judge_client,
                 public_task=public_task,
-                hidden_row=hidden_row,
+                hidden_row=eval_row,
                 result_row=row,
             )
             out_row = build_aux_result_row(
                 run_id=run_id,
                 public_task=public_task,
-                hidden_row=hidden_row,
+                hidden_row=eval_row,
                 result_row=row,
                 family_aux_eval=family_aux_eval,
             )

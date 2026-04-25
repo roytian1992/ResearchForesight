@@ -11,10 +11,8 @@ Use these entrypoints for the public `data/releases/researchforesight_refined_42
 - `evaluate_experiment_final_metrics.py`: runs the maintained final metric bundle from `task_refined.jsonl`.
 - `run_pairwise_judge_v3.py` and `run_pairwise_bestofk_v3.py`: pairwise comparison utilities using the refined public task view.
 
-## Legacy/Provenance Scripts
+## Current Data Contract
 
-Many older build, augmentation, and post-processing scripts still reference `tasks.jsonl`, `tasks_hidden_eval*.jsonl`, `tasks_build_trace.jsonl`, or `tasks_internal_full.jsonl`. They are retained to preserve release-construction provenance, but they are not part of the current public benchmark flow.
+All maintained prediction and evaluation scripts must treat `task_refined.jsonl` as the single source of task, target, and evaluation metadata. The only other release input they may read is the cutoff-aware `kb/` directory.
 
-For new experiments, do not build dependencies on those split files. Treat `task_refined.jsonl` as the single source of task, target, and evaluation metadata.
-
-The maintained `researchworld.refined_release` loader intentionally requires `task_refined.jsonl` and does not fall back to legacy split files.
+The maintained `researchworld.refined_release` loader requires `task_refined.jsonl` and fails fast if it is absent.

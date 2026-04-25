@@ -20,7 +20,7 @@ from researchworld.experiment_eval_v4 import (
     write_main_table_csv_v4,
 )
 from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
-from researchworld.refined_release import load_release_public_by_id
+from researchworld.refined_release import load_task_refined_public_by_id
 
 
 def main() -> None:
@@ -40,7 +40,7 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    public_by_id = load_release_public_by_id(release_dir)
+    public_by_id = load_task_refined_public_by_id(release_dir)
     judge_primary = OpenAICompatChatClient(load_openai_compat_config(Path(args.judge_llm_config)))
     judge_fallback = None
     fallback_path = Path(args.judge_fallback_llm_config) if str(args.judge_fallback_llm_config or '').strip() else None
@@ -58,7 +58,7 @@ def main() -> None:
         if str(row.get('task_id') or '') not in public_by_id
     ]
     if missing_task_ids:
-        raise SystemExit(f"results contain task ids not present in release public data: count={len(missing_task_ids)} first={missing_task_ids[:5]}")
+        raise SystemExit(f"results contain task ids not present in task_refined public data: count={len(missing_task_ids)} first={missing_task_ids[:5]}")
 
     out_jsonl = output_dir / 'results_eval_v4.jsonl'
     outputs = []

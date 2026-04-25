@@ -47,7 +47,7 @@ def parse_args() -> argparse.Namespace:
         default="",
         help=(
             "Maximum visible history cutoff date (YYYY-MM-DD). If omitted, infer the max "
-            "time_cutoff from task_refined.jsonl, falling back to tasks.jsonl."
+            "time_cutoff from task_refined.jsonl."
         ),
     )
     parser.add_argument(
@@ -92,9 +92,9 @@ def normalize_date(value: object) -> str | None:
 
 def _release_tasks_path(release_dir: Path) -> Path:
     refined_path = release_dir / "task_refined.jsonl"
-    if refined_path.exists():
-        return refined_path
-    return release_dir / "tasks.jsonl"
+    if not refined_path.exists():
+        raise FileNotFoundError(f"Expected unified task file: {refined_path}")
+    return refined_path
 
 
 def infer_history_cutoff(release_dir: Path) -> str:
@@ -345,14 +345,12 @@ def main() -> None:
             ),
             "disallowed_sources": [
                 "future papers after cutoff",
-                "tasks_hidden_eval.jsonl",
-                "tasks_internal_full.jsonl",
-                "tasks_build_trace.jsonl",
-                "support packets used during benchmark construction",
+                "any file outside task_refined.jsonl",
+                "any file outside this kb directory",
             ],
         },
         "usage_modes": {
-            "native_llm": "Use only public task fields from task_refined.jsonl. Do not load hidden eval fields.",
+            "native_llm": "Use only public task fields from task_refined.jsonl.",
             "llm_plus_rag": "Use this KB as the only retrieval source, always with per-task cutoff filtering.",
             "agent": "Use this KB plus non-network tools over the same KB, always with per-task cutoff filtering.",
         },

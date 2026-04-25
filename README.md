@@ -67,7 +67,7 @@ python scripts/evaluate_experiment_final_metrics.py \
   --metrics all
 ```
 
-The same release directory can be used with `ARIS-Offline`, `CoI-Agent-Offline`, non-agent baselines, pairwise judges, and final metrics. Legacy scripts that build old split releases are retained for provenance but are not the recommended user path.
+The same release directory can be used with `ARIS-Offline`, `CoI-Agent-Offline`, non-agent baselines, pairwise judges, and final metrics. Maintained prediction and evaluation entrypoints use only this directory's `task_refined.jsonl` and `kb/`.
 
 Generated experiment outputs such as intermediate run directories, evaluation summaries, and pairwise comparison artifacts are expected to live in local working directories and are not part of the versioned benchmark asset surface.
 

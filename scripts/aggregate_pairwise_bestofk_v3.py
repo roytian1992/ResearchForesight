@@ -28,7 +28,7 @@ def normalize_round_rows(rows: Iterable[Dict[str, Any]]) -> List[Dict[str, Any]]
     for row in rows:
         if "rounds" in row and isinstance(row.get("rounds"), list):
             methods = list(row.get("methods") or [])
-            judge_profile = str(row.get("judge_profile") or "legacy")
+            judge_profile = str(row.get("judge_profile") or "standard")
             for round_row in row["rounds"]:
                 normalized.append(
                     {
@@ -229,7 +229,7 @@ def main() -> None:
         "extra_jsonl": args.extra_jsonl or [],
         "raw_instance_count": len(rows),
         "collapsed_comparison_count": len(collapsed),
-        "judge_profiles": sorted({str(row.get("judge_profile") or "legacy") for row in rows}),
+        "judge_profiles": sorted({str(row.get("judge_profile") or "standard") for row in rows}),
         "overall": overall,
         "family_summary": by_family,
         "domain_summary": by_domain,

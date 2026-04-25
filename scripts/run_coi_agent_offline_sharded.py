@@ -16,7 +16,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from researchworld.baseline_runner import load_release_tasks
+from researchworld.baseline_runner import load_task_refined_public_tasks
 
 
 def parse_args() -> argparse.Namespace:
@@ -186,7 +186,7 @@ def main() -> None:
         with supervisor_status.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
-    tasks = load_release_tasks(release_dir)
+    tasks = load_task_refined_public_tasks(release_dir)
     all_task_ids = [str(row.get("task_id") or "") for row in tasks if str(row.get("task_id") or "").strip()]
     auto_seed_path = output_dir / "results_merged.jsonl"
     seed_path = Path(args.resume_seed_results) if args.resume_seed_results else (auto_seed_path if auto_seed_path.exists() else None)

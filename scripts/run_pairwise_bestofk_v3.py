@@ -18,10 +18,10 @@ if str(SRC) not in sys.path:
 
 from researchworld.corpus import iter_jsonl
 from researchworld.llm import OpenAICompatChatClient, complete_json_object, load_openai_compat_config
-from researchworld.refined_release import load_release_public_by_id
+from researchworld.refined_release import load_task_refined_public_by_id
 
 JUDGE_PROFILES = [
-    "legacy",
+    "standard",
     "idea_arena",
     "structured_idea_arena",
     "structured_idea_arena_evidence",
@@ -45,7 +45,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-rounds", type=int, default=5)
     parser.add_argument("--escalate-conf-threshold", type=float, default=0.65)
     parser.add_argument("--job-retries", type=int, default=3)
-    parser.add_argument("--judge-profile", choices=JUDGE_PROFILES, default="legacy")
+    parser.add_argument("--judge-profile", choices=JUDGE_PROFILES, default="standard")
     parser.add_argument("--task-limit", type=int, default=None)
     parser.add_argument("--task-ids-file", default=None)
     parser.add_argument(
@@ -58,7 +58,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_public_tasks(release_dir: Path) -> Dict[str, Dict[str, Any]]:
-    return load_release_public_by_id(release_dir)
+    return load_task_refined_public_by_id(release_dir)
 
 
 def load_method_results(specs: Iterable[str]) -> Tuple[List[str], Dict[str, Dict[str, Dict[str, Any]]]]:

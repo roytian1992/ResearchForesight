@@ -12,7 +12,7 @@ if str(SRC) not in sys.path:
 
 from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
 from researchworld.offline_kb import OfflineKnowledgeBase, PUBLIC_DOMAIN_TO_ID
-from researchworld.refined_release import load_release_public_tasks
+from researchworld.refined_release import load_task_refined_public_tasks
 from researchworld.researchagent_offline import ResearchAgentOffline, safe_run_task
 
 
@@ -59,7 +59,7 @@ def main() -> None:
         render_passes=args.render_passes,
     )
 
-    tasks = load_release_public_tasks(release_dir)
+    tasks = load_task_refined_public_tasks(release_dir)
     allowed_task_ids = None
     if args.task_ids_file:
         allowed_task_ids = {

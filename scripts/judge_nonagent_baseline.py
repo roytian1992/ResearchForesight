@@ -12,6 +12,7 @@ from researchworld.llm import (
     extract_json_object,
     load_openai_compat_config,
 )
+from researchworld.refined_release import load_task_refined_eval_by_id
 
 
 def load_jsonl(path: Path) -> List[Dict[str, Any]]:
@@ -19,16 +20,11 @@ def load_jsonl(path: Path) -> List[Dict[str, Any]]:
         return [json.loads(line) for line in handle if line.strip()]
 
 
-def build_hidden_map(path: Path) -> Dict[str, Dict[str, Any]]:
-    rows = load_jsonl(path)
-    return {str(row["task_id"]): row for row in rows}
-
-
 def judge_single(
     client: OpenAICompatChatClient,
     *,
     public_result: Dict[str, Any],
-    hidden_task: Dict[str, Any],
+    eval_task: Dict[str, Any],
 ) -> Dict[str, Any]:
     public_task = {
         "task_id": public_result.get("task_id"),
@@ -44,9 +40,9 @@ Public task:
 {json.dumps(public_task, ensure_ascii=False, indent=2)}
 
 Reference signals:
-- gold_answer: {hidden_task.get('gold_answer')}
-- expected_answer_points: {json.dumps(hidden_task.get('expected_answer_points') or [], ensure_ascii=False)}
-- rubric: {json.dumps(hidden_task.get('evaluation_rubric') or {}, ensure_ascii=False)}
+- gold_answer: {eval_task.get('gold_answer')}
+- expected_answer_points: {json.dumps(eval_task.get('expected_answer_points') or [], ensure_ascii=False)}
+- rubric: {json.dumps(eval_task.get('evaluation_rubric') or {}, ensure_ascii=False)}
 
 Candidate answer:
 {public_result.get('answer') or ''}
@@ -75,28 +71,28 @@ Scores must be in [0, 1]."""
 def main() -> None:
     parser = argparse.ArgumentParser(description="Judge completed non-agent baseline answers.")
     parser.add_argument("--input-results", required=True)
-    parser.add_argument("--hidden-eval", required=True)
+    parser.add_argument("--release-dir", required=True)
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--judge-llm-config", default="configs/llm/mimo_pro.local.yaml")
     args = parser.parse_args()
 
     results = load_jsonl(Path(args.input_results))
-    hidden_by_id = build_hidden_map(Path(args.hidden_eval))
+    eval_by_id = load_task_refined_eval_by_id(Path(args.release_dir))
     client = OpenAICompatChatClient(load_openai_compat_config(Path(args.judge_llm_config)))
 
     judged_rows: List[Dict[str, Any]] = []
     total = len(results)
     for idx, row in enumerate(results, start=1):
         task_id = str(row.get("task_id") or "")
-        hidden = hidden_by_id.get(task_id)
-        if hidden is None:
+        eval_task = eval_by_id.get(task_id)
+        if eval_task is None:
             continue
         print(
             f"[judge] {idx}/{total} task={task_id} baseline={row.get('baseline')} family={row.get('family')}",
             flush=True,
         )
         judged = dict(row)
-        judged["judge"] = judge_single(client, public_result=row, hidden_task=hidden)
+        judged["judge"] = judge_single(client, public_result=row, eval_task=eval_task)
         judged_rows.append(judged)
 
     out_dir = Path(args.output_dir)

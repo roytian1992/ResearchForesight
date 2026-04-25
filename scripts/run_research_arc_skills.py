@@ -15,8 +15,8 @@ from researchworld.baseline_runner import (
     PUBLIC_DOMAIN_TO_ID,
     aggregate_scores,
     judge_answer,
-    load_hidden_eval,
-    load_release_tasks,
+    load_task_refined_eval_by_id,
+    load_task_refined_public_tasks,
 )
 from researchworld.llm import OpenAICompatChatClient, load_openai_compat_config
 from researchworld.offline_kb import OfflineKnowledgeBase
@@ -52,9 +52,9 @@ def main() -> None:
         critic_client=critic_client,
         profile=args.profile,
     )
-    hidden_by_id = load_hidden_eval(release_dir) if not args.skip_judge else {}
+    eval_by_id = load_task_refined_eval_by_id(release_dir) if not args.skip_judge else {}
 
-    tasks = load_release_tasks(release_dir)
+    tasks = load_task_refined_public_tasks(release_dir)
     domain_filter = set(args.domains) if args.domains else None
     family_filter = set(args.families) if args.families else None
     allowed_task_ids = None
@@ -99,12 +99,12 @@ def main() -> None:
             "trace": result,
         }
         if not args.skip_judge:
-            hidden_task = hidden_by_id.get(str(task["task_id"]))
-            if hidden_task is not None:
+            eval_task = eval_by_id.get(str(task["task_id"]))
+            if eval_task is not None:
                 row["judge"] = judge_answer(
                     critic_client,
                     public_task=task,
-                    hidden_task=hidden_task,
+                    eval_task=eval_task,
                     candidate_answer=result["answer"],
                 )
         outputs.append(row)

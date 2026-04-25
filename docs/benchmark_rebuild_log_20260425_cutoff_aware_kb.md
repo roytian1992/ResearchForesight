@@ -69,6 +69,19 @@ Date: 2026-04-25
   - `.venv-researchforesight/bin/python scripts/evaluate_experiment_final_metrics.py --results-jsonl data/releases/benchmark_researchagent_refined_smoke1_20260425/results.jsonl --release-dir data/releases/researchforesight_refined_422 --output-dir /tmp/rf_metric_logic_smoke --metrics factuality --task-limit 1`
   - Smoke output `summary.json` resolved to `v31`, used empty `future_kb_dir`, and completed with 0 future evidence date-window violations for `RTLv3-0001`.
 
+## Clean Task-Refined Contract
+
+- Maintained prediction and evaluation loaders now use explicit `load_task_refined_*` APIs.
+- Removed the maintained `load_hidden_eval`, `load_release_tasks`, `load_release_*` refined-loader APIs so current code paths cannot imply or silently use split release files.
+- Removed the `--hidden-eval-v3` override from `scripts/run_factscore_eval_v3.py`; FactScore now reads evaluation targets only from `task_refined.jsonl`.
+- Updated maintained runners, final metrics, direct metric scripts, pairwise scripts, adapters, and non-agent judging to resolve public/eval views from `task_refined.jsonl`.
+- Updated KB export and the checked-in KB manifest so the data contract says only `task_refined.jsonl` plus `kb/` are valid maintained runtime inputs.
+- Clean-contract validation passed:
+  - `.venv-researchforesight/bin/python -m py_compile src/researchworld/refined_release.py src/researchworld/baseline_runner.py src/researchworld/research_arc_skills.py src/researchworld/coi_agent_offline.py scripts/validate_refined_release.py scripts/export_offline_kb.py scripts/run_researchagent_offline.py scripts/run_aris_offline.py scripts/run_coi_agent_offline.py scripts/run_coi_agent_offline_sharded.py scripts/prepare_coi_fulltext_cache.py scripts/run_offline_kb_baseline.py scripts/run_research_arc.py scripts/run_research_arc_kb.py scripts/run_research_arc_skills.py scripts/run_research_arc_v2.py scripts/run_research_arc_v3.py scripts/run_research_arc_v4.py scripts/run_research_arc_v5.py scripts/run_research_arc_v6.py scripts/run_factscore_eval_v3.py scripts/evaluate_experiment_run_v3.py scripts/evaluate_experiment_run_v3_1.py scripts/evaluate_experiment_run_v4.py scripts/evaluate_experiment_aux.py scripts/evaluate_experiment_final_metrics.py scripts/run_pairwise_judge_v3.py scripts/run_pairwise_bestofk_v3.py scripts/rerun_pairwise_conflicts_v3.py scripts/aggregate_pairwise_bestofk_v3.py scripts/adapt_experiment_answers.py scripts/judge_nonagent_baseline.py scripts/export_canonical_method_results.py`
+  - `.venv-researchforesight/bin/python scripts/validate_refined_release.py --release-dir data/releases/researchforesight_refined_422`
+  - `.venv-researchforesight/bin/python scripts/evaluate_experiment_final_metrics.py --results-jsonl data/releases/benchmark_researchagent_refined_smoke1_20260425/results.jsonl --release-dir data/releases/researchforesight_refined_422 --output-dir /tmp/rf_clean_contract_eval_smoke --metrics factuality --task-limit 1`
+  - Load-only prediction smokes passed for `run_researchagent_offline.py`, `run_aris_offline.py`, and `run_coi_agent_offline.py` with `--task-limit 0`.
+
 ## Caveats
 
 - Methods are safe only if they continue passing `task["time_cutoff"]` into all KB retrievers. Current ResearchAgent, ARIS, and CoI retrieval paths already do this.

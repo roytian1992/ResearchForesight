@@ -14,7 +14,7 @@ if str(SRC) not in sys.path:
 from researchworld.factscore_eval_v3 import FactScoreV3Config, evaluate_answer_factscore_v3
 from researchworld.llm import OpenAICompatChatClient, load_openai_compat_config
 from researchworld.offline_kb import OfflineKnowledgeBase, PUBLIC_DOMAIN_TO_ID
-from researchworld.refined_release import load_release_eval_by_id
+from researchworld.refined_release import load_task_refined_eval_by_id
 
 
 def iter_jsonl(path: Path):
@@ -40,7 +40,6 @@ def main() -> None:
     parser.add_argument("--kb-dir", default="")
     parser.add_argument("--history-kb-dir", default="")
     parser.add_argument("--future-kb-dir", default="")
-    parser.add_argument("--hidden-eval-v3", default="", help="Legacy override. Prefer --release-dir with task_refined.jsonl.")
     parser.add_argument("--judge-llm-config", default="configs/llm/qwen3_235b_8002.local.yaml")
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--max-claims", type=int, default=8)
@@ -56,10 +55,7 @@ def main() -> None:
     if args.task_limit is not None:
         rows = rows[: args.task_limit]
 
-    if str(args.hidden_eval_v3 or "").strip():
-        gt_by_task = {row["task_id"]: row for row in iter_jsonl(Path(args.hidden_eval_v3))}
-    else:
-        gt_by_task = load_release_eval_by_id(release_dir, variant="v3_1")
+    gt_by_task = load_task_refined_eval_by_id(release_dir)
     kb_dir = Path(args.kb_dir) if str(args.kb_dir or "").strip() else release_dir / "kb"
     history_kb_dir = Path(args.history_kb_dir) if str(args.history_kb_dir or "").strip() else kb_dir
     future_kb_dir = Path(args.future_kb_dir) if str(args.future_kb_dir or "").strip() else None

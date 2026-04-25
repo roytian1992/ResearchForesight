@@ -15,7 +15,7 @@ if str(SRC) not in sys.path:
 from researchworld.answer_adapter import apply_shared_final_adapter, shared_adapter_name
 from researchworld.corpus import iter_jsonl
 from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
-from researchworld.refined_release import load_release_public_by_id
+from researchworld.refined_release import load_task_refined_public_by_id
 
 
 def build_client(primary_config: Path, fallback_config: str) -> FallbackOpenAICompatChatClient:
@@ -66,7 +66,7 @@ def main() -> None:
     output_path = Path(args.output_jsonl)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    public_by_id = load_release_public_by_id(release_dir)
+    public_by_id = load_task_refined_public_by_id(release_dir)
 
     primary_config = Path(args.adapter_llm_config)
     fallback_config = str(args.adapter_fallback_llm_config or "")

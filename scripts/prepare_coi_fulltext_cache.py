@@ -12,7 +12,7 @@ import sys
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from researchworld.baseline_runner import PUBLIC_DOMAIN_TO_ID, load_release_tasks
+from researchworld.baseline_runner import PUBLIC_DOMAIN_TO_ID, load_task_refined_public_tasks
 from researchworld.fulltext_cache import LocalFulltextCache
 from researchworld.offline_kb import OfflineKnowledgeBase, merge_multi_query_results
 from researchworld.research_arc_kb import extract_focus_text
@@ -37,7 +37,7 @@ def main() -> None:
     release_dir = Path(args.release_dir)
     kb_dir = Path(args.kb_dir) if args.kb_dir else (release_dir / "kb")
     kb = OfflineKnowledgeBase(kb_dir)
-    tasks = load_release_tasks(release_dir)
+    tasks = load_task_refined_public_tasks(release_dir)
 
     allowed_task_ids: Optional[Set[str]] = None
     if args.task_ids_file:

@@ -16,7 +16,7 @@ if str(SRC) not in sys.path:
 
 from researchworld.corpus import iter_jsonl
 from researchworld.llm import OpenAICompatChatClient, complete_json_object, load_openai_compat_config
-from researchworld.refined_release import load_release_public_by_id
+from researchworld.refined_release import load_task_refined_public_by_id
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,7 +43,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_public_tasks(release_dir: Path) -> Dict[str, Dict[str, Any]]:
-    return load_release_public_by_id(release_dir)
+    return load_task_refined_public_by_id(release_dir)
 
 
 def load_method_results(specs: Iterable[str]) -> Dict[str, Dict[str, Dict[str, Any]]]:

@@ -4795,7 +4795,7 @@ Constraints:
             trace_result=raw_result,
         )
 
-    def run_task_legacy(self, *, task: Dict[str, Any], domain_id: str) -> Dict[str, Any]:
+    def run_task_linear_chain(self, *, task: Dict[str, Any], domain_id: str) -> Dict[str, Any]:
         queries = self.build_queries(task)
         evidence = self.gather_evidence(task=task, domain_id=domain_id, queries=queries)
         chain = self.build_chain_cards(evidence)

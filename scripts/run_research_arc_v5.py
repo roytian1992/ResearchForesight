@@ -10,7 +10,7 @@ SRC = ROOT / 'src'
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from researchworld.baseline_runner import PUBLIC_DOMAIN_TO_ID, load_release_tasks
+from researchworld.baseline_runner import PUBLIC_DOMAIN_TO_ID, load_task_refined_public_tasks
 from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
 from researchworld.research_arc_v5 import ResearchArcV5
 
@@ -45,7 +45,7 @@ def main() -> None:
     )
     agent = ResearchArcV5(answer_client=answer_client, critic_client=critic_client)
 
-    tasks = load_release_tasks(release_dir)
+    tasks = load_task_refined_public_tasks(release_dir)
     allowed_task_ids = None
     if args.task_ids_file:
         allowed_task_ids = {

@@ -23,7 +23,7 @@ from researchworld.llm import (
     load_openai_compat_embedding_config,
 )
 from researchworld.offline_kb import OfflineKnowledgeBase, PUBLIC_DOMAIN_TO_ID
-from researchworld.refined_release import load_release_public_tasks
+from researchworld.refined_release import load_task_refined_public_tasks
 
 
 def main() -> None:
@@ -65,7 +65,7 @@ def main() -> None:
         else None
     )
     kb = OfflineKnowledgeBase(kb_dir)
-    tasks = load_release_public_tasks(release_dir)
+    tasks = load_task_refined_public_tasks(release_dir)
     allowed_task_ids = None
     if args.task_ids_file:
         allowed_task_ids = {
