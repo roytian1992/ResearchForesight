@@ -114,8 +114,9 @@ def _result_path(root: Path, bundle: str) -> Path:
 def _build_judge_client(primary_config: Path, fallback_config: str) -> FallbackOpenAICompatChatClient:
     judge_primary = OpenAICompatChatClient(load_openai_compat_config(primary_config))
     judge_fallback = None
-    if str(fallback_config or '').strip():
-        judge_fallback = OpenAICompatChatClient(load_openai_compat_config(Path(fallback_config)))
+    fallback_path = Path(fallback_config) if str(fallback_config or '').strip() else None
+    if fallback_path and fallback_path.exists():
+        judge_fallback = OpenAICompatChatClient(load_openai_compat_config(fallback_path))
     return FallbackOpenAICompatChatClient(judge_primary, judge_fallback)
 
 
@@ -210,6 +211,10 @@ def _evaluate_rows(
         raise RuntimeError(f'results contain task IDs not present in release: count={len(bad_source_ids)} first={bad_source_ids[:5]}')
     if duplicate_source_ids:
         raise RuntimeError(f'results contain duplicate task IDs: count={len(duplicate_source_ids)} first={duplicate_source_ids[:5]}')
+    if hidden_by_id:
+        missing_hidden_ids = [task_id for task_id in seen_source_ids if task_id not in hidden_by_id]
+        if missing_hidden_ids:
+            raise RuntimeError(f'results contain task IDs not present in release eval data: count={len(missing_hidden_ids)} first={missing_hidden_ids[:5]}')
 
     existing_rows_by_bundle: Dict[str, List[Dict[str, Any]]] = {}
     completed_by_bundle: Dict[str, Set[str]] = {}
@@ -357,11 +362,14 @@ def _spawn_parallel_workers(args: argparse.Namespace, rows: List[Dict[str, Any]]
             '--workers', '1',
             '--judge-llm-config', args.judge_llm_config,
             '--judge-fallback-llm-config', args.judge_fallback_llm_config,
-            '--kb-dir', args.kb_dir,
-            '--history-kb-dir', args.history_kb_dir,
-            '--future-kb-dir', args.future_kb_dir,
             '--_worker-mode',
         ]
+        if str(args.kb_dir or '').strip():
+            cmd.extend(['--kb-dir', args.kb_dir])
+        if str(args.history_kb_dir or '').strip():
+            cmd.extend(['--history-kb-dir', args.history_kb_dir])
+        if str(args.future_kb_dir or '').strip():
+            cmd.extend(['--future-kb-dir', args.future_kb_dir])
         if args.resume:
             cmd.append('--resume')
         log_path = log_root / f'worker_{worker_idx:02d}.log'

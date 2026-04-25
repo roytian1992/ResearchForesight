@@ -54,8 +54,9 @@ def main() -> None:
     future_kb = OfflineKnowledgeBase(future_kb_dir) if future_kb_dir is not None else None
     judge_primary = OpenAICompatChatClient(load_openai_compat_config(Path(args.judge_llm_config)))
     judge_fallback = None
-    if str(args.judge_fallback_llm_config or '').strip():
-        judge_fallback = OpenAICompatChatClient(load_openai_compat_config(Path(args.judge_fallback_llm_config)))
+    fallback_path = Path(args.judge_fallback_llm_config) if str(args.judge_fallback_llm_config or '').strip() else None
+    if fallback_path and fallback_path.exists():
+        judge_fallback = OpenAICompatChatClient(load_openai_compat_config(fallback_path))
     judge_client = FallbackOpenAICompatChatClient(judge_primary, judge_fallback)
     fact_cfg = FactScoreV3Config()
     future_cfg = FutureAlignmentV3_1Config()
@@ -64,6 +65,13 @@ def main() -> None:
     result_rows = list(iter_jsonl(results_path))
     if args.task_limit is not None:
         result_rows = result_rows[: args.task_limit]
+    missing_task_ids = [
+        str(row.get('task_id') or '')
+        for row in result_rows
+        if str(row.get('task_id') or '') not in public_by_id or str(row.get('task_id') or '') not in hidden_by_id
+    ]
+    if missing_task_ids:
+        raise SystemExit(f"results contain task ids not present in release eval data: count={len(missing_task_ids)} first={missing_task_ids[:5]}")
 
     out_jsonl = output_dir / 'results_eval_v3_1.jsonl'
     outputs = []
@@ -87,8 +95,6 @@ def main() -> None:
             task_id = str(row.get('task_id') or '')
             public_task = public_by_id.get(task_id)
             hidden_row = hidden_by_id.get(task_id)
-            if not public_task or not hidden_row:
-                continue
             row = dict(row)
             row['domain_id'] = infer_domain_id(row)
             print(f"[eval_v3_1] {idx}/{len(result_rows)} {task_id} domain={row['domain_id']} family={row.get('family')}", flush=True)

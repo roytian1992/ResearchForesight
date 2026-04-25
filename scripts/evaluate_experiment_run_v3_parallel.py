@@ -28,12 +28,18 @@ def _write_jsonl(path: Path, rows: List[Dict[str, Any]]) -> None:
             f.write(json.dumps(row, ensure_ascii=False) + '\n')
 
 
+def _append_optional_arg(cmd: List[str], name: str, value: str) -> None:
+    if str(value or '').strip():
+        cmd.extend([name, value])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Parallel wrapper for evaluate_experiment_run_v3.py')
     parser.add_argument('--results-jsonl', required=True)
     parser.add_argument('--release-dir', required=True)
-    parser.add_argument('--history-kb-dir', required=True)
-    parser.add_argument('--future-kb-dir', required=True)
+    parser.add_argument('--kb-dir', default='')
+    parser.add_argument('--history-kb-dir', default='')
+    parser.add_argument('--future-kb-dir', default='')
     parser.add_argument('--judge-llm-config', default='configs/llm/mimo_pro.local.yaml')
     parser.add_argument('--judge-fallback-llm-config', default='configs/llm/qwen_235b.local.yaml')
     parser.add_argument('--output-dir', required=True)
@@ -70,13 +76,14 @@ def main() -> None:
             str(ROOT / 'scripts' / 'evaluate_experiment_run_v3.py'),
             '--results-jsonl', str(chunk_file),
             '--release-dir', args.release_dir,
-            '--history-kb-dir', args.history_kb_dir,
-            '--future-kb-dir', args.future_kb_dir,
             '--judge-llm-config', args.judge_llm_config,
             '--judge-fallback-llm-config', args.judge_fallback_llm_config,
             '--output-dir', str(worker_out),
             '--run-id', f"{args.run_id or output_dir.name}_w{worker_idx:02d}",
         ]
+        _append_optional_arg(cmd, '--kb-dir', args.kb_dir)
+        _append_optional_arg(cmd, '--history-kb-dir', args.history_kb_dir)
+        _append_optional_arg(cmd, '--future-kb-dir', args.future_kb_dir)
         if args.resume:
             cmd.append('--resume')
         log_path = log_root / f'worker_{worker_idx:02d}.log'

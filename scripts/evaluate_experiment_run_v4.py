@@ -43,14 +43,22 @@ def main() -> None:
     public_by_id = load_release_public_by_id(release_dir)
     judge_primary = OpenAICompatChatClient(load_openai_compat_config(Path(args.judge_llm_config)))
     judge_fallback = None
-    if str(args.judge_fallback_llm_config or '').strip():
-        judge_fallback = OpenAICompatChatClient(load_openai_compat_config(Path(args.judge_fallback_llm_config)))
+    fallback_path = Path(args.judge_fallback_llm_config) if str(args.judge_fallback_llm_config or '').strip() else None
+    if fallback_path and fallback_path.exists():
+        judge_fallback = OpenAICompatChatClient(load_openai_compat_config(fallback_path))
     judge_client = FallbackOpenAICompatChatClient(judge_primary, judge_fallback)
     run_id = args.run_id.strip() or results_path.parent.name or results_path.stem
 
     result_rows = list(iter_jsonl(results_path))
     if args.task_limit is not None:
         result_rows = result_rows[: args.task_limit]
+    missing_task_ids = [
+        str(row.get('task_id') or '')
+        for row in result_rows
+        if str(row.get('task_id') or '') not in public_by_id
+    ]
+    if missing_task_ids:
+        raise SystemExit(f"results contain task ids not present in release public data: count={len(missing_task_ids)} first={missing_task_ids[:5]}")
 
     out_jsonl = output_dir / 'results_eval_v4.jsonl'
     outputs = []
@@ -73,8 +81,6 @@ def main() -> None:
         for idx, row in enumerate(result_rows, start=1):
             task_id = str(row.get('task_id') or '')
             public_task = public_by_id.get(task_id)
-            if not public_task:
-                continue
             family = str(public_task.get('family') or row.get('family') or '')
             answer = str(row.get('answer') or '')
             print(f"[eval_v4] {idx}/{len(result_rows)} {task_id} family={family} method={row.get('agent') or row.get('baseline')}", flush=True)
