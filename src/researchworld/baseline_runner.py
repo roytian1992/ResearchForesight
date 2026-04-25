@@ -16,12 +16,13 @@ from researchworld.corpus import iter_jsonl
 from researchworld.llm import (
     OpenAICompatChatClient,
     complete_json_object,
-    extract_json_object,
     load_openai_compat_config,
 )
-
-
-ROOT = Path(__file__).resolve().parents[2]
+from researchworld.offline_kb import OfflineKnowledgeBase
+from researchworld.refined_release import (
+    load_release_eval_by_id as _load_release_eval_by_id,
+    load_release_public_tasks as _load_release_public_tasks,
+)
 
 PUBLIC_DOMAIN_TO_ID = {
     "LLM agents": "llm_agent",
@@ -70,76 +71,11 @@ def clip_text(text: str, limit: int) -> str:
 
 
 def load_release_tasks(release_dir: Path) -> List[Dict[str, Any]]:
-    with (release_dir / "tasks.jsonl").open("r", encoding="utf-8") as handle:
-        return [json.loads(line) for line in handle if line.strip()]
+    return _load_release_public_tasks(release_dir)
 
 
 def load_hidden_eval(release_dir: Path) -> Dict[str, Dict[str, Any]]:
-    with (release_dir / "tasks_hidden_eval.jsonl").open("r", encoding="utf-8") as handle:
-        rows = [json.loads(line) for line in handle if line.strip()]
-    return {str(row["task_id"]): row for row in rows}
-
-
-def load_domain_labels(domain_id: str) -> Dict[str, Dict[str, Any]]:
-    path = ROOT / "data" / "domains" / domain_id / "annotations" / "paper_labels.jsonl"
-    return {str(row["paper_id"]): row for row in iter_jsonl(path)}
-
-
-def load_domain_metadata(domain_id: str) -> Dict[str, Dict[str, Any]]:
-    path = ROOT / "data" / "domains" / domain_id / "interim" / "papers_merged.publication_enriched.semanticscholar.jsonl"
-    labels = load_domain_labels(domain_id)
-    rows: Dict[str, Dict[str, Any]] = {}
-    for row in iter_jsonl(path):
-        paper_id = str(row.get("paper_id") or "")
-        label = labels.get(paper_id) or {}
-        if str(label.get("scope_decision") or "") != "core_domain":
-            continue
-        rows[paper_id] = row
-    return rows
-
-
-def load_domain_content(domain_id: str) -> Dict[str, Dict[str, Any]]:
-    path = ROOT / "data" / "support_packets" / "fulltext_content" / domain_id / "content.jsonl"
-    return {str(row["paper_id"]): row for row in iter_jsonl(path)}
-
-
-def load_domain_pageindex(domain_id: str) -> Dict[str, Dict[str, Any]]:
-    path = ROOT / "data" / "support_packets" / "pageindex" / domain_id / "pageindex.jsonl"
-    if not path.exists():
-        return {}
-    return {str(row["paper_id"]): row for row in iter_jsonl(path)}
-
-
-def paper_publication_date(row: Dict[str, Any]) -> Optional[datetime]:
-    enrichment = row.get("publication_enrichment") or {}
-    for candidate in [
-        enrichment.get("published_date"),
-        enrichment.get("openalex_publication_date"),
-        enrichment.get("crossref_published_date"),
-        row.get("published"),
-        row.get("updated"),
-    ]:
-        dt = parse_iso_date(candidate)
-        if dt is not None:
-            return dt
-    return None
-
-
-def paper_venue(row: Dict[str, Any]) -> str:
-    enrichment = row.get("publication_enrichment") or {}
-    return (
-        enrichment.get("published_venue_name")
-        or enrichment.get("semantic_scholar_venue")
-        or "unknown"
-    )
-
-
-def paper_citations(row: Dict[str, Any]) -> int:
-    enrichment = row.get("publication_enrichment") or {}
-    try:
-        return int(enrichment.get("preferred_cited_by_count") or 0)
-    except Exception:
-        return 0
+    return _load_release_eval_by_id(release_dir, variant="base")
 
 
 @dataclass
@@ -203,102 +139,18 @@ class HybridRetriever:
 
 
 class DomainCorpus:
-    def __init__(self, domain_id: str):
+    def __init__(self, kb: OfflineKnowledgeBase, domain_id: str):
         self.domain_id = domain_id
-        self.metadata_by_paper = load_domain_metadata(domain_id)
-        self.content_by_paper = load_domain_content(domain_id)
-        self.pageindex_by_paper = load_domain_pageindex(domain_id)
-        self._paper_docs_cache: Dict[str, List[RetrievalDoc]] = {}
-        self._paper_retriever_cache: Dict[str, HybridRetriever] = {}
+        self.domain_kb = kb.domain(domain_id)
 
     def paper_docs(self, cutoff: str) -> List[RetrievalDoc]:
-        if cutoff in self._paper_docs_cache:
-            return self._paper_docs_cache[cutoff]
-        cutoff_dt = parse_iso_date(cutoff)
-        docs: List[RetrievalDoc] = []
-        for paper_id, row in self.metadata_by_paper.items():
-            pub_dt = paper_publication_date(row)
-            if cutoff_dt is not None and pub_dt is not None and pub_dt.date() > cutoff_dt.date():
-                continue
-            content = self.content_by_paper.get(paper_id) or {}
-            abstract = content.get("abstract") or row.get("abstract") or ""
-            title = str(row.get("title") or content.get("title") or "")
-            text = "\n".join(
-                part
-                for part in [
-                    f"Title: {title}",
-                    f"Venue: {paper_venue(row)}",
-                    f"Published: {(row.get('published') or '')}",
-                    f"Citations: {paper_citations(row)}",
-                    f"Abstract: {abstract}",
-                ]
-                if normalize_ws(part)
-            )
-            docs.append(
-                RetrievalDoc(
-                    doc_id=f"paper::{paper_id}",
-                    paper_id=paper_id,
-                    title=title,
-                    text=text,
-                    meta={
-                        "venue": paper_venue(row),
-                        "citations": paper_citations(row),
-                        "published": row.get("published"),
-                    },
-                )
-            )
-        self._paper_docs_cache[cutoff] = docs
-        return docs
+        return list(self.domain_kb.paper_docs(cutoff_date=cutoff))
 
     def paper_retriever(self, cutoff: str) -> HybridRetriever:
-        if cutoff not in self._paper_retriever_cache:
-            self._paper_retriever_cache[cutoff] = HybridRetriever(self.paper_docs(cutoff))
-        return self._paper_retriever_cache[cutoff]
+        return self.domain_kb.paper_retriever(cutoff_date=cutoff)
 
     def node_docs(self, cutoff: str, *, paper_ids: Optional[set[str]] = None) -> List[RetrievalDoc]:
-        cutoff_dt = parse_iso_date(cutoff)
-        docs: List[RetrievalDoc] = []
-        for paper_id, row in self.metadata_by_paper.items():
-            if paper_ids is not None and paper_id not in paper_ids:
-                continue
-            pub_dt = paper_publication_date(row)
-            if cutoff_dt is not None and pub_dt is not None and pub_dt.date() > cutoff_dt.date():
-                continue
-            pageindex = self.pageindex_by_paper.get(paper_id)
-            if not pageindex:
-                continue
-            paper_title = str(pageindex.get("paper_title") or row.get("title") or "")
-            for node in pageindex.get("nodes") or []:
-                node_id = str(node.get("node_id") or "")
-                section_title = str(node.get("normalized_title") or node.get("title") or "")
-                section_path = str(node.get("section_path") or section_title)
-                node_text = str(node.get("text") or "")
-                full_text = "\n".join(
-                    part
-                    for part in [
-                        f"Paper: {paper_title}",
-                        f"Section: {section_title}",
-                        f"Path: {section_path}",
-                        f"Kind: {node.get('kind')}",
-                        node_text,
-                    ]
-                    if normalize_ws(part)
-                )
-                docs.append(
-                    RetrievalDoc(
-                        doc_id=f"node::{paper_id}::{node_id}",
-                        paper_id=paper_id,
-                        title=f"{paper_title} / {section_title}",
-                        text=full_text,
-                        meta={
-                            "paper_title": paper_title,
-                            "section_title": section_title,
-                            "section_path": section_path,
-                            "kind": node.get("kind"),
-                        },
-                    )
-                )
-        return docs
+        return list(self.domain_kb.pageindex_docs(cutoff_date=cutoff, paper_ids=paper_ids))
 
 
 def build_hybrid_evidence(task: Dict[str, Any], corpus: DomainCorpus, *, top_k: int = 12) -> Dict[str, Any]:
@@ -306,14 +158,15 @@ def build_hybrid_evidence(task: Dict[str, Any], corpus: DomainCorpus, *, top_k: 
     rows = retriever.retrieve(task["question"], top_k=top_k)
     evidence = []
     for rank, (doc, scores) in enumerate(rows, start=1):
+        publication = doc.meta.get("publication") or {}
         evidence.append(
             {
                 "evidence_id": f"P{rank}",
                 "paper_id": doc.paper_id,
                 "paper_title": doc.title,
-                "venue": doc.meta.get("venue"),
-                "citations": doc.meta.get("citations"),
-                "published": doc.meta.get("published"),
+                "venue": publication.get("venue_name"),
+                "citations": publication.get("citation_count"),
+                "published": doc.meta.get("published_date"),
                 "snippet": clip_text(doc.text, 1400),
                 "scores": scores,
             }
@@ -387,6 +240,8 @@ def answer_task(
 ) -> str:
     retrieved_rows = list(evidence_packet.get("retrieved") or [])
     evidence_block = render_evidence_block(retrieved_rows) if retrieved_rows else ""
+    deliverable_spec = json.dumps(task.get("deliverable_spec") or {}, ensure_ascii=False)
+    answer_contract = json.dumps(task.get("answer_contract") or {}, ensure_ascii=False)
     if retrieved_rows:
         prompt = f"""You are answering an offline research benchmark.
 
@@ -398,6 +253,10 @@ Time cutoff: {task['time_cutoff']}
 Title: {task['title']}
 Question:
 {task['question']}
+Deliverable spec:
+{deliverable_spec}
+Answer contract:
+{answer_contract}
 
 Constraints:
 - Use only the provided evidence.
@@ -421,6 +280,10 @@ Time cutoff: {task['time_cutoff']}
 Title: {task['title']}
 Question:
 {task['question']}
+Deliverable spec:
+{deliverable_spec}
+Answer contract:
+{answer_contract}
 
 Constraints:
 - No retrieval evidence is provided for this baseline.
@@ -516,6 +379,7 @@ def run_baseline(
     baseline_name: str,
     output_dir: Path,
     answer_llm_config: Path,
+    kb_dir: Optional[Path] = None,
     judge_llm_config: Optional[Path] = None,
     task_limit: Optional[int] = None,
     domain_filter: Optional[set[str]] = None,
@@ -526,6 +390,7 @@ def run_baseline(
     tasks = load_release_tasks(release_dir)
     hidden_by_id = load_hidden_eval(release_dir) if judge_llm_config else {}
     answer_client = OpenAICompatChatClient(load_openai_compat_config(answer_llm_config))
+    kb = OfflineKnowledgeBase(kb_dir if kb_dir is not None else (release_dir / "kb"))
     judge_client = (
         OpenAICompatChatClient(load_openai_compat_config(judge_llm_config))
         if judge_llm_config is not None
@@ -573,7 +438,7 @@ def run_baseline(
             flush=True,
         )
         if domain_id not in corpora:
-            corpora[domain_id] = DomainCorpus(domain_id)
+            corpora[domain_id] = DomainCorpus(kb, domain_id)
         corpus = corpora[domain_id]
         if baseline_name == "hybrid":
             evidence_packet = build_hybrid_evidence(task, corpus)
@@ -625,6 +490,7 @@ def run_baseline(
     summary = {
         "baseline": baseline_name,
         "release_dir": str(release_dir),
+        "kb_dir": str(kb.kb_dir),
         "task_count": len(rows_out),
         "results_path": str(results_path),
         "score_summary": aggregate_scores(rows_out),

@@ -18,6 +18,7 @@ if str(SRC) not in sys.path:
 
 from researchworld.corpus import iter_jsonl
 from researchworld.llm import OpenAICompatChatClient, complete_json_object, load_openai_compat_config
+from researchworld.refined_release import load_release_public_by_id
 
 JUDGE_PROFILES = [
     "legacy",
@@ -57,7 +58,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_public_tasks(release_dir: Path) -> Dict[str, Dict[str, Any]]:
-    return {str(row["task_id"]): row for row in iter_jsonl(release_dir / "tasks.jsonl")}
+    return load_release_public_by_id(release_dir)
 
 
 def load_method_results(specs: Iterable[str]) -> Tuple[List[str], Dict[str, Dict[str, Dict[str, Any]]]]:
@@ -268,6 +269,8 @@ You are evaluating two competing research-intelligence outputs in a blind pairwi
 - Domain: {public_task.get("domain")}
 - Time Cutoff: {public_task.get("time_cutoff")}
 - Research Question: {public_task.get("question")}
+- Deliverable Spec: {json.dumps(public_task.get("deliverable_spec") or {}, ensure_ascii=False)}
+- Answer Contract: {json.dumps(public_task.get("answer_contract") or {}, ensure_ascii=False)}
 
 # Evaluation Dimensions
 {json.dumps(dims, ensure_ascii=False)}
@@ -315,6 +318,8 @@ You are evaluating two competing research-intelligence outputs in a blind pairwi
 - Domain: {public_task.get("domain")}
 - Time Cutoff: {public_task.get("time_cutoff")}
 - Research Question: {public_task.get("question")}
+- Deliverable Spec: {json.dumps(public_task.get("deliverable_spec") or {}, ensure_ascii=False)}
+- Answer Contract: {json.dumps(public_task.get("answer_contract") or {}, ensure_ascii=False)}
 
 # Evaluation Dimensions
 {json.dumps(dims, ensure_ascii=False)}
@@ -372,6 +377,8 @@ You are evaluating two competing research-intelligence outputs in a blind pairwi
 - Domain: {public_task.get("domain")}
 - Time Cutoff: {public_task.get("time_cutoff")}
 - Research Question: {public_task.get("question")}
+- Deliverable Spec: {json.dumps(public_task.get("deliverable_spec") or {}, ensure_ascii=False)}
+- Answer Contract: {json.dumps(public_task.get("answer_contract") or {}, ensure_ascii=False)}
 
 # Evaluation Dimensions
 {json.dumps(dims, ensure_ascii=False)}
@@ -433,6 +440,8 @@ You are evaluating two competing research-intelligence outputs in a blind pairwi
 - Domain: {public_task.get("domain")}
 - Time Cutoff: {public_task.get("time_cutoff")}
 - Research Question: {public_task.get("question")}
+- Deliverable Spec: {json.dumps(public_task.get("deliverable_spec") or {}, ensure_ascii=False)}
+- Answer Contract: {json.dumps(public_task.get("answer_contract") or {}, ensure_ascii=False)}
 
 # Evaluation Dimensions
 {json.dumps(dims, ensure_ascii=False)}
@@ -495,6 +504,8 @@ You are evaluating two competing research-intelligence outputs in a blind pairwi
 - Domain: {public_task.get("domain")}
 - Time Cutoff: {public_task.get("time_cutoff")}
 - Research Question: {public_task.get("question")}
+- Deliverable Spec: {json.dumps(public_task.get("deliverable_spec") or {}, ensure_ascii=False)}
+- Answer Contract: {json.dumps(public_task.get("answer_contract") or {}, ensure_ascii=False)}
 
 # Evaluation Dimensions
 {json.dumps(dims, ensure_ascii=False)}

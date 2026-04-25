@@ -23,14 +23,16 @@ from researchworld.factscore_eval_v3 import FactScoreV3Config, evaluate_answer_f
 from researchworld.future_alignment_eval_v3_1 import FutureAlignmentV3_1Config, evaluate_future_alignment_v3_1
 from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
 from researchworld.offline_kb import OfflineKnowledgeBase
+from researchworld.refined_release import load_release_task_views
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description='Evaluate an experiment run under benchmark v3.1.')
     parser.add_argument('--results-jsonl', required=True)
     parser.add_argument('--release-dir', required=True)
-    parser.add_argument('--history-kb-dir', required=True)
-    parser.add_argument('--future-kb-dir', required=True)
+    parser.add_argument('--kb-dir', default='')
+    parser.add_argument('--history-kb-dir', default='')
+    parser.add_argument('--future-kb-dir', default='')
     parser.add_argument('--judge-llm-config', default='configs/llm/qwen_235b.local.yaml')
     parser.add_argument('--judge-fallback-llm-config', default='configs/llm/mimo_pro.local.yaml')
     parser.add_argument('--output-dir', required=True)
@@ -44,10 +46,12 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    public_by_id = {row['task_id']: row for row in iter_jsonl(release_dir / 'tasks.jsonl')}
-    hidden_by_id = {row['task_id']: row for row in iter_jsonl(release_dir / 'tasks_hidden_eval_v3_1.jsonl')}
-    history_kb = OfflineKnowledgeBase(Path(args.history_kb_dir))
-    future_kb = OfflineKnowledgeBase(Path(args.future_kb_dir))
+    public_by_id, hidden_by_id = load_release_task_views(release_dir, eval_variant='v3_1')
+    kb_dir = Path(args.kb_dir) if str(args.kb_dir or '').strip() else release_dir / 'kb'
+    history_kb_dir = Path(args.history_kb_dir) if str(args.history_kb_dir or '').strip() else kb_dir
+    future_kb_dir = Path(args.future_kb_dir) if str(args.future_kb_dir or '').strip() else None
+    history_kb = OfflineKnowledgeBase(history_kb_dir)
+    future_kb = OfflineKnowledgeBase(future_kb_dir) if future_kb_dir is not None else None
     judge_primary = OpenAICompatChatClient(load_openai_compat_config(Path(args.judge_llm_config)))
     judge_fallback = None
     if str(args.judge_fallback_llm_config or '').strip():

@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional
 
 from researchworld.factscore_eval_v3 import FactScoreV3Config, _collect_evidence_from_domain, render_evidence
 from researchworld.llm import OpenAICompatChatClient, complete_json_object
-from researchworld.offline_kb import OfflineKnowledgeBase, normalize_ws
+from researchworld.offline_kb import OfflineKnowledgeBase, clip_text, normalize_ws
 
 
 @dataclass
@@ -93,9 +93,44 @@ def _label_score(label: str) -> float:
     return 0.0
 
 
+def _embedded_future_evidence(
+    hidden_row: Dict[str, Any],
+    unit: Dict[str, Any],
+    *,
+    max_rows: int,
+) -> List[Dict[str, Any]]:
+    trace = hidden_row.get('trace') or {}
+    future_items = [item for item in (trace.get('future_evidence') or []) if isinstance(item, dict)]
+    if not future_items:
+        return []
+    wanted_titles = {normalize_ws(x).lower() for x in (unit.get('future_paper_titles') or []) if normalize_ws(x)}
+    selected: List[Dict[str, Any]] = []
+    for item in future_items:
+        title = normalize_ws(item.get('title'))
+        if wanted_titles and title.lower() not in wanted_titles:
+            continue
+        selected.append(item)
+    if not selected:
+        selected = future_items
+    rows: List[Dict[str, Any]] = []
+    for idx, item in enumerate(selected[:max_rows], start=1):
+        rows.append(
+            {
+                'evidence_id': f'FE{idx}',
+                'evidence_source': 'embedded_future',
+                'paper_id': item.get('paper_id'),
+                'paper_title': item.get('title'),
+                'published_date': item.get('published_date'),
+                'snippet': clip_text(item.get('why_it_matters') or item.get('title') or '', 1000),
+                'scores': {'combined_score': 1.0},
+            }
+        )
+    return rows
+
+
 def evaluate_future_alignment_v3_1(
     *,
-    future_kb: OfflineKnowledgeBase,
+    future_kb: Optional[OfflineKnowledgeBase],
     judge_client: OpenAICompatChatClient,
     public_task: Dict[str, Any],
     result_row: Dict[str, Any],
@@ -119,7 +154,6 @@ def evaluate_future_alignment_v3_1(
     answer = normalize_ws(result_row.get('answer'))
     temporal_policy = hidden_row.get('temporal_policy') or {}
     cutoff = str(temporal_policy.get('future_end') or '')
-    kb_domain = future_kb.domain(domain_id)
     collect_cfg = FactScoreV3Config(evidence_per_view=cfg.evidence_per_view, max_evidence_rows=cfg.max_evidence_rows)
 
     unit_rows: List[Dict[str, Any]] = []
@@ -140,13 +174,20 @@ def evaluate_future_alignment_v3_1(
                 continue
             seen.add(key)
             queries.append(norm)
-        evidence_rows = _collect_evidence_from_domain(
-            kb_domain,
-            queries,
-            cutoff_date=cutoff,
-            cfg=collect_cfg,
-            source_name='future',
-        )[: cfg.max_evidence_rows]
+        evidence_rows: List[Dict[str, Any]] = []
+        if future_kb is not None:
+            evidence_rows.extend(
+                _collect_evidence_from_domain(
+                    future_kb.domain(domain_id),
+                    queries,
+                    cutoff_date=cutoff,
+                    cfg=collect_cfg,
+                    source_name='future',
+                )
+            )
+        if not evidence_rows:
+            evidence_rows.extend(_embedded_future_evidence(hidden_row, unit, max_rows=cfg.max_evidence_rows))
+        evidence_rows = evidence_rows[: cfg.max_evidence_rows]
         obj = _future_alignment_json(
             judge_client,
             public_task=public_task,

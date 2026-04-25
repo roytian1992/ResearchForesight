@@ -16,6 +16,7 @@ from researchworld.baseline_runner import run_baseline
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run offline non-agent baselines on RTL benchmark v2.")
     parser.add_argument("--release-dir", required=True)
+    parser.add_argument("--kb-dir", default=None)
     parser.add_argument("--baseline", required=True, choices=["hybrid", "pageindex", "native"])
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--answer-llm-config", default="configs/llm/mimo_flash.local.yaml")
@@ -41,6 +42,7 @@ def main() -> None:
         baseline_name=args.baseline,
         output_dir=Path(args.output_dir),
         answer_llm_config=Path(args.answer_llm_config),
+        kb_dir=Path(args.kb_dir) if args.kb_dir else None,
         judge_llm_config=None if args.skip_judge else (Path(args.judge_llm_config) if args.judge_llm_config else None),
         task_limit=args.task_limit,
         domain_filter=set(args.domains) if args.domains else None,

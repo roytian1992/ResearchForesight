@@ -13,7 +13,6 @@ if str(ROOT) not in sys.path:
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from researchworld.baseline_runner import PUBLIC_DOMAIN_TO_ID, load_release_tasks
 from researchworld.coi_agent_offline import CoIAgentOffline
 from researchworld.fulltext_cache import LocalFulltextCache
 from researchworld.llm import (
@@ -23,7 +22,8 @@ from researchworld.llm import (
     load_openai_compat_config,
     load_openai_compat_embedding_config,
 )
-from researchworld.offline_kb import OfflineKnowledgeBase
+from researchworld.offline_kb import OfflineKnowledgeBase, PUBLIC_DOMAIN_TO_ID
+from researchworld.refined_release import load_release_public_tasks
 
 
 def main() -> None:
@@ -65,7 +65,7 @@ def main() -> None:
         else None
     )
     kb = OfflineKnowledgeBase(kb_dir)
-    tasks = load_release_tasks(release_dir)
+    tasks = load_release_public_tasks(release_dir)
     allowed_task_ids = None
     if args.task_ids_file:
         allowed_task_ids = {

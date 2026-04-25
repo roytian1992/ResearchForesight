@@ -6,7 +6,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Sequence, Set
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'src'
@@ -39,6 +39,7 @@ from researchworld.factscore_eval_v3 import FactScoreV3Config, evaluate_answer_f
 from researchworld.future_alignment_eval_v3_1 import FutureAlignmentV3_1Config, evaluate_future_alignment_v3_1
 from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
 from researchworld.offline_kb import OfflineKnowledgeBase
+from researchworld.refined_release import load_release_public_by_id, load_release_task_views
 
 METRIC_BUNDLES = ('v31', 'v4', 'aux')
 
@@ -172,17 +173,17 @@ def _evaluate_rows(
     selected_bundles: Sequence[str],
     release_dir: Path,
     history_kb_dir: Path,
-    future_kb_dir: Path,
+    future_kb_dir: Optional[Path],
     judge_client: FallbackOpenAICompatChatClient,
     output_root: Path,
     run_id: str,
     results_path: Path,
     resume: bool,
 ) -> Dict[str, Dict[str, Any]]:
-    public_by_id = {row['task_id']: row for row in iter_jsonl(release_dir / 'tasks.jsonl')}
+    public_by_id = load_release_public_by_id(release_dir)
     hidden_by_id = {}
     if any(bundle in {'v31', 'aux'} for bundle in selected_bundles):
-        hidden_by_id = {row['task_id']: row for row in iter_jsonl(release_dir / 'tasks_hidden_eval_v3_1.jsonl')}
+        _, hidden_by_id = load_release_task_views(release_dir, eval_variant='v3_1')
 
     history_kb = None
     future_kb = None
@@ -190,9 +191,25 @@ def _evaluate_rows(
     future_cfg = None
     if 'v31' in selected_bundles:
         history_kb = OfflineKnowledgeBase(history_kb_dir)
-        future_kb = OfflineKnowledgeBase(future_kb_dir)
+        future_kb = OfflineKnowledgeBase(future_kb_dir) if future_kb_dir is not None else None
         fact_cfg = FactScoreV3Config()
         future_cfg = FutureAlignmentV3_1Config()
+
+    seen_source_ids: Set[str] = set()
+    bad_source_ids: List[str] = []
+    duplicate_source_ids: List[str] = []
+    for source_row in rows:
+        task_id = _task_id(source_row)
+        if not task_id or task_id not in public_by_id:
+            bad_source_ids.append(task_id or '<missing-task-id>')
+            continue
+        if task_id in seen_source_ids:
+            duplicate_source_ids.append(task_id)
+        seen_source_ids.add(task_id)
+    if bad_source_ids:
+        raise RuntimeError(f'results contain task IDs not present in release: count={len(bad_source_ids)} first={bad_source_ids[:5]}')
+    if duplicate_source_ids:
+        raise RuntimeError(f'results contain duplicate task IDs: count={len(duplicate_source_ids)} first={duplicate_source_ids[:5]}')
 
     existing_rows_by_bundle: Dict[str, List[Dict[str, Any]]] = {}
     completed_by_bundle: Dict[str, Set[str]] = {}
@@ -225,7 +242,7 @@ def _evaluate_rows(
             print(f"[eval_final] {idx}/{len(rows)} {task_id} family={family} bundles={','.join(pending_bundles)}", flush=True)
 
             if 'v31' in pending_bundles:
-                if hidden_row is None or history_kb is None or future_kb is None or fact_cfg is None or future_cfg is None:
+                if hidden_row is None or history_kb is None or fact_cfg is None or future_cfg is None:
                     raise RuntimeError(f'missing v31 evaluation dependencies for task {task_id}')
                 fact_eval = evaluate_answer_factscore_v3(
                     history_kb=history_kb,
@@ -340,6 +357,7 @@ def _spawn_parallel_workers(args: argparse.Namespace, rows: List[Dict[str, Any]]
             '--workers', '1',
             '--judge-llm-config', args.judge_llm_config,
             '--judge-fallback-llm-config', args.judge_fallback_llm_config,
+            '--kb-dir', args.kb_dir,
             '--history-kb-dir', args.history_kb_dir,
             '--future-kb-dir', args.future_kb_dir,
             '--_worker-mode',
@@ -404,8 +422,9 @@ def _build_root_summary(
         'run_id': run_id,
         'release_dir': str(args.release_dir),
         'results_jsonl': str(args.results_jsonl),
+        'kb_dir': str(args.kb_dir),
         'history_kb_dir': str(args.history_kb_dir),
-        'future_kb_dir': str(args.future_kb_dir),
+        'future_kb_dir': str(args.future_kb_dir or ''),
         'requested_metrics': list(requested_metrics),
         'resolved_metric_bundles': list(selected_bundles),
         'workers': int(args.workers),
@@ -421,8 +440,11 @@ def _build_root_summary(
     (output_dir / 'summary.json').write_text(json.dumps(root_summary, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
-def _resolve_default_kb_dir(release_dir: Path, provided: str, suffix: str) -> Path:
-    return Path(provided) if str(provided or '').strip() else release_dir / suffix
+def _resolve_eval_kb_dirs(release_dir: Path, kb_dir: str, history_kb_dir: str, future_kb_dir: str) -> tuple[Path, Path, Optional[Path]]:
+    base_kb = Path(kb_dir) if str(kb_dir or '').strip() else release_dir / 'kb'
+    history_kb = Path(history_kb_dir) if str(history_kb_dir or '').strip() else base_kb
+    future_kb = Path(future_kb_dir) if str(future_kb_dir or '').strip() else None
+    return base_kb, history_kb, future_kb
 
 
 def main() -> None:
@@ -434,6 +456,7 @@ def main() -> None:
     parser.add_argument('--workers', type=int, default=1)
     parser.add_argument('--judge-llm-config', default='configs/llm/qwen_235b.local.yaml')
     parser.add_argument('--judge-fallback-llm-config', default='configs/llm/mimo_pro.local.yaml')
+    parser.add_argument('--kb-dir', default='')
     parser.add_argument('--history-kb-dir', default='')
     parser.add_argument('--future-kb-dir', default='')
     parser.add_argument('--run-id', default='')
@@ -449,8 +472,15 @@ def main() -> None:
     selected_bundles, requested_metrics = _parse_metrics(args.metrics)
     results_path = Path(args.results_jsonl)
     run_id = args.run_id.strip() or output_dir.name or results_path.stem
-    args.history_kb_dir = str(_resolve_default_kb_dir(release_dir, args.history_kb_dir, 'kb'))
-    args.future_kb_dir = str(_resolve_default_kb_dir(release_dir, args.future_kb_dir, 'future_kb'))
+    kb_dir, history_kb_dir, future_kb_dir = _resolve_eval_kb_dirs(
+        release_dir,
+        args.kb_dir,
+        args.history_kb_dir,
+        args.future_kb_dir,
+    )
+    args.kb_dir = str(kb_dir)
+    args.history_kb_dir = str(history_kb_dir)
+    args.future_kb_dir = str(future_kb_dir) if future_kb_dir is not None else ''
 
     rows = list(iter_jsonl(results_path))
     if args.task_limit is not None:
@@ -459,7 +489,7 @@ def main() -> None:
     if 'v31' in selected_bundles:
         if not Path(args.history_kb_dir).exists():
             raise SystemExit(f'history kb dir not found: {args.history_kb_dir}')
-        if not Path(args.future_kb_dir).exists():
+        if args.future_kb_dir and not Path(args.future_kb_dir).exists():
             raise SystemExit(f'future kb dir not found: {args.future_kb_dir}')
 
     if args._worker_mode or args.workers <= 1:
@@ -469,7 +499,7 @@ def main() -> None:
             selected_bundles=selected_bundles,
             release_dir=release_dir,
             history_kb_dir=Path(args.history_kb_dir),
-            future_kb_dir=Path(args.future_kb_dir),
+            future_kb_dir=Path(args.future_kb_dir) if args.future_kb_dir else None,
             judge_client=judge_client,
             output_root=output_dir,
             run_id=run_id,

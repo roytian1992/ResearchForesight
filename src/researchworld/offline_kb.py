@@ -10,7 +10,11 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 from rank_bm25 import BM25Okapi
-from sklearn.feature_extraction.text import TfidfVectorizer
+
+try:
+    from sklearn.feature_extraction.text import TfidfVectorizer
+except Exception:  # pragma: no cover
+    TfidfVectorizer = None
 
 
 PUBLIC_DOMAIN_TO_ID = {
@@ -101,28 +105,90 @@ class HybridRetriever:
             self.bm25 = None
             self.vectorizer = None
             self.doc_matrix = None
+            self._fallback_vocab = {}
+            self._fallback_idf = np.zeros(0, dtype=float)
             return
         self.doc_texts = [doc.text for doc in docs]
         self.doc_tokens = [tokenize(doc.text) for doc in docs]
         self.bm25 = BM25Okapi(self.doc_tokens)
-        max_df = 1.0 if len(docs) < 5 else 0.98
-        self.vectorizer = TfidfVectorizer(
-            lowercase=True,
-            strip_accents="unicode",
-            stop_words="english",
-            ngram_range=(1, 2),
-            min_df=1,
-            max_df=max_df,
-        )
-        self.doc_matrix = self.vectorizer.fit_transform(self.doc_texts)
+        self._fallback_vocab: Dict[str, int] = {}
+        self._fallback_idf = np.zeros(0, dtype=float)
+        if TfidfVectorizer is not None:
+            max_df = 1.0 if len(docs) < 5 else 0.98
+            self.vectorizer = TfidfVectorizer(
+                lowercase=True,
+                strip_accents="unicode",
+                stop_words="english",
+                ngram_range=(1, 2),
+                min_df=1,
+                max_df=max_df,
+            )
+            self.doc_matrix = self.vectorizer.fit_transform(self.doc_texts)
+        else:
+            self.vectorizer = None
+            self.doc_matrix = self._build_fallback_doc_matrix(self.doc_tokens)
+
+    def _build_fallback_doc_matrix(self, doc_tokens: List[List[str]]) -> np.ndarray:
+        doc_freq: Dict[str, int] = {}
+        term_counts_per_doc: List[Dict[str, int]] = []
+        for tokens in doc_tokens:
+            counts: Dict[str, int] = {}
+            for tok in tokens:
+                counts[tok] = counts.get(tok, 0) + 1
+            term_counts_per_doc.append(counts)
+            for tok in counts:
+                doc_freq[tok] = doc_freq.get(tok, 0) + 1
+        vocab = {tok: idx for idx, tok in enumerate(sorted(doc_freq))}
+        self._fallback_vocab = vocab
+        if not vocab:
+            self._fallback_idf = np.zeros(0, dtype=float)
+            return np.zeros((len(doc_tokens), 0), dtype=float)
+        n_docs = max(1, len(doc_tokens))
+        idf = np.zeros(len(vocab), dtype=float)
+        for tok, idx in vocab.items():
+            idf[idx] = math.log((1.0 + n_docs) / (1.0 + float(doc_freq.get(tok, 0)))) + 1.0
+        self._fallback_idf = idf
+        matrix = np.zeros((len(doc_tokens), len(vocab)), dtype=float)
+        for row_idx, counts in enumerate(term_counts_per_doc):
+            total = float(sum(counts.values()) or 1.0)
+            for tok, count in counts.items():
+                col_idx = vocab.get(tok)
+                if col_idx is None:
+                    continue
+                matrix[row_idx, col_idx] = (float(count) / total) * idf[col_idx]
+            norm = float(np.linalg.norm(matrix[row_idx]))
+            if norm > 0.0:
+                matrix[row_idx] /= norm
+        return matrix
+
+    def _fallback_query_vector(self, query: str) -> np.ndarray:
+        if not self._fallback_vocab:
+            return np.zeros(0, dtype=float)
+        counts: Dict[str, int] = {}
+        for tok in tokenize(query):
+            if tok in self._fallback_vocab:
+                counts[tok] = counts.get(tok, 0) + 1
+        vec = np.zeros(len(self._fallback_vocab), dtype=float)
+        total = float(sum(counts.values()) or 1.0)
+        for tok, count in counts.items():
+            idx = self._fallback_vocab[tok]
+            vec[idx] = (float(count) / total) * self._fallback_idf[idx]
+        norm = float(np.linalg.norm(vec))
+        if norm > 0.0:
+            vec /= norm
+        return vec
 
     def retrieve(self, query: str, *, top_k: int = 10) -> List[Tuple[RetrievalDoc, Dict[str, float]]]:
         if not self.docs:
             return []
         query_tokens = tokenize(query)
         bm25_scores = np.asarray(self.bm25.get_scores(query_tokens), dtype=float)
-        tfidf_query = self.vectorizer.transform([query])
-        dense_scores = (self.doc_matrix @ tfidf_query.T).toarray().reshape(-1)
+        if self.vectorizer is not None:
+            tfidf_query = self.vectorizer.transform([query])
+            dense_scores = (self.doc_matrix @ tfidf_query.T).toarray().reshape(-1)
+        else:
+            query_vec = self._fallback_query_vector(query)
+            dense_scores = self.doc_matrix @ query_vec if query_vec.size else np.zeros(len(self.docs), dtype=float)
 
         def normalize(scores: np.ndarray) -> np.ndarray:
             if scores.size == 0:

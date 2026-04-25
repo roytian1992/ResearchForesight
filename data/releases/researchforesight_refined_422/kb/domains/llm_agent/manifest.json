@@ -1,7 +1,7 @@
 {
   "domain_slug": "llm_agent",
   "domain": "LLM agents",
-  "history_cutoff": "2025-08-31",
+  "history_cutoff": "2025-11-30",
   "source_files": {
     "papers": "data/domains/llm_agent/interim/papers_merged.publication_enriched.semanticscholar.jsonl",
     "pageindex": "data/support_packets/pageindex/llm_agent/pageindex.jsonl",
@@ -18,18 +18,19 @@
   },
   "coverage": {
     "source_papers_total": 39426,
-    "papers_exported": 26432,
-    "pageindex_rows_exported": 78,
-    "structures_rows_exported": 78,
-    "content_rows_exported": 78,
-    "section_rows_exported": 78,
+    "papers_exported": 32998,
+    "pageindex_rows_exported": 137,
+    "structures_rows_exported": 137,
+    "content_rows_exported": 137,
+    "section_rows_exported": 137,
     "papers_missing_published_date": 0,
-    "papers_with_pageindex_share": 0.003,
-    "papers_with_structures_share": 0.003,
-    "papers_with_content_share": 0.003
+    "papers_with_pageindex_share": 0.0042,
+    "papers_with_structures_share": 0.0042,
+    "papers_with_content_share": 0.0042
   },
   "notes": [
-    "This KB contains only papers published on or before the history cutoff.",
+    "This KB contains papers published on or before the maximum release cutoff.",
+    "Runtime retrieval must still pass each task's own time_cutoff to avoid cross-cutoff leakage.",
     "pageindex/content/structures are partial layers and do not cover all exported papers.",
     "The current content layer is abstract-derived normalized content rather than uniformly recovered raw full text."
   ]

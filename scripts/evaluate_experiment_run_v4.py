@@ -20,6 +20,7 @@ from researchworld.experiment_eval_v4 import (
     write_main_table_csv_v4,
 )
 from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
+from researchworld.refined_release import load_release_public_by_id
 
 
 def main() -> None:
@@ -39,7 +40,7 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    public_by_id = {row['task_id']: row for row in iter_jsonl(release_dir / 'tasks.jsonl')}
+    public_by_id = load_release_public_by_id(release_dir)
     judge_primary = OpenAICompatChatClient(load_openai_compat_config(Path(args.judge_llm_config)))
     judge_fallback = None
     if str(args.judge_fallback_llm_config or '').strip():

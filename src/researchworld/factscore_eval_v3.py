@@ -468,14 +468,83 @@ def _collect_evidence_from_domain(domain_kb, queries: List[str], *, cutoff_date:
     return rows
 
 
+def _date_in_window(value: Any, *, start: str = "", end: str = "") -> bool:
+    day = normalize_ws(value)[:10]
+    if not day:
+        return True
+    if start and day < start:
+        return False
+    if end and day > end:
+        return False
+    return True
+
+
+def _embedded_trace_evidence(
+    gt_row: Optional[Dict[str, Any]],
+    *,
+    matched_gt_claim: Optional[Dict[str, Any]],
+    temporal_policy: Dict[str, Any],
+    source_name: str,
+    max_rows: int,
+) -> List[Dict[str, Any]]:
+    if not gt_row:
+        return []
+    trace = gt_row.get("trace") or {}
+    trace_key = "future_evidence" if source_name == "future" else "history_evidence"
+    items = [item for item in (trace.get(trace_key) or []) if isinstance(item, dict)]
+    if not items:
+        return []
+    ref_ids = {
+        str(x).strip()
+        for x in ((matched_gt_claim or {}).get("reference_paper_ids") or [])
+        if str(x).strip()
+    }
+    if ref_ids:
+        matched = [item for item in items if str(item.get("paper_id") or "").strip() in ref_ids]
+        if matched:
+            items = matched
+    if source_name == "history":
+        items = [
+            item
+            for item in items
+            if _date_in_window(item.get("published_date"), end=str(temporal_policy.get("history_cutoff") or ""))
+        ]
+    else:
+        items = [
+            item
+            for item in items
+            if _date_in_window(
+                item.get("published_date"),
+                start=str(temporal_policy.get("future_start") or ""),
+                end=str(temporal_policy.get("future_end") or ""),
+            )
+        ]
+    rows: List[Dict[str, Any]] = []
+    prefix = "FE" if source_name == "future" else "HE"
+    for idx, item in enumerate(items[:max_rows], start=1):
+        rows.append(
+            {
+                "evidence_id": f"{prefix}{idx}",
+                "evidence_source": f"embedded_{source_name}",
+                "paper_id": item.get("paper_id"),
+                "paper_title": item.get("title"),
+                "published_date": item.get("published_date"),
+                "snippet": clip_text(item.get("why_it_matters") or item.get("title") or "", 1000),
+                "scores": {"combined_score": 1.0},
+            }
+        )
+    return rows
+
+
 def retrieve_claim_evidence_v3(
     history_kb: OfflineKnowledgeBase,
-    future_kb: OfflineKnowledgeBase,
+    future_kb: Optional[OfflineKnowledgeBase],
     *,
     domain_id: str,
     answer_claim: str,
     matched_gt_claim: Optional[Dict[str, Any]],
     temporal_policy: Dict[str, Any],
+    gt_row: Optional[Dict[str, Any]],
     cfg: FactScoreV3Config,
 ) -> List[Dict[str, Any]]:
     queries = [answer_claim]
@@ -504,7 +573,16 @@ def retrieve_claim_evidence_v3(
                 source_name="history",
             )
         )
-    if scope in {"future", "cross_temporal"}:
+        evidence_rows.extend(
+            _embedded_trace_evidence(
+                gt_row,
+                matched_gt_claim=matched_gt_claim,
+                temporal_policy=temporal_policy,
+                source_name="history",
+                max_rows=cfg.max_evidence_rows,
+            )
+        )
+    if scope in {"future", "cross_temporal"} and future_kb is not None:
         evidence_rows.extend(
             _collect_evidence_from_domain(
                 future_kb.domain(domain_id),
@@ -512,6 +590,16 @@ def retrieve_claim_evidence_v3(
                 cutoff_date=str(temporal_policy.get("future_end") or ""),
                 cfg=cfg,
                 source_name="future",
+            )
+        )
+    if scope in {"future", "cross_temporal"}:
+        evidence_rows.extend(
+            _embedded_trace_evidence(
+                gt_row,
+                matched_gt_claim=matched_gt_claim,
+                temporal_policy=temporal_policy,
+                source_name="future",
+                max_rows=cfg.max_evidence_rows,
             )
         )
     if not matched_gt_claim:
@@ -524,15 +612,16 @@ def retrieve_claim_evidence_v3(
                 source_name="history",
             )
         )
-        evidence_rows.extend(
-            _collect_evidence_from_domain(
-                future_kb.domain(domain_id),
-                deduped_queries,
-                cutoff_date=str(temporal_policy.get("future_end") or ""),
-                cfg=cfg,
-                source_name="future",
+        if future_kb is not None:
+            evidence_rows.extend(
+                _collect_evidence_from_domain(
+                    future_kb.domain(domain_id),
+                    deduped_queries,
+                    cutoff_date=str(temporal_policy.get("future_end") or ""),
+                    cfg=cfg,
+                    source_name="future",
+                )
             )
-        )
     evidence_rows.sort(key=lambda x: -float((x.get("scores") or {}).get("combined_score") or 0.0))
 
     deduped_rows: List[Dict[str, Any]] = []
@@ -628,7 +717,7 @@ Evaluate the Temporal Consistency:
 def evaluate_answer_factscore_v3(
     *,
     history_kb: OfflineKnowledgeBase,
-    future_kb: OfflineKnowledgeBase,
+    future_kb: Optional[OfflineKnowledgeBase],
     judge_client: OpenAICompatChatClient,
     result_row: Dict[str, Any],
     gt_row: Dict[str, Any],
@@ -668,6 +757,7 @@ def evaluate_answer_factscore_v3(
             answer_claim=claim,
             matched_gt_claim=matched_gt_claim,
             temporal_policy=temporal_policy,
+            gt_row=gt_row,
             cfg=cfg,
         )
         verdict = verify_claim_v3(judge_client, claim=claim, matched_gt_claim=matched_gt_claim, evidence_rows=evidence_rows)

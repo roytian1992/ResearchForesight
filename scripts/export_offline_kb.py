@@ -24,7 +24,7 @@ DOMAIN_PUBLIC = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Export a frozen offline knowledge base for benchmark_v2 evaluation."
+        description="Export a cutoff-aware offline knowledge base for ResearchForesight evaluation."
     )
     parser.add_argument(
         "--release-dir",
@@ -45,7 +45,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--history-cutoff",
         default="",
-        help="History cutoff date (YYYY-MM-DD). If omitted, infer from release tasks.jsonl.",
+        help=(
+            "Maximum visible history cutoff date (YYYY-MM-DD). If omitted, infer the max "
+            "time_cutoff from task_refined.jsonl, falling back to tasks.jsonl."
+        ),
     )
     parser.add_argument(
         "--keep-existing",
@@ -87,8 +90,15 @@ def normalize_date(value: object) -> str | None:
     return text
 
 
+def _release_tasks_path(release_dir: Path) -> Path:
+    refined_path = release_dir / "task_refined.jsonl"
+    if refined_path.exists():
+        return refined_path
+    return release_dir / "tasks.jsonl"
+
+
 def infer_history_cutoff(release_dir: Path) -> str:
-    tasks_path = release_dir / "tasks.jsonl"
+    tasks_path = _release_tasks_path(release_dir)
     cutoffs = sorted(
         {
             str((row.get("time_cutoff") or "")).strip()
@@ -98,9 +108,7 @@ def infer_history_cutoff(release_dir: Path) -> str:
     )
     if not cutoffs:
         raise ValueError(f"Unable to infer history cutoff from {tasks_path}")
-    if len(cutoffs) != 1:
-        raise ValueError(f"Expected exactly one history cutoff in {tasks_path}, got: {cutoffs}")
-    return cutoffs[0]
+    return cutoffs[-1]
 
 
 def paper_visible(row: dict, history_cutoff: str) -> bool:
@@ -286,7 +294,8 @@ def export_domain(
         "files": {name: str(path.relative_to(out_dir)) for name, path in files.items()},
         "coverage": coverage,
         "notes": [
-            "This KB contains only papers published on or before the history cutoff.",
+            "This KB contains papers published on or before the maximum release cutoff.",
+            "Runtime retrieval must still pass each task's own time_cutoff to avoid cross-cutoff leakage.",
             "pageindex/content/structures are partial layers and do not cover all exported papers.",
             "The current content layer is abstract-derived normalized content rather than uniformly recovered raw full text.",
         ],
@@ -321,6 +330,7 @@ def main() -> None:
     root_manifest = {
         "release_name": release_dir.name,
         "history_cutoff": history_cutoff,
+        "max_history_cutoff": history_cutoff,
         "kb_name": f"{release_dir.name}_offline_kb",
         "domains": domain_manifests,
         "files": {
@@ -328,8 +338,11 @@ def main() -> None:
             "domains_dir": "domains",
         },
         "temporal_policy": {
-            "mode": "history_frozen",
-            "allowed_evidence": f"Only papers with published_date <= {history_cutoff} are included.",
+            "mode": "cutoff_aware_history_pool",
+            "allowed_evidence": (
+                f"The KB includes papers with published_date <= {history_cutoff}; methods must "
+                "filter retrieval by each task's time_cutoff at query time."
+            ),
             "disallowed_sources": [
                 "future papers after cutoff",
                 "tasks_hidden_eval.jsonl",
@@ -339,12 +352,12 @@ def main() -> None:
             ],
         },
         "usage_modes": {
-            "native_llm": "Use only tasks.jsonl question text. Do not load this KB.",
-            "llm_plus_rag": "Use this frozen KB as the only retrieval source.",
-            "agent": "Use this frozen KB plus non-network tools over the same KB.",
+            "native_llm": "Use only public task fields from task_refined.jsonl. Do not load hidden eval fields.",
+            "llm_plus_rag": "Use this KB as the only retrieval source, always with per-task cutoff filtering.",
+            "agent": "Use this KB plus non-network tools over the same KB, always with per-task cutoff filtering.",
         },
         "notes": [
-            "The KB is release-aligned and safe for offline evaluation under the benchmark_v2 temporal protocol.",
+            "The KB is release-aligned and safe only when the runtime passes each task's time_cutoff into retrieval.",
             "Section/pageindex/structure layers are partial and should be treated as auxiliary evidence layers.",
             "For reproducibility and corpus extension, use a separate fetch-and-parse toolkit rather than modifying the official evaluation KB in place.",
         ],

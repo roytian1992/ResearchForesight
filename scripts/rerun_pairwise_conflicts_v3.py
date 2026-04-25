@@ -16,6 +16,7 @@ if str(SRC) not in sys.path:
 
 from researchworld.corpus import iter_jsonl
 from researchworld.llm import OpenAICompatChatClient, complete_json_object, load_openai_compat_config
+from researchworld.refined_release import load_release_public_by_id
 
 
 def parse_args() -> argparse.Namespace:
@@ -42,7 +43,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_public_tasks(release_dir: Path) -> Dict[str, Dict[str, Any]]:
-    return {str(row["task_id"]): row for row in iter_jsonl(release_dir / "tasks.jsonl")}
+    return load_release_public_by_id(release_dir)
 
 
 def load_method_results(specs: Iterable[str]) -> Dict[str, Dict[str, Dict[str, Any]]]:
@@ -89,6 +90,8 @@ Task:
     "time_cutoff": public_task.get("time_cutoff"),
     "title": public_task.get("title"),
     "question": public_task.get("question"),
+    "deliverable_spec": public_task.get("deliverable_spec"),
+    "answer_contract": public_task.get("answer_contract"),
 }, ensure_ascii=False, indent=2)}
 
 Evaluation rules:

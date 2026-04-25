@@ -61,6 +61,8 @@ def _compact_public_task(public_task: Dict[str, Any]) -> Dict[str, Any]:
         'title',
         'question',
         'time_cutoff',
+        'deliverable_spec',
+        'answer_contract',
         'expected_output',
     ]
     return {k: public_task.get(k) for k in keep if k in public_task}

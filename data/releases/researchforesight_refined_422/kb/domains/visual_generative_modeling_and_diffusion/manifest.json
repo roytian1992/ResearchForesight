@@ -1,7 +1,7 @@
 {
   "domain_slug": "visual_generative_modeling_and_diffusion",
   "domain": "Visual generative modeling and diffusion",
-  "history_cutoff": "2025-08-31",
+  "history_cutoff": "2025-11-30",
   "source_files": {
     "papers": "data/domains/visual_generative_modeling_and_diffusion/interim/papers_merged.publication_enriched.semanticscholar.jsonl",
     "pageindex": "data/support_packets/pageindex/visual_generative_modeling_and_diffusion/pageindex.jsonl",
@@ -18,18 +18,19 @@
   },
   "coverage": {
     "source_papers_total": 9391,
-    "papers_exported": 7546,
-    "pageindex_rows_exported": 85,
-    "structures_rows_exported": 85,
-    "content_rows_exported": 85,
-    "section_rows_exported": 85,
+    "papers_exported": 8494,
+    "pageindex_rows_exported": 133,
+    "structures_rows_exported": 133,
+    "content_rows_exported": 133,
+    "section_rows_exported": 133,
     "papers_missing_published_date": 0,
-    "papers_with_pageindex_share": 0.0113,
-    "papers_with_structures_share": 0.0113,
-    "papers_with_content_share": 0.0113
+    "papers_with_pageindex_share": 0.0157,
+    "papers_with_structures_share": 0.0157,
+    "papers_with_content_share": 0.0157
   },
   "notes": [
-    "This KB contains only papers published on or before the history cutoff.",
+    "This KB contains papers published on or before the maximum release cutoff.",
+    "Runtime retrieval must still pass each task's own time_cutoff to avoid cross-cutoff leakage.",
     "pageindex/content/structures are partial layers and do not cover all exported papers.",
     "The current content layer is abstract-derived normalized content rather than uniformly recovered raw full text."
   ]
