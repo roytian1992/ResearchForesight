@@ -19,9 +19,9 @@ This directory is documentation-only. The actual public release files live under
 This public release does not split tasks into separate half-year and quarter subfolders.
 Instead, each task carries its own `time_cutoff` field in `task_refined.jsonl`.
 
-## Files
-- `task_refined.jsonl`: unified benchmark task file, including public fields and embedded evaluation targets
-- `kb/`: cutoff-aware offline knowledge base exported to the maximum task cutoff
+## Canonical release files
+- `data/releases/researchforesight_refined_422/task_refined.jsonl`: unified benchmark task file, including public fields and embedded evaluation targets
+- `data/releases/researchforesight_refined_422/kb/`: cutoff-aware offline knowledge base exported to the maximum task cutoff
 
 ## Offline evaluation note
 This 422-task public release mixes multiple time cutoffs. The packaged `kb/` is a cutoff-aware history pool, not a single global visible corpus.
@@ -42,6 +42,5 @@ python scripts/evaluate_experiment_final_metrics.py \
   --results-jsonl /path/to/run/results.jsonl \
   --release-dir data/releases/researchforesight_refined_422 \
   --output-dir /path/to/eval \
-  --judge-llm-config configs/llm/qwen3_235b_8002.local.yaml \
   --metrics all
 ```

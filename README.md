@@ -17,8 +17,7 @@ The current official public release is the unified 422-task `ResearchForesight` 
 
 This release does not split public tasks into separate half-year and quarter sub-releases. Instead, it exposes a single mixed-horizon benchmark with per-task temporal cutoffs.
 
-Historical intermediate folders and smaller internal subsets under `data/releases/` are retained as
-build artifacts, not as the recommended public entry point.
+Historical intermediate folders and smaller internal subsets may exist in local workspaces as build artifacts, but they are not part of the recommended public entry point.
 
 ### 3. Public release contents
 The public release directory is `data/releases/researchforesight_refined_422/`.
