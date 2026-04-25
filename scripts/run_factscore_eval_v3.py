@@ -41,7 +41,7 @@ def main() -> None:
     parser.add_argument("--history-kb-dir", default="")
     parser.add_argument("--future-kb-dir", default="")
     parser.add_argument("--hidden-eval-v3", default="", help="Legacy override. Prefer --release-dir with task_refined.jsonl.")
-    parser.add_argument("--judge-llm-config", default="configs/llm/mimo_pro.local.yaml")
+    parser.add_argument("--judge-llm-config", default="configs/llm/qwen3_235b_8002.local.yaml")
     parser.add_argument("--output-dir", required=True)
     parser.add_argument("--max-claims", type=int, default=8)
     parser.add_argument("--task-limit", type=int, default=None)

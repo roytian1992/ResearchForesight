@@ -8,4 +8,4 @@ Recommended usage:
 - mimo-v2-flash: cheap batch labeling, candidate polishing, first-pass judges
 - mimo-v2-pro: higher-quality rewrite / judge fallback
 
-Use environment variables for secrets instead of hardcoding API keys.
+Use environment variables for secrets instead of hardcoding API keys. Copy `.example.yaml` files to ignored `.local.yaml` files before running local experiments.

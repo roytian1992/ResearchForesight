@@ -1,0 +1,8 @@
+embedding:
+  provider: openai
+  model_name: bge-m3
+  api_key: ${BGE_M3_API_KEY}
+  base_url: ${BGE_M3_BASE_URL}
+  max_tokens: 8192
+  dimensions: 1024
+  timeout: 60

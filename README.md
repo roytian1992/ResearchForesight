@@ -43,14 +43,19 @@ cp configs/llm/qwen3_235b_8002.example.yaml \
   configs/llm/qwen3_235b_8002.local.yaml
 ```
 
+If you run CoI with a local embedding server, create the optional embedding config:
+
+```bash
+cp configs/embedding/bge_m3.example.yaml \
+  configs/embedding/bge_m3.local.yaml
+```
+
 Run an offline agent:
 
 ```bash
 python scripts/run_researchagent_offline.py \
   --release-dir data/releases/researchforesight_refined_422 \
-  --output-dir /path/to/local_run_output \
-  --reasoning-llm-config configs/llm/qwen3_235b_8002.local.yaml \
-  --render-llm-config configs/llm/qwen3_235b_8002.local.yaml
+  --output-dir /path/to/local_run_output
 ```
 
 Evaluate predictions:
@@ -60,7 +65,6 @@ python scripts/evaluate_experiment_final_metrics.py \
   --results-jsonl /path/to/local_run_output/results.jsonl \
   --release-dir data/releases/researchforesight_refined_422 \
   --output-dir /path/to/local_eval_output \
-  --judge-llm-config configs/llm/qwen3_235b_8002.local.yaml \
   --metrics all
 ```
 

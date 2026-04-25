@@ -24,7 +24,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run round-robin pairwise judging on benchmark v3 answers.")
     parser.add_argument("--release-dir", required=True)
     parser.add_argument("--output-dir", required=True)
-    parser.add_argument("--judge-llm-config", default="configs/llm/mimo_pro.local.yaml")
+    parser.add_argument("--judge-llm-config", default="configs/llm/qwen3_235b_8002.local.yaml")
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--seed", type=int, default=20260404)
     parser.add_argument("--mirror", action="store_true")

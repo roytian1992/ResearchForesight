@@ -7,6 +7,8 @@
 - release form: unified mixed-horizon benchmark
 - canonical release path: `data/releases/researchforesight_refined_422`
 
+This directory is documentation-only. The actual public release files live under the canonical release path above.
+
 ## Task families
 1. bottleneck_opportunity_discovery
 2. direction_forecasting
