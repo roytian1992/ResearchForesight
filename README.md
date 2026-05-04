@@ -15,7 +15,7 @@ This repository contains the current benchmark code, official benchmark releases
 The current official public release is the unified 422-task `ResearchForesight` release:
 - `data/releases/researchforesight_refined_422/`: canonical release directory
 
-This release does not split public tasks into separate half-year and quarter sub-releases. Instead, it exposes a single mixed-horizon benchmark with per-task temporal cutoffs.
+This release uses the manually refined public task wording and the stable `RF-0001` to `RF-0422` task-id scheme. It does not split public tasks into separate half-year and quarter sub-releases. Instead, it exposes a single mixed-horizon benchmark with per-task temporal cutoffs.
 
 Historical intermediate folders and smaller internal subsets may exist in local workspaces as build artifacts, but they are not part of the recommended public entry point.
 
@@ -24,6 +24,9 @@ The public release directory is `data/releases/researchforesight_refined_422/`.
 
 It contains:
 - `task_refined.jsonl`: unified task file containing public task fields and embedded evaluation targets
+- `task_id_mapping_old_to_rf_20260504.json` and `.jsonl`: mapping from the legacy `RTLv3-*` IDs to the stable `RF-*` IDs
+- `renumbering_report_20260504.json`: release-level summary of the renumbering pass
+- `question_polish_manual_report_20260504.json`: audit summary for the manual task-wording refinement pass
 - `kb/`: cutoff-aware offline knowledge base
 
 The `kb/` directory is exported up to the maximum task cutoff, but all runners filter retrieval by each task's own `time_cutoff`. This lets one KB serve mixed-cutoff tasks without leaking later history to earlier-cutoff tasks.
@@ -94,7 +97,7 @@ We only keep the **latest** prompt inventory in-repo.
 - `family_auxiliary.yaml`
 - `pairwise_round_robin.yaml`
 
-These prompt files are the canonical latest snapshots we want visible on GitHub for transparency and reproducibility.
+These prompt files are the canonical latest snapshots we want visible on GitHub for transparency and reproducibility. The current Research Judgment evaluator uses an inline strict deliberative-decision rubric in `src/researchworld/research_judgment_eval_v8.py`, with family rubrics defined in `src/researchworld/research_judgment_rubrics.py`.
 
 ## Current task families
 1. `bottleneck_opportunity_discovery`
@@ -113,12 +116,23 @@ These prompt files are the canonical latest snapshots we want visible on GitHub 
 - `Evidence-Grounded Factuality`
 - `Future Alignment`
 - `Evidence Traceability`
+- `Research Judgment`
 
 ### Family-specific auxiliary metrics
 - `Opportunity Grounding`: used for `bottleneck_opportunity_discovery`
 - `Forecast Grounding`: used for `direction_forecasting`
 - `Strategic Execution Grounding`: used for `strategic_research_planning`
 - `Venue Positioning Grounding`: used for `venue_aware_research_positioning`
+
+`Research Judgment` is available through the maintained final-metrics entrypoint:
+
+```bash
+python scripts/evaluate_experiment_final_metrics.py \
+  --results-jsonl /path/to/local_run_output/results.jsonl \
+  --release-dir data/releases/researchforesight_refined_422 \
+  --output-dir /path/to/local_eval_output \
+  --metrics research_judgment
+```
 
 ## Benchmark positioning
 ResearchForesight is designed to study whether a system can exhibit useful forward-looking research judgment under a strict temporal cutoff. The target capability is prospective reasoning from bounded historical evidence: can an agent anticipate bottlenecks, directions, and plans before subsequent developments are known?

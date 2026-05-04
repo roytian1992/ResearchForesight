@@ -28,7 +28,6 @@ REQUIRED_TASK_KEYS = [
     "answer_contract",
     "gold_answer",
     "expected_answer_points",
-    "evaluation_rubric",
     "eval_targets",
     "trace",
 ]
@@ -44,7 +43,6 @@ REQUIRED_EVAL_TARGET_KEYS = [
 FORBIDDEN_PUBLIC_KEYS = {
     "gold_answer",
     "expected_answer_points",
-    "evaluation_rubric",
     "eval_targets",
     "slot_targets",
     "claim_bank",

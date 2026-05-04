@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import shutil
 import subprocess
@@ -36,39 +37,69 @@ from researchworld.experiment_eval_v4 import (
     write_main_table_csv_v4,
 )
 from researchworld.factscore_eval_v3 import FactScoreV3Config, evaluate_answer_factscore_v3
+from researchworld.factscore_eval_v5 import evaluate_answer_factscore_v5
 from researchworld.future_alignment_eval_v3_1 import FutureAlignmentV3_1Config, evaluate_future_alignment_v3_1
-from researchworld.llm import FallbackOpenAICompatChatClient, OpenAICompatChatClient, load_openai_compat_config
+from researchworld.future_alignment_eval_v5 import evaluate_future_alignment_v5
+from researchworld.llm import (
+    FallbackOpenAICompatChatClient,
+    OpenAICompatChatClient,
+    OpenAICompatEmbeddingClient,
+    load_openai_compat_config,
+    load_openai_compat_embedding_config,
+)
 from researchworld.offline_kb import OfflineKnowledgeBase
+from researchworld.research_judgment_eval_v8 import (
+    build_research_judgment_result_row_v8,
+    evaluate_research_judgment_v8,
+    summarize_research_judgment_results_v8,
+    write_dimension_csv_v8,
+    write_main_table_csv_v8,
+)
+from researchworld.research_judgment_rubrics import default_evaluation_rubric
 from researchworld.refined_release import load_task_refined_public_by_id, load_task_refined_views
 
-METRIC_BUNDLES = ('v31', 'v4', 'aux')
+METRIC_BUNDLES = ('v6', 'v5', 'v4', 'aux', 'v31')
 
 METRIC_SUBDIRS = {
+    'v6': 'eval_v6',
+    'v5': 'eval_v5',
     'v31': 'eval_v31',
     'v4': 'eval_v4',
     'aux': 'eval_aux',
 }
 
 METRIC_RESULT_FILENAMES = {
+    'v6': 'results_eval_v6.jsonl',
+    'v5': 'results_eval_v5.jsonl',
     'v31': 'results_eval_v3_1.jsonl',
     'v4': 'results_eval_v4.jsonl',
     'aux': 'results_eval_aux.jsonl',
 }
 
 METRIC_ALIASES = {
-    'all': {'v31', 'v4', 'aux'},
-    'primary': {'v31', 'v4'},
-    'factuality': {'v31'},
-    'fact': {'v31'},
-    'future_alignment': {'v31'},
-    'future': {'v31'},
+    'all': {'v6', 'v5', 'v4', 'aux'},
+    'primary': {'v6', 'v5', 'v4'},
+    'answer_quality': {'v6'},
+    'judgment': {'v6'},
+    'research_judgment': {'v6'},
+    'rubric': {'v6'},
+    'v6': {'v6'},
+    'factuality': {'v5'},
+    'fact': {'v5'},
+    'future_alignment': {'v5'},
+    'future': {'v5'},
+    'v5': {'v5'},
     'traceability': {'v4'},
     'evidence_traceability': {'v4'},
     'v31': {'v31'},
+    'legacy_v31': {'v31'},
     'v4': {'v4'},
     'aux': {'aux'},
     'family_aux': {'aux'},
 }
+
+V6_EVAL_CACHE_VERSION = 'v8_research_judgment_strict_deliberative_decision_20260430'
+V5_EVAL_CACHE_VERSION = 'v5_task_json_only_family_fact_claims_20260430a'
 
 
 def _parse_metrics(raw_values: Sequence[str]) -> tuple[List[str], List[str]]:
@@ -84,7 +115,7 @@ def _parse_metrics(raw_values: Sequence[str]) -> tuple[List[str], List[str]]:
                 raise SystemExit(f'unknown metric selection "{part}". valid values: {valid}')
             selected.update(bundles)
     if not selected:
-        selected = {'v31', 'v4', 'aux'}
+        selected = {'v6', 'v5', 'v4', 'aux'}
         requested = ['all']
     ordered = [bundle for bundle in METRIC_BUNDLES if bundle in selected]
     return ordered, requested
@@ -101,6 +132,74 @@ def _write_jsonl(path: Path, rows: Iterable[Dict[str, Any]]) -> None:
     with path.open('w', encoding='utf-8') as handle:
         for row in rows:
             handle.write(json.dumps(row, ensure_ascii=False) + '\n')
+
+
+def _stable_json(obj: Any) -> str:
+    return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(',', ':'), default=str)
+
+
+def _sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode('utf-8')).hexdigest()
+
+
+def _v5_cache_key(*, public_task: Dict[str, Any], eval_row: Dict[str, Any], answer: str) -> str:
+    payload = {
+        'version': V5_EVAL_CACHE_VERSION,
+        'task_id': str(public_task.get('task_id') or eval_row.get('task_id') or ''),
+        'family': str(public_task.get('family') or eval_row.get('family') or ''),
+        'question': public_task.get('question'),
+        'answer': answer,
+        'claim_bank': eval_row.get('claim_bank') or [],
+        'future_alignment_targets': eval_row.get('future_alignment_targets') or {},
+        'temporal_policy': eval_row.get('temporal_policy') or {},
+    }
+    return _sha256_text(_stable_json(payload))
+
+
+def _v6_cache_key(*, public_task: Dict[str, Any], eval_row: Dict[str, Any], answer: str) -> str:
+    payload = {
+        'version': V6_EVAL_CACHE_VERSION,
+        'task_id': str(public_task.get('task_id') or eval_row.get('task_id') or ''),
+        'family': str(public_task.get('family') or eval_row.get('family') or ''),
+        'question': public_task.get('question'),
+        'answer_contract': public_task.get('answer_contract') or {},
+        'answer': answer,
+        'gold_answer': eval_row.get('gold_answer'),
+        'expected_answer_points': eval_row.get('expected_answer_points') or [],
+        'evaluation_rubric': eval_row.get('evaluation_rubric') or default_evaluation_rubric(
+            str(public_task.get('family') or eval_row.get('family') or '')
+        ),
+        'component_targets': eval_row.get('component_targets') or {},
+        'future_alignment_targets': eval_row.get('future_alignment_targets') or {},
+        'temporal_policy': eval_row.get('temporal_policy') or {},
+    }
+    return _sha256_text(_stable_json(payload))
+
+
+def _v5_cache_path(cache_dir: Path, cache_key: str) -> Path:
+    return cache_dir / cache_key[:2] / f'{cache_key}.json'
+
+
+def _read_v5_cache(cache_dir: Optional[Path], cache_key: str) -> Optional[Dict[str, Any]]:
+    if cache_dir is None:
+        return None
+    path = _v5_cache_path(cache_dir, cache_key)
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding='utf-8'))
+    except Exception:
+        return None
+
+
+def _write_v5_cache(cache_dir: Optional[Path], cache_key: str, payload: Dict[str, Any]) -> None:
+    if cache_dir is None:
+        return
+    path = _v5_cache_path(cache_dir, cache_key)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix('.tmp')
+    tmp.write_text(json.dumps(payload, ensure_ascii=False), encoding='utf-8')
+    tmp.replace(path)
 
 
 def _metric_dir(root: Path, bundle: str) -> Path:
@@ -134,7 +233,18 @@ def _write_metric_outputs(bundle: str, rows: List[Dict[str, Any]], output_root: 
     metric_dir.mkdir(parents=True, exist_ok=True)
     result_path = _result_path(output_root, bundle)
     _write_jsonl(result_path, rows)
-    if bundle == 'v31':
+    if bundle == 'v6':
+        summary = summarize_research_judgment_results_v8(rows)
+        summary.update({
+            'run_id': run_id,
+            'input_results_jsonl': str(input_results_jsonl),
+            'output_results_jsonl': str(result_path),
+        })
+        (metric_dir / 'summary.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
+        write_main_table_csv_v8(rows, metric_dir / 'main_results.csv')
+        write_dimension_csv_v8(rows, metric_dir / 'dimension_breakdown.csv')
+        return summary
+    if bundle in {'v5', 'v31'}:
         summary = summarize_results_v3_1(rows)
         summary.update({
             'run_id': run_id,
@@ -176,14 +286,16 @@ def _evaluate_rows(
     history_kb_dir: Path,
     future_kb_dir: Optional[Path],
     judge_client: FallbackOpenAICompatChatClient,
+    embedding_client: Optional[OpenAICompatEmbeddingClient],
     output_root: Path,
     run_id: str,
     results_path: Path,
     resume: bool,
+    eval_cache_dir: Optional[Path] = None,
 ) -> Dict[str, Dict[str, Any]]:
     public_by_id = load_task_refined_public_by_id(release_dir)
     eval_by_id = {}
-    if any(bundle in {'v31', 'aux'} for bundle in selected_bundles):
+    if any(bundle in {'v6', 'v5', 'v31', 'aux'} for bundle in selected_bundles):
         _, eval_by_id = load_task_refined_views(release_dir)
 
     history_kb = None
@@ -195,6 +307,8 @@ def _evaluate_rows(
         future_kb = OfflineKnowledgeBase(future_kb_dir) if future_kb_dir is not None else None
         fact_cfg = FactScoreV3Config()
         future_cfg = FutureAlignmentV3_1Config()
+    fact_v5_cfg = FactScoreV3Config() if 'v5' in selected_bundles else None
+    future_v5_cfg = FutureAlignmentV3_1Config() if 'v5' in selected_bundles else None
 
     seen_source_ids: Set[str] = set()
     bad_source_ids: List[str] = []
@@ -245,6 +359,106 @@ def _evaluate_rows(
                 continue
             family = str(public_task.get('family') or row.get('family') or '')
             print(f"[eval_final] {idx}/{len(rows)} {task_id} family={family} bundles={','.join(pending_bundles)}", flush=True)
+
+            if 'v6' in pending_bundles:
+                if eval_row is None:
+                    raise RuntimeError(f'missing v6 evaluation dependencies for task {task_id}')
+                answer = str(row.get('answer') or '')
+                cache_key = _v6_cache_key(public_task=public_task, eval_row=eval_row, answer=answer)
+                cached_v6 = _read_v5_cache(eval_cache_dir, cache_key)
+                if cached_v6:
+                    judgment_eval = cached_v6['judgment_eval']
+                    cache_status = 'hit'
+                else:
+                    judgment_eval = evaluate_research_judgment_v8(
+                        judge_client=judge_client,
+                        public_task=public_task,
+                        hidden_row=eval_row,
+                        result_row=row,
+                    )
+                    _write_v5_cache(
+                        eval_cache_dir,
+                        cache_key,
+                        {
+                            'cache_version': V6_EVAL_CACHE_VERSION,
+                            'task_id': task_id,
+                            'answer_sha256': _sha256_text(answer),
+                            'judgment_eval': judgment_eval,
+                        },
+                    )
+                    cache_status = 'miss'
+                out_row = build_research_judgment_result_row_v8(
+                    run_id=run_id,
+                    public_task=public_task,
+                    result_row=row,
+                    judgment_eval=judgment_eval,
+                )
+                out_row.setdefault('metadata', {})['eval_cache'] = {
+                    'enabled': eval_cache_dir is not None,
+                    'status': cache_status,
+                    'cache_key': cache_key if eval_cache_dir is not None else '',
+                    'cache_version': V6_EVAL_CACHE_VERSION,
+                }
+                outputs_by_bundle['v6'].append(out_row)
+                handles['v6'].write(json.dumps(out_row, ensure_ascii=False) + '\n')
+                handles['v6'].flush()
+
+            if 'v5' in pending_bundles:
+                if eval_row is None or fact_v5_cfg is None or future_v5_cfg is None:
+                    raise RuntimeError(f'missing v5 evaluation dependencies for task {task_id}')
+                answer = str(row.get('answer') or '')
+                cache_key = _v5_cache_key(public_task=public_task, eval_row=eval_row, answer=answer)
+                cached_v5 = _read_v5_cache(eval_cache_dir, cache_key)
+                if cached_v5:
+                    fact_eval = cached_v5['fact_eval']
+                    future_alignment_eval = cached_v5['future_alignment_eval']
+                    cache_status = 'hit'
+                else:
+                    fact_eval = evaluate_answer_factscore_v5(
+                        judge_client=judge_client,
+                        result_row=row,
+                        gt_row=eval_row,
+                        cfg=fact_v5_cfg,
+                    )
+                    future_alignment_eval = evaluate_future_alignment_v5(
+                        judge_client=judge_client,
+                        embedding_client=embedding_client,
+                        public_task=public_task,
+                        result_row=row,
+                        hidden_row=eval_row,
+                        cfg=future_v5_cfg,
+                    )
+                    _write_v5_cache(
+                        eval_cache_dir,
+                        cache_key,
+                        {
+                            'cache_version': V5_EVAL_CACHE_VERSION,
+                            'task_id': task_id,
+                            'answer_sha256': _sha256_text(answer),
+                            'fact_eval': fact_eval,
+                            'future_alignment_eval': future_alignment_eval,
+                        },
+                    )
+                    cache_status = 'miss'
+                out_row = build_experiment_result_row_v3_1(
+                    run_id=run_id,
+                    public_task=public_task,
+                    hidden_row=eval_row,
+                    result_row=row,
+                    fact_eval=fact_eval,
+                    future_alignment_eval=future_alignment_eval,
+                )
+                out_row.setdefault('metadata', {})['schema_version'] = 'v5_task_json_only'
+                out_row.setdefault('metadata', {})['evaluator_scope'] = 'task_refined_json_only_no_kb'
+                out_row.setdefault('metadata', {})['eval_cache'] = {
+                    'enabled': eval_cache_dir is not None,
+                    'status': cache_status,
+                    'cache_key': cache_key if eval_cache_dir is not None else '',
+                    'cache_version': V5_EVAL_CACHE_VERSION,
+                }
+                outputs_by_bundle['v5'].append(out_row)
+                handles['v5'].write(json.dumps(out_row, ensure_ascii=False) + '\n')
+                handles['v5'].flush()
 
             if 'v31' in pending_bundles:
                 if eval_row is None or history_kb is None or fact_cfg is None or future_cfg is None:
@@ -364,14 +578,18 @@ def _spawn_parallel_workers(args: argparse.Namespace, rows: List[Dict[str, Any]]
             '--judge-fallback-llm-config', args.judge_fallback_llm_config,
             '--_worker-mode',
         ]
-        if str(args.kb_dir or '').strip():
+        if str(args.embedding_config or '').strip():
+            cmd.extend(['--embedding-config', args.embedding_config])
+        if 'v31' in selected_bundles and str(args.kb_dir or '').strip():
             cmd.extend(['--kb-dir', args.kb_dir])
-        if str(args.history_kb_dir or '').strip():
+        if 'v31' in selected_bundles and str(args.history_kb_dir or '').strip():
             cmd.extend(['--history-kb-dir', args.history_kb_dir])
-        if str(args.future_kb_dir or '').strip():
+        if 'v31' in selected_bundles and str(args.future_kb_dir or '').strip():
             cmd.extend(['--future-kb-dir', args.future_kb_dir])
         if args.resume:
             cmd.append('--resume')
+        if str(args.eval_cache_dir or '').strip():
+            cmd.extend(['--eval-cache-dir', args.eval_cache_dir])
         log_path = log_root / f'worker_{worker_idx:02d}.log'
         log_f = log_path.open('a' if args.resume else 'w', encoding='utf-8')
         proc = subprocess.Popen(cmd, cwd=str(ROOT), stdout=log_f, stderr=subprocess.STDOUT, text=True)
@@ -433,14 +651,18 @@ def _build_root_summary(
         'kb_dir': str(args.kb_dir),
         'history_kb_dir': str(args.history_kb_dir),
         'future_kb_dir': str(args.future_kb_dir or ''),
+        'embedding_config': str(args.embedding_config or ''),
+        'eval_cache_dir': str(args.eval_cache_dir or ''),
         'requested_metrics': list(requested_metrics),
         'resolved_metric_bundles': list(selected_bundles),
         'workers': int(args.workers),
         'metric_outputs': {bundle: str(_metric_dir(output_dir, bundle)) for bundle in selected_bundles},
         'metric_summaries': summaries,
         'bundle_resolution_note': {
-            'factuality': 'runs inside eval_v31 together with future_alignment',
-            'future_alignment': 'runs inside eval_v31 together with factuality',
+            'research_judgment': 'runs inside eval_v6 directory for backward file-layout compatibility, but scores with research_judgment v8 strict deliberative decision rubric; uses task_refined.jsonl reference fields only and does not open KB',
+            'factuality': 'runs inside eval_v5 together with future_alignment; eval_v5 uses task_refined.jsonl only and does not open KB',
+            'future_alignment': 'runs inside eval_v5 together with factuality; eval_v5 uses task_refined.jsonl only and does not open KB',
+            'legacy_v31': 'legacy evaluator that may use offline KB for fact evidence retrieval',
             'traceability': 'runs inside eval_v4',
             'family_aux': 'runs inside eval_aux',
         },
@@ -464,12 +686,14 @@ def main() -> None:
     parser.add_argument('--workers', type=int, default=1)
     parser.add_argument('--judge-llm-config', default='configs/llm/qwen3_235b_8002.local.yaml')
     parser.add_argument('--judge-fallback-llm-config', default='')
+    parser.add_argument('--embedding-config', default='')
     parser.add_argument('--kb-dir', default='')
     parser.add_argument('--history-kb-dir', default='')
     parser.add_argument('--future-kb-dir', default='')
     parser.add_argument('--run-id', default='')
     parser.add_argument('--task-limit', type=int, default=None)
     parser.add_argument('--resume', action='store_true')
+    parser.add_argument('--eval-cache-dir', default='results/eval_cache/refined422_v6_v5')
     parser.add_argument('--_worker-mode', action='store_true')
     args = parser.parse_args()
 
@@ -480,15 +704,20 @@ def main() -> None:
     selected_bundles, requested_metrics = _parse_metrics(args.metrics)
     results_path = Path(args.results_jsonl)
     run_id = args.run_id.strip() or output_dir.name or results_path.stem
-    kb_dir, history_kb_dir, future_kb_dir = _resolve_eval_kb_dirs(
-        release_dir,
-        args.kb_dir,
-        args.history_kb_dir,
-        args.future_kb_dir,
-    )
-    args.kb_dir = str(kb_dir)
-    args.history_kb_dir = str(history_kb_dir)
-    args.future_kb_dir = str(future_kb_dir) if future_kb_dir is not None else ''
+    if 'v31' in selected_bundles:
+        kb_dir, history_kb_dir, future_kb_dir = _resolve_eval_kb_dirs(
+            release_dir,
+            args.kb_dir,
+            args.history_kb_dir,
+            args.future_kb_dir,
+        )
+        args.kb_dir = str(kb_dir)
+        args.history_kb_dir = str(history_kb_dir)
+        args.future_kb_dir = str(future_kb_dir) if future_kb_dir is not None else ''
+    else:
+        args.kb_dir = ''
+        args.history_kb_dir = ''
+        args.future_kb_dir = ''
 
     rows = list(iter_jsonl(results_path))
     if args.task_limit is not None:
@@ -502,6 +731,12 @@ def main() -> None:
 
     if args._worker_mode or args.workers <= 1:
         judge_client = _build_judge_client(Path(args.judge_llm_config), args.judge_fallback_llm_config)
+        embedding_path = Path(args.embedding_config) if str(args.embedding_config or '').strip() else None
+        embedding_client = (
+            OpenAICompatEmbeddingClient(load_openai_compat_embedding_config(embedding_path))
+            if embedding_path and embedding_path.exists()
+            else None
+        )
         summaries = _evaluate_rows(
             rows=rows,
             selected_bundles=selected_bundles,
@@ -509,10 +744,12 @@ def main() -> None:
             history_kb_dir=Path(args.history_kb_dir),
             future_kb_dir=Path(args.future_kb_dir) if args.future_kb_dir else None,
             judge_client=judge_client,
+            embedding_client=embedding_client,
             output_root=output_dir,
             run_id=run_id,
             results_path=results_path,
             resume=args.resume,
+            eval_cache_dir=Path(args.eval_cache_dir) if str(args.eval_cache_dir or '').strip() else None,
         )
         _build_root_summary(
             output_dir=output_dir,

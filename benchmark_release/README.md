@@ -6,6 +6,8 @@
 - domains: 4
 - release form: unified mixed-horizon benchmark
 - canonical release path: `data/releases/researchforesight_refined_422`
+- task ids: stable `RF-0001` to `RF-0422`
+- task wording: manually refined public questions dated 2026-05-04
 
 This directory is documentation-only. The actual public release files live under the canonical release path above.
 
@@ -21,6 +23,8 @@ Instead, each task carries its own `time_cutoff` field in `task_refined.jsonl`.
 
 ## Canonical release files
 - `data/releases/researchforesight_refined_422/task_refined.jsonl`: unified benchmark task file, including public fields and embedded evaluation targets
+- `data/releases/researchforesight_refined_422/task_id_mapping_old_to_rf_20260504.json`: legacy-to-stable task-id mapping
+- `data/releases/researchforesight_refined_422/task_id_mapping_old_to_rf_20260504.jsonl`: row-oriented version of the same mapping
 - `data/releases/researchforesight_refined_422/kb/`: cutoff-aware offline knowledge base exported to the maximum task cutoff
 
 ## Offline evaluation note
@@ -44,3 +48,5 @@ python scripts/evaluate_experiment_final_metrics.py \
   --output-dir /path/to/eval \
   --metrics all
 ```
+
+`--metrics all` currently covers Evidence-Grounded Factuality, Future Alignment, Evidence Traceability, Research Judgment, and the family-specific auxiliary metric. To run only the Research Judgment metric, use `--metrics research_judgment`.

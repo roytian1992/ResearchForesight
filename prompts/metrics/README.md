@@ -11,3 +11,5 @@ Included prompt assets:
 - `pairwise_round_robin.yaml`
 
 These files are prompt snapshots for transparency and documentation. The current evaluation code may still inline prompt templates in Python, but the latest prompt wording is tracked here explicitly.
+
+Research Judgment currently uses an inline strict deliberative-decision rubric rather than a YAML prompt snapshot. See `src/researchworld/research_judgment_eval_v8.py` and `src/researchworld/research_judgment_rubrics.py`.

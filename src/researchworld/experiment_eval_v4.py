@@ -10,8 +10,9 @@ from researchworld.experiment_eval_v3 import infer_domain_id
 from researchworld.llm import OpenAICompatChatClient, complete_json_object
 
 EVIDENCE_TRACEABILITY_DIMENSIONS_V4: List[Dict[str, Any]] = [
-    {"name": "evidence_linkage", "weight": 0.55},
-    {"name": "support_specificity", "weight": 0.45},
+    {"name": "external_evidence_linkage", "weight": 0.50},
+    {"name": "support_specificity", "weight": 0.25},
+    {"name": "answer_internal_trace", "weight": 0.25},
 ]
 
 
@@ -237,7 +238,8 @@ Judge whether the answer's important conclusions can be traced to explicit suppo
 - Judge traceability: can a reviewer see where the answer came from?
 - Reward explicit linkage from claims to papers, snippets, evidence bundles, or reasoning traces.
 - Penalize answers that look strong but cannot be connected to identifiable support.
-- If no support artifact is attached, score strictly unless the answer itself clearly states concrete evidence bases.
+- If no support artifact is attached, the answer cannot receive high overall traceability; answer-internal rationale is only partial supplemental traceability.
+- Do not reward fabricated paper titles, fake citations, exact counts, exact dates, benchmark names, model names, or organization names that are not present in attached support.
 
 # Input Data
 - Public Task Definition: {json.dumps(_compact_public_task(public_task), ensure_ascii=False, indent=2)}
@@ -251,8 +253,9 @@ Judge whether the answer's important conclusions can be traced to explicit suppo
 {support_snapshot}
 
 # Rubric
-1. evidence_linkage: Are the answer's main claims visibly connected to explicit evidence items, retrieved papers, snippets, or trace steps?
-2. support_specificity: Is the support concrete and discriminative enough that a reviewer could audit why the answer made these conclusions instead of generic alternatives?
+1. external_evidence_linkage: Are the answer's main claims visibly connected to explicit evidence items, retrieved papers, snippets, evidence ids, or trace steps in the attached support snapshot? If no external support is attached, this dimension should usually be 0.0-0.15.
+2. support_specificity: Is the support concrete and discriminative enough that a reviewer could audit why the answer made these conclusions instead of generic alternatives? For answers without attached support, judge only whether the self-described basis is specific rather than generic.
+3. answer_internal_trace: Does the answer itself expose an auditable rationale chain, such as evidence-basis types, recurring limitations, mechanism/trade-off, and uncertainty, without fabricating citations or unsupported exact details?
 
 # Output (Strict JSON)
 {{
@@ -276,12 +279,16 @@ Judge whether the answer's important conclusions can be traced to explicit suppo
         repair_instruction="Your previous response was malformed JSON. Return exactly one valid JSON object with keys dimension_scores, evidence_traceability_score, strengths, weaknesses.",
     )
     overall, rubric_scores = _weighted(dimensions, obj.get('dimension_scores') or {}, 'evidence_traceability_score', obj)
+    support_profile = _collect_support_items(result_row)
+    if not support_profile.get('has_external_support'):
+        overall = min(overall, 0.30)
     return {
         'evidence_traceability_score': overall,
         'rubric_scores': rubric_scores,
         'strengths': [str(x) for x in (obj.get('strengths') or []) if str(x).strip()],
         'weaknesses': [str(x) for x in (obj.get('weaknesses') or []) if str(x).strip()],
         'support_snapshot': support_snapshot,
+        'no_external_support_cap': 0.30 if not support_profile.get('has_external_support') else None,
     }
 def build_experiment_result_row_v4(
     *,

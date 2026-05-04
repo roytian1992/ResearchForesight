@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from researchworld.factscore_eval_v3 import FactScoreV3Config, _collect_evidence_from_domain, render_evidence
 from researchworld.llm import OpenAICompatChatClient, complete_json_object
@@ -16,6 +17,123 @@ class FutureAlignmentV3_1Config:
     max_evidence_rows: int = 8
 
 
+_WORD_RE = re.compile(r"[a-z0-9]+")
+
+
+def _token_set(text: Any) -> Set[str]:
+    return set(_WORD_RE.findall(normalize_ws(text).lower()))
+
+
+def _token_overlap(a: Any, b: Any) -> float:
+    left = _token_set(a)
+    right = _token_set(b)
+    if not left or not right:
+        return 0.0
+    return len(left & right) / len(left)
+
+
+def _public_task_text(public_task: Dict[str, Any]) -> str:
+    fields: List[str] = []
+    for key in ["title", "question", "deliverable_spec", "answer_contract"]:
+        value = public_task.get(key)
+        if isinstance(value, (dict, list)):
+            fields.append(json.dumps(value, ensure_ascii=False))
+        elif value is not None:
+            fields.append(str(value))
+    return normalize_ws(" ".join(fields))
+
+
+def _future_unit_public_leakage(public_task: Dict[str, Any], unit: Dict[str, Any]) -> Dict[str, Any]:
+    public_text = _public_task_text(public_task)
+    public_lower = public_text.lower()
+    aliases = [normalize_ws(unit.get("text"))] + [normalize_ws(x) for x in (unit.get("aliases") or [])]
+    aliases = [x for x in aliases if x]
+    exact_aliases = [alias for alias in aliases if len(alias) >= 12 and alias.lower() in public_lower]
+    max_overlap = max([_token_overlap(alias, public_text) for alias in aliases] or [0.0])
+    leaked = bool(exact_aliases) or max_overlap >= 0.72
+    return {
+        "unit_visible_in_public_task": leaked,
+        "max_public_token_overlap": round(max_overlap, 4),
+        "exact_public_aliases": exact_aliases[:3],
+        "policy": (
+            "If visible, mere repetition of this public task phrase is insufficient; the answer must make the requested "
+            "forecast, assessment, selection, or ranking call and justify it with task-specific reasoning."
+        ),
+    }
+
+
+def _answer_mentions_future_unit(answer: str, unit: Dict[str, Any]) -> bool:
+    answer_lower = normalize_ws(answer).lower()
+    aliases = [normalize_ws(unit.get("text"))] + [normalize_ws(x) for x in (unit.get("aliases") or [])]
+    for alias in aliases:
+        if len(alias) >= 12 and alias.lower() in answer_lower:
+            return True
+        if _token_overlap(alias, answer) >= 0.68:
+            return True
+    return False
+
+
+def _answer_makes_task_commitment(answer: str, *, family: str) -> bool:
+    text = normalize_ws(answer).lower()
+    if not text:
+        return False
+    generic_commitment = [
+        "should be treated",
+        "should be prioritized",
+        "priority 1",
+        "rank 1",
+        "ranking",
+        "ranks higher",
+        "ranked",
+        "ranked first",
+        "first priority",
+        "most promising",
+        "most likely",
+        "leading near-term",
+        "leading direction",
+        "forecast",
+        "accelerating",
+        "fragmenting",
+        "steady",
+        "cooling",
+        "venue fit",
+    ]
+    if any(cue in text for cue in generic_commitment):
+        return True
+    if family == "venue_aware_research_positioning" and re.search(r"\b(1|first|top)\b.{0,120}\b(rank|direction|option|bucket|venue)\b", text):
+        return True
+    if family == "strategic_research_planning" and re.search(r"\b(yes|treat|prioritize|priority|invest|defer|roadmap)\b", text):
+        return True
+    if family == "direction_forecasting" and re.search(r"\b(next[- ]step|trajectory|likely|emerge|accelerat|fragment|steady|cool)\b", text):
+        return True
+    return False
+
+
+def _apply_public_leakage_guard(
+    *,
+    label: str,
+    specificity: float,
+    rationale: str,
+    public_leakage: Dict[str, Any],
+    candidate_answer: str,
+    family: str,
+    unit: Dict[str, Any],
+) -> tuple[str, float, str, Dict[str, Any]]:
+    if not public_leakage.get("unit_visible_in_public_task"):
+        return label, specificity, rationale, {"applied": False, "reason": "unit_not_visible_in_public_task"}
+    mentions_unit = _answer_mentions_future_unit(candidate_answer, unit)
+    makes_commitment = _answer_makes_task_commitment(candidate_answer, family=family)
+    guard = {
+        "applied": False,
+        "mentions_unit": mentions_unit,
+        "makes_task_commitment": makes_commitment,
+    }
+    if not makes_commitment and label == "aligned":
+        guard.update({"applied": True, "reason": "public_unit_repeated_without_required_task_commitment"})
+        return "partial", min(specificity, 0.55), f"{rationale} Public-leakage guard: a visible task phrase without a clear forecast/selection/ranking commitment is capped at partial.", guard
+    return label, specificity, rationale, guard
+
+
 def _future_alignment_json(
     client: OpenAICompatChatClient,
     *,
@@ -24,6 +142,7 @@ def _future_alignment_json(
     candidate_answer: str,
     unit: Dict[str, Any],
     evidence_rows: List[Dict[str, Any]],
+    public_leakage: Dict[str, Any],
 ) -> Dict[str, Any]:
     prompt = f"""# Role
 You are a Future-Alignment Auditor for a time-sliced research benchmark.
@@ -43,6 +162,7 @@ Judge whether the candidate answer successfully anticipated a future-emergent re
 - Task Family: {family}
 - Candidate Answer: {candidate_answer}
 - Hidden Future Unit: {json.dumps(unit, ensure_ascii=False, indent=2)}
+- Public Task Leakage Check: {json.dumps(public_leakage, ensure_ascii=False, indent=2)}
 - Future Evidence: {render_evidence(evidence_rows)}
 
 # Labels
@@ -61,6 +181,9 @@ Score from 0.0 to 1.0:
 - Use only the provided candidate answer and future evidence.
 - Favor semantic equivalence over literal string overlap.
 - If the answer only says something broad like "better evaluation" or "more robust agents", that is usually partial at best.
+- If Public Task Leakage Check says the hidden future unit was already visible in the public task, mere repetition is NOT enough for alignment.
+- For leaked units, require the answer to perform the requested operation: forecast the unit as the likely next direction, assess it as leading, select/rank it appropriately, or explain why the task-visible unit is the right future-facing choice.
+- If a leaked unit is mentioned but the answer ranks/selects a different incompatible direction first, assign partial or not_aligned depending on the explanation.
 
 # Output (Strict JSON)
 {{
@@ -238,11 +361,14 @@ def evaluate_future_alignment_v3_1(
         if not evidence_rows:
             label = 'not_aligned'
             specificity = 0.0
+            public_leakage = _future_unit_public_leakage(public_task, unit)
+            leakage_guard = {'applied': False, 'reason': 'no_future_evidence'}
             obj = {
                 'rationale': 'No future evidence rows were available for this alignment unit.',
                 'cited_evidence_ids': [],
             }
         else:
+            public_leakage = _future_unit_public_leakage(public_task, unit)
             obj = _future_alignment_json(
                 judge_client,
                 public_task=public_task,
@@ -250,11 +376,22 @@ def evaluate_future_alignment_v3_1(
                 candidate_answer=answer,
                 unit=unit,
                 evidence_rows=evidence_rows,
+                public_leakage=public_leakage,
             )
             label = str(obj.get('label') or 'not_aligned').strip().lower()
             if label not in {'aligned', 'partial', 'not_aligned'}:
                 label = 'not_aligned'
             specificity = _clamp01(obj.get('specificity'))
+            label, specificity, guarded_rationale, leakage_guard = _apply_public_leakage_guard(
+                label=label,
+                specificity=specificity,
+                rationale=str(obj.get('rationale') or '').strip(),
+                public_leakage=public_leakage,
+                candidate_answer=answer,
+                family=family,
+                unit=unit,
+            )
+            obj['rationale'] = guarded_rationale
         valid_evidence_ids = {str(row.get('evidence_id') or '') for row in evidence_rows}
         importance = max(0.0, _float_or_default(unit.get('importance'), 1.0))
         base = _label_score(label)
@@ -279,6 +416,8 @@ def evaluate_future_alignment_v3_1(
                     for x in (obj.get('cited_evidence_ids') or [])
                     if str(x).strip() and str(x).strip() in valid_evidence_ids
                 ],
+                'public_leakage': public_leakage,
+                'leakage_guard': leakage_guard,
                 'evidence': evidence_rows,
             }
         )

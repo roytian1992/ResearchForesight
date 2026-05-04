@@ -1,0 +1,124 @@
+{
+  "source_release": "researchforesight_refined_422_goldexp_full_20260430_question_polished_manual_20260504",
+  "output_release": "data/releases/researchforesight_refined_422",
+  "task_count": 422,
+  "id_scheme": "RF-0001_to_RF-0422_by_task_refined_jsonl_order",
+  "mapping_json": "data/releases/researchforesight_refined_422/task_id_mapping_old_to_rf_20260504.json",
+  "mapping_jsonl": "data/releases/researchforesight_refined_422/task_id_mapping_old_to_rf_20260504.jsonl",
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 135,
+    "direction_forecasting": 67,
+    "strategic_research_planning": 120,
+    "venue_aware_research_positioning": 100
+  },
+  "subtype_counts": {
+    "bottleneck_to_opportunity": 135,
+    "single_direction_forecast": 67,
+    "direction_priority_ranking": 91,
+    "direction_assessment": 26,
+    "venue_targeted_direction_forecast": 40,
+    "venue_direction_priority_ranking": 37,
+    "venue_priority_assessment": 23,
+    "ranked_direction_prioritization": 3
+  },
+  "sidecar_files_rewritten": [
+    "gold_expansion_audit.json",
+    "gold_expansion_audit_remaining322.json",
+    "gold_expansion_pilot.jsonl",
+    "gold_expansion_summary.json",
+    "gold_manual_overrides_apply_report.json",
+    "gold_manual_overrides_remaining322_batch01.jsonl",
+    "gold_manual_overrides_remaining322_batch02.jsonl",
+    "gold_manual_overrides_remaining322_batch03.jsonl",
+    "gold_manual_overrides_remaining322_batch04.jsonl",
+    "gold_manual_overrides_remaining322_batch05.jsonl",
+    "gold_manual_overrides_remaining322_batch06.jsonl",
+    "gold_manual_overrides_remaining322_batch07.jsonl",
+    "gold_manual_overrides_remaining322_batch08.jsonl",
+    "gold_manual_overrides_remaining322_batch09.jsonl",
+    "gold_manual_overrides_remaining322_batch10.jsonl",
+    "gold_manual_overrides_remaining322_batch11.jsonl",
+    "gold_manual_overrides_remaining322_batch12.jsonl",
+    "gold_manual_overrides_remaining322_batch13.jsonl",
+    "gold_manual_overrides_remaining322_batch14.jsonl",
+    "gold_manual_overrides_remaining322_batch15.jsonl",
+    "gold_manual_review_queue_full422_finalpass.jsonl",
+    "gold_manual_review_queue_full422_finalpass.md",
+    "gold_manual_review_queue_remaining322_finalpass.jsonl",
+    "gold_manual_review_queue_remaining322_finalpass.md",
+    "gold_manual_review_queue_remaining322_partial.jsonl",
+    "gold_manual_review_queue_remaining322_partial.md",
+    "gold_manual_review_queue_summary.json",
+    "question_polish_manual_report.json"
+  ],
+  "sample_mappings": [
+    {
+      "index": 1,
+      "old_task_id": "RF-0001",
+      "new_task_id": "RF-0001",
+      "family": "bottleneck_opportunity_discovery",
+      "subtype": "bottleneck_to_opportunity",
+      "domain": "LLM agents",
+      "time_cutoff": "2025-08-31",
+      "title": "Identifying Unresolved Bottlenecks in Long-Term Memory Evaluation Frameworks for LLM Agents"
+    },
+    {
+      "index": 2,
+      "old_task_id": "RF-0002",
+      "new_task_id": "RF-0002",
+      "family": "bottleneck_opportunity_discovery",
+      "subtype": "bottleneck_to_opportunity",
+      "domain": "LLM agents",
+      "time_cutoff": "2025-08-31",
+      "title": "Identifying a Key Bottleneck in Multi-Turn Reinforcement Learning for LLM Agents"
+    },
+    {
+      "index": 3,
+      "old_task_id": "RF-0003",
+      "new_task_id": "RF-0003",
+      "family": "bottleneck_opportunity_discovery",
+      "subtype": "bottleneck_to_opportunity",
+      "domain": "LLM agents",
+      "time_cutoff": "2025-08-31",
+      "title": "Identifying a Key Bottleneck in Reasoning-Aware Multi-Turn Reinforcement Learning"
+    },
+    {
+      "index": 420,
+      "old_task_id": "RF-0420",
+      "new_task_id": "RF-0420",
+      "family": "venue_aware_research_positioning",
+      "subtype": "venue_direction_priority_ranking",
+      "domain": "Visual generative modeling and diffusion",
+      "time_cutoff": "2025-08-31",
+      "title": "Ranking EMNLP-Aligned Directions in Training-Free Prompt Adaptation"
+    },
+    {
+      "index": 421,
+      "old_task_id": "RF-0421",
+      "new_task_id": "RF-0421",
+      "family": "venue_aware_research_positioning",
+      "subtype": "venue_direction_priority_ranking",
+      "domain": "Visual generative modeling and diffusion",
+      "time_cutoff": "2025-08-31",
+      "title": "Ranking AAAI-Aligned Directions in Zero-Shot Image Editing"
+    },
+    {
+      "index": 422,
+      "old_task_id": "RF-0422",
+      "new_task_id": "RF-0422",
+      "family": "venue_aware_research_positioning",
+      "subtype": "venue_direction_priority_ranking",
+      "domain": "Visual generative modeling and diffusion",
+      "time_cutoff": "2025-08-31",
+      "title": "Ranking ICLR-Aligned Directions in Artifact Detection Metrics"
+    }
+  ],
+  "validation": {
+    "task_count": 422,
+    "ids_match_expected": true,
+    "unique_new_ids": true,
+    "legacy_task_id_field_count": 0,
+    "mapping_invertible": true,
+    "old_ids_outside_mapping": 0
+  }
+}

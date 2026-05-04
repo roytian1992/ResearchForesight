@@ -1,0 +1,86 @@
+{
+  "source_release": "researchforesight_refined_422_goldexp_full_20260430",
+  "output_release": "researchforesight_refined_422_goldexp_full_20260430_question_polished_manual_20260504",
+  "source_task_file": "researchforesight_refined_422_goldexp_full_20260430/task_refined.jsonl",
+  "output_task_file": "researchforesight_refined_422_goldexp_full_20260430_question_polished_manual_20260504/task_refined.jsonl",
+  "task_count_before": 422,
+  "task_count_after": 422,
+  "changed_question_count": 422,
+  "family_counts": {
+    "bottleneck_opportunity_discovery": 135,
+    "direction_forecasting": 67,
+    "strategic_research_planning": 120,
+    "venue_aware_research_positioning": 100
+  },
+  "subtype_counts": {
+    "bottleneck_to_opportunity": 135,
+    "single_direction_forecast": 67,
+    "direction_priority_ranking": 91,
+    "direction_assessment": 26,
+    "venue_targeted_direction_forecast": 40,
+    "venue_direction_priority_ranking": 37,
+    "venue_priority_assessment": 23,
+    "ranked_direction_prioritization": 3
+  },
+  "fields_changed": [
+    "question"
+  ],
+  "future_novelty_cleanup_run": false,
+  "supplementation_run": false,
+  "strict_recomputed": false,
+  "strict_count_before": null,
+  "strict_count_after": null,
+  "notes": [
+    "Original release has no manifest.json and no strict_task_ids.txt at top level.",
+    "This release is a question-surface polish only: task ids, family labels, gold answers, eval targets, traces, contracts, and gold sets were preserved byte-for-byte as parsed JSON values.",
+    "All final questions include the cutoff date in the visible prompt.",
+    "Polishing was done by family/subtype style review and mechanically written back to valid JSONL; no reusable automatic polishing script was retained."
+  ],
+  "checks": {
+    "non_question_fields_unchanged": true,
+    "missing_visible_cutoff_dates": [],
+    "legacy_phrase_hits": {
+      "Using literature published": 0,
+      "Based on literature": 0,
+      "2025, 2025": 0,
+      "holding back how": 0,
+      "forecast the most likely": 0,
+      "identify the single": 0,
+      "assess whether": 0,
+      "directions in directions": 0,
+      "multi turn": 0
+    }
+  },
+  "samples": {
+    "RF-0001": {
+      "family": "bottleneck_opportunity_discovery",
+      "subtype": "bottleneck_to_opportunity",
+      "before": "Using literature published on or before August 31, 2025, identify one unresolved bottleneck in how long-term memory is evaluated for LLM agents. Support the bottleneck with recurring limitations, failure cases, or explicit gaps in the pre-cutoff record, then explain one concrete research opportunity that would become plausible within the next six months if that bottleneck were solved. Base both claims only on pre-cutoff evidence.",
+      "after": "As of August 31, 2025, what unresolved bottleneck was still holding back the way long-term memory is evaluated for LLM agents? Use recurring limitations, failure cases, or explicit gaps in the pre-cutoff record, then explain one concrete research opportunity that would become plausible over the next six months if the bottleneck were solved. Base both claims on pre-cutoff evidence only."
+    },
+    "RF-0047": {
+      "family": "direction_forecasting",
+      "subtype": "single_direction_forecast",
+      "before": "Based on the body of published research available up to August 31, 2025, in the domain of multi turn reinforcement learning frameworks, what specific technical direction is most likely to emerge as the immediate next step over the following six months, from September 1, 2025, to February 28, 2026? Additionally, how should the trajectory of research activity in this area be characterized during that period—accelerating, fragmenting, steady, or cooling? Your response must identify one concrete direction and one trajectory label, supported by reasoning grounded in the historical literature and research dynamics observable prior to the cutoff date.",
+      "after": "As of August 31, 2025, what concrete technical direction in multi-turn reinforcement learning frameworks was most likely to emerge over the next six months? Give one direction and one trajectory label (accelerating, fragmenting, steady, or cooling), and support both judgments with evidence visible before the cutoff."
+    },
+    "RF-0086": {
+      "family": "strategic_research_planning",
+      "subtype": "direction_priority_ranking",
+      "before": "By August 31, 2025, evaluate and rank these candidate research directions in multi-turn reinforcement learning frameworks for the period September 2025 to February 2026: (1) multi-agent collaborative reinforcement learning; (2) uncertainty-aware multi-turn reinforcement learning; (3) human-in-the-loop multi-turn reinforcement learning; (4) multi-agent reinforcement learning for retrieval-augmented generation. Provide a complete priority ordering and justify it with evidence from publication trends, venue signals, technical dependencies, and unresolved challenges in the pre-cutoff literature. Do not add new directions.",
+      "after": "As of August 31, 2025, how should the following candidate directions in multi-turn reinforcement learning frameworks be prioritized for the next six months: (1) multi-agent collaborative reinforcement learning; (2) uncertainty-aware multi-turn reinforcement learning; (3) human-in-the-loop multi-turn reinforcement learning; (4) multi-agent reinforcement learning for retrieval-augmented generation? Provide a complete priority ordering, justify it with evidence from publication trends, venue signals, technical dependencies, and unresolved challenges in the pre-cutoff literature, and do not add new directions."
+    },
+    "RF-0151": {
+      "family": "venue_aware_research_positioning",
+      "subtype": "venue_targeted_direction_forecast",
+      "before": "Based on literature available up to August 31, 2025, determine the single most concrete next-step research direction in Tool-augmented reasoning protocols expected to gain significant traction from September 2025 through February 2026. Identify the one top-tier venue bucket—specifically AAAI-like—most suited for this direction, and justify this venue fit by referencing the technical framing or contribution style characteristic of that venue. Do not incorporate developments beyond the cutoff date.",
+      "after": "As of August 31, 2025, what concrete next-step research direction in Tool-augmented reasoning protocols was most likely to gain traction over the next six months? Name the AAAI-like venue bucket and justify the fit by referencing the technical framing or contribution style characteristic of that venue. Do not use post-cutoff developments."
+    },
+    "RF-0422": {
+      "family": "venue_aware_research_positioning",
+      "subtype": "venue_direction_priority_ranking",
+      "before": "Using literature published on or before August 31, 2025, rank the following directions in artifact detection metrics for generative models by how well they fit ICLR-like venues over the following six months: (1) high-resolution generation artifact detection metrics; (2) frequency-domain artifact detection metrics. Provide a complete ranking and justify the ordering using pre-cutoff evidence on methodological value, future momentum, and venue fit. Do not introduce additional directions.",
+      "after": "As of August 31, 2025, how should the following directions in artifact detection metrics for generative models be ranked for fit with ICLR-like venues over the next six months: (1) high-resolution generation artifact detection metrics; (2) frequency-domain artifact detection metrics? Provide a complete ranking and justify the ordering with pre-cutoff evidence on methodological value, future momentum, and venue fit. Do not introduce additional directions."
+    }
+  }
+}

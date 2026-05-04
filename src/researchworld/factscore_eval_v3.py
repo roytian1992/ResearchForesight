@@ -147,6 +147,57 @@ STATISTICAL_CUES = [
     "share",
 ]
 
+FAMILY_CLAIM_EXTRACTION_GUIDANCE = {
+    "bottleneck_opportunity_discovery": {
+        "focus": [
+            "extract the concrete bottleneck or failure mode the answer identifies",
+            "extract the mechanism-level reason why this is the bottleneck",
+            "extract the downstream opportunity unlocked if the bottleneck is resolved",
+            "prefer technical constraints over generic importance claims",
+        ],
+        "avoid": [
+            "broad field summaries with no explicit blocker",
+            "generic statements that a topic is important or promising",
+        ],
+    },
+    "direction_forecasting": {
+        "focus": [
+            "extract the answer's predicted next direction, top-ranked direction, or likely trajectory",
+            "extract the concrete signal chain used to support that forecast",
+            "extract any explicit comparison showing why one direction is more likely than alternatives",
+            "preserve trend labels such as accelerating, consolidating, fragmenting, or plateauing when stated",
+        ],
+        "avoid": [
+            "static background facts that do not support a forward-looking call",
+            "generic descriptions of a topic without a forecast or trajectory claim",
+        ],
+    },
+    "strategic_research_planning": {
+        "focus": [
+            "extract the prioritized ranking or selected research direction",
+            "extract explicit reasons why the chosen direction should be prioritized before alternatives",
+            "extract dependency, tractability, maturity, or leverage claims that drive the ranking",
+            "when the answer compares multiple options, keep comparison claims rather than isolated praise",
+        ],
+        "avoid": [
+            "claims that merely restate all candidates are useful",
+            "generic planning advice not tied to the ranked options",
+        ],
+    },
+    "venue_aware_research_positioning": {
+        "focus": [
+            "extract the proposed technical direction and the target venue or venue bucket",
+            "extract fit claims about evaluation style, contribution type, methodological novelty, or empirical scope",
+            "extract explicit reasons why the chosen venue fits better than nearby alternatives",
+            "preserve disqualifying mismatch claims when the answer rules out a venue family",
+        ],
+        "avoid": [
+            "generic statements that a direction is strong without venue-fit content",
+            "broad field facts unrelated to venue positioning",
+        ],
+    },
+}
+
 
 @dataclass
 class FactScoreV3Config:
@@ -290,7 +341,30 @@ def _claim_family_compatibility(answer_claim: str, gt_claim: Dict[str, Any]) -> 
     return 1.0
 
 
-def extract_atomic_claims(client: OpenAICompatChatClient, *, answer: str, max_claims: int) -> List[str]:
+def _family_claim_extraction_prompt(family: str) -> str:
+    spec = FAMILY_CLAIM_EXTRACTION_GUIDANCE.get(family)
+    if not spec:
+        return """Family-Specific Focus:
+- Extract claims about bottlenecks, opportunities, directions, trajectories, venues, metrics, counts, or representative papers.
+- Prefer claims that a benchmark evaluator could check against a structured gold packet.
+- Avoid generic summaries that are not concrete enough to verify."""
+    focus = "\n".join(f"- {item}" for item in spec["focus"])
+    avoid = "\n".join(f"- {item}" for item in spec["avoid"])
+    return f"""Family-Specific Focus:
+{focus}
+
+Avoid:
+{avoid}"""
+
+
+def extract_atomic_claims(
+    client: OpenAICompatChatClient,
+    *,
+    answer: str,
+    max_claims: int,
+    family: str = "",
+) -> List[str]:
+    family_prompt = _family_claim_extraction_prompt(str(family or "").strip())
     prompt = f"""Decompose the answer into a small set of atomic benchmark-relevant factual claims.
 
 Rules:
@@ -299,6 +373,8 @@ Rules:
 - Ignore purely stylistic statements and generic advice.
 - Ignore duplicates.
 - At most {max_claims} claims.
+
+{family_prompt}
 
 Answer:
 {answer}
@@ -774,7 +850,13 @@ def evaluate_answer_factscore_v3(
             "claims": [],
         }
 
-    answer_claims = extract_atomic_claims(judge_client, answer=answer, max_claims=cfg.max_claims)
+    family = str(gt_row.get("family") or result_row.get("family") or "")
+    answer_claims = extract_atomic_claims(
+        judge_client,
+        answer=answer,
+        max_claims=cfg.max_claims,
+        family=family,
+    )
     gt_claim_bank = list(gt_row.get("claim_bank") or [])
     temporal_policy = gt_row.get("temporal_policy") or {}
     domain_id = str(result_row.get("domain_id") or "")

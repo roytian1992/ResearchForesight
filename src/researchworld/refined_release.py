@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 from researchworld.corpus import iter_jsonl
+from researchworld.research_judgment_rubrics import default_evaluation_rubric
 
 
 REFINED_TASK_FILENAME = "task_refined.jsonl"
@@ -94,6 +95,8 @@ def normalize_refined_eval_row(row: Dict[str, Any]) -> Dict[str, Any]:
     for key in EVAL_TARGET_KEYS:
         if key not in normalized and key in eval_targets:
             normalized[key] = eval_targets.get(key)
+    if not normalized.get("evaluation_rubric"):
+        normalized["evaluation_rubric"] = default_evaluation_rubric(str(normalized.get("family") or ""))
     if not normalized.get("temporal_policy"):
         normalized["temporal_policy"] = _derive_temporal_policy(row)
     if not normalized.get("judge_profile"):
